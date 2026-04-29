@@ -1,6 +1,7 @@
 let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} };
 let diasTreinados = JSON.parse(localStorage.getItem('frequenciaTreino')) || [];
 let usuariosCadastrados = JSON.parse(localStorage.getItem('fitai_users')) || [];
+let fichaAtivaNoMomento = "";
 let fichaAtiva = null;
 
 const dicionarioExercicios = {
@@ -15,19 +16,16 @@ const dicionarioExercicios = {
 // --- NAVEGAÇÃO ---
 
 function showView(viewName) {
-    const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas'];
+    const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas', 'view-consulta'];
     
-    // Esconde todas as telas
     views.forEach(v => {
         const el = document.getElementById(v);
         if (el) el.classList.add('hidden');
     });
 
-    // Mostra a tela desejada
     const target = document.getElementById('view-' + viewName);
     if (target) target.classList.remove('hidden');
     
-    // Gerencia o App Shell (Menu superior)
     const shell = document.getElementById('app-shell');
     if (viewName === 'login') {
         if (shell) shell.classList.add('hidden');
@@ -35,9 +33,8 @@ function showView(viewName) {
         if (shell) shell.classList.remove('hidden');
     }
 
-    // Atualiza dados específicos se necessário
     if (viewName === 'planilhas') renderizarFichas();
-    if (viewName === 'registro') renderizarTreino();
+    if (viewName === 'registro') renderizarLogTreino();
 }
 
 // --- SISTEMA DE AUTENTICAÇÃO ---
@@ -58,25 +55,45 @@ function toggleAuthTab(tab) {
     }
 }
 
+if (!bancoDeDados.usuarios) {
+    bancoDeDados.usuarios = [];
+}
+
 function handleCadastro() {
     const nome = document.getElementById('reg-nome').value;
     const email = document.getElementById('reg-email').value;
-    const tel = document.getElementById('reg-tel').value;
-    const pass = document.getElementById('reg-pass').value;
-    const passConf = document.getElementById('reg-pass-conf').value;
+    const senha = document.getElementById('reg-pass').value;
+    const confirmaSenha = document.getElementById('reg-pass-conf').value;
 
-    if (!nome || !email || !pass) return alert("Preencha os campos obrigatórios!");
-    if (pass !== passConf) return alert("As senhas não coincidem!");
-    
-    if (usuariosCadastrados.find(u => u.email === email)) {
-        return alert("Este e-mail já está cadastrado!");
+    if (!nome || !email || !senha) {
+        alert("Preencha todos os campos!");
+        return;
     }
 
-    const novoUsuario = { nome, email, tel, pass };
+    if (senha !== confirmaSenha) {
+        alert("As senhas não coincidem!");
+        return;
+    }
+
+    const usuarioExiste = bancoDeDados.usuarios.find(u => u.email === email);
+    if (usuarioExiste) {
+        alert("Este e-mail já está cadastrado!");
+        return;
+    }
+
+    const novoUsuario = {
+        nome: nome,
+        email: email,
+        pass: senha, // Mantendo pass conforme seu handleLogin
+        fichas: {}
+    };
+
+    bancoDeDados.usuarios.push(novoUsuario);
     usuariosCadastrados.push(novoUsuario);
     localStorage.setItem('fitai_users', JSON.stringify(usuariosCadastrados));
-
-    alert("Conta criada com sucesso! Agora é só entrar.");
+    salvarBanco();
+    
+    alert("Conta criada com sucesso! Agora faça login.");
     toggleAuthTab('login');
 }
 
@@ -110,41 +127,54 @@ function logout() {
     location.reload();
 }
 
-// --- GESTÃO DE FICHAS (PLANILHAS) ---
+// --- GESTÃO DE FICHAS ---
 
-function renderizarFichas() {
-    const container = document.getElementById('lista-fichas');
+function renderizarFichasConsulta() {
+    const container = document.getElementById('lista-fichas-consulta');
     if (!container) return;
     container.innerHTML = "";
 
     const nomesFichas = Object.keys(bancoDeDados.fichas);
 
-    if (nomesFichas.length === 0) {
-        container.innerHTML = `<p class="col-span-full text-center text-gray-500 py-10 italic">Nenhuma ficha criada. Comece no botão acima!</p>`;
-        return;
-    }
-
     nomesFichas.forEach(nome => {
         container.innerHTML += `
-            <div class="bg-[#0b0f1a] border border-gray-800 p-6 rounded-2xl flex justify-between items-center group hover:border-blue-500 transition-all">
-                <div>
-                    <h4 class="font-black text-white italic uppercase">${nome}</h4>
-                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${bancoDeDados.fichas[nome].length} Exercícios</p>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="abrirFicha('${nome}')" class="bg-blue-600/10 text-blue-500 p-2 rounded-lg hover:bg-blue-600 hover:text-white transition-all">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    </button>
-                    <button onclick="excluirFicha('${nome}')" class="text-gray-700 hover:text-red-500 p-2 transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
-                </div>
+            <div onclick="verDetalhesConsulta('${nome}')" 
+                 style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; white-space: nowrap;">
+                <span class="italic-bold uppercase" style="color: white; font-size: 0.8rem;">${nome}</span>
             </div>`;
     });
 }
 
+function verDetalhesConsulta(nome) {
+    const container = document.getElementById('detalhes-treino-consulta');
+    const exercicios = bancoDeDados.fichas[nome] || [];
+
+    // Título do treino selecionado
+    let html = `<h4 class="italic-bold uppercase" style="color: var(--accent-blue); margin-bottom: 15px;">Exercícios de ${nome}</h4>`;
+
+    if (exercicios.length === 0) {
+        html += `<p style="color: gray;">Nenhum exercício registrado para consulta.</p>`;
+    } else {
+        exercicios.forEach(ex => {
+            html += `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span style="font-size: 9px; color: var(--accent-blue); font-weight: bold; text-transform: uppercase;">${ex.grupo}</span>
+                        <h4 style="color: white; margin: 2px 0; text-transform: uppercase; font-size: 0.9rem;">${ex.nome}</h4>
+                    </div>
+                    <div style="text-align: right;">
+                        <p style="color: white; font-weight: 900; margin: 0;">${ex.series || ex.sets}x${ex.reps}</p>
+                        <p style="color: gray; font-size: 10px; margin: 0; font-weight: bold;">${ex.carga} KG</p>
+                    </div>
+                </div>`;
+        });
+    }
+
+    container.innerHTML = html;
+}
+
 function criarNovaFicha() {
-    const nome = prompt("Nome do Treino (ex: Treino A - Pernas):");
+    const nome = prompt("Nome do Treino:");
     if (nome && !bancoDeDados.fichas[nome]) {
         bancoDeDados.fichas[nome] = [];
         salvarBanco();
@@ -154,17 +184,22 @@ function criarNovaFicha() {
     }
 }
 
-function abrirFicha(nomeDaFicha) {
-    // Muda para a tela de registro
-    showView('registro');
+function abrirFicha(nome) {
+    // 1. Define qual ficha está ativa para o sistema saber onde salvar
+    fichaAtivaNoMomento = nome;
+    fichaAtiva = nome; 
+
+    // 2. Muda para a tela de REGISTRO (onde estão os campos de salvar e a lista)
+    showView('registro'); 
     
-    // Atualiza o título da página de registro com o nome da ficha selecionada
+    // 3. Atualiza o título para o usuário saber qual treino abriu
     const titulo = document.getElementById('nome-ficha-ativa');
-    if(titulo) titulo.innerText = "TREINO: " + nomeDaFicha.toUpperCase();
-    
-    // Aqui você carregaria os exercícios dessa ficha específica
-    renderizarListaTreino(); 
+    if (titulo) titulo.innerText = "TREINO: " + nome.toUpperCase();
+
+    // 4. Carrega os exercícios que já foram salvos nessa ficha anteriormente
+    renderizarLogTreino();
 }
+
 
 function excluirFicha(nome) {
     if (confirm(`Excluir permanentemente o ${nome}?`)) {
@@ -194,7 +229,8 @@ function atualizarListaExercicios() {
 }
 
 function adicionarExercicio() {
-    if (!fichaAtiva) return alert("Selecione uma ficha primeiro!");
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    if (!ativa) return alert("Selecione uma ficha primeiro!");
 
     const grupo = document.getElementById('select-grupo').value;
     const nome = document.getElementById('select-exercicio').value;
@@ -207,87 +243,63 @@ function adicionarExercicio() {
     const novo = {
         id: Date.now(),
         grupo, nome, series, reps,
+        sets: series, // Para compatibilidade com seus outros renders
         carga: carga || 0,
         hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     };
 
-    bancoDeDados.fichas[fichaAtiva].unshift(novo);
+    if (!bancoDeDados.fichas[ativa]) bancoDeDados.fichas[ativa] = [];
+    bancoDeDados.fichas[ativa].unshift(novo);
     salvarBanco();
     
     document.getElementById('series-ex').value = "";
     document.getElementById('reps-ex').value = "";
     document.getElementById('carga-ex').value = "";
     
-    renderizarTreino();
+    renderizarLogTreino();
 }
 
-function renderizarListaTreino() {
+function renderizarLogTreino() {
     const container = document.getElementById('lista-treino');
-    container.innerHTML = ''; // Limpa a lista antes de desenhar
+    if(!container) return;
+    container.innerHTML = ''; 
 
-    // Exemplo de como o loop deve montar o HTML interno
-    // treinosLogados é o seu array de exercícios realizados
-    treinosLogados.forEach((ex, index) => {
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    const exercicios = bancoDeDados.fichas[ativa] || [];
+
+    exercicios.forEach((ex, index) => {
         container.innerHTML += `
             <div class="treino-item fade-in">
                 <div class="treino-info">
                     <h4>${ex.nome}</h4>
-                    <p>${ex.grupo} • <span class="treino-stats">${ex.sets}x${ex.reps} — ${ex.carga}kg</span></p>
+                    <p>${ex.grupo} • <span class="treino-stats">${ex.series || ex.sets}x${ex.reps} — ${ex.carga}kg</span></p>
                 </div>
-                <button onclick="removerExercicio(${index})" class="btn-delete" title="Excluir Exercício">
-                    🗑️
-                </button>
-            </div>
-        `;
-    });
-}
-
-// IMPORTANTE: Esta função faz o "pulo" da ficha para o registro
-function abrirFicha(idFicha) {
-    // 1. Lógica para carregar os dados da ficha pelo ID (sua lógica atual)
-    // 2. Muda a tela
-    showView('registro'); 
-    // 3. Atualiza o título na tela de registro
-    document.getElementById('nome-ficha-ativa').innerText = "Treino: " + idFicha;
-}
-
-    exercicios.forEach(ex => {
-        lista.innerHTML += `
-            <div class="bg-[#0b0f1a] border border-gray-800 p-4 rounded-2xl flex items-center justify-between group mb-3">
-                <div class="flex items-center gap-4">
-                    <div class="w-1.5 h-10 bg-blue-600 rounded-full"></div>
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[9px] font-black uppercase px-2 py-0.5 bg-blue-900/30 text-blue-400 rounded-md tracking-wider">${ex.grupo}</span>
-                            <span class="text-[10px] text-gray-600 font-mono italic">${ex.hora}</span>
-                        </div>
-                        <h4 class="font-bold text-gray-100 uppercase text-xs sm:text-sm tracking-tight">${ex.nome}</h4>
-                    </div>
-                </div>
-                <div class="flex items-center gap-6">
-                    <div class="text-right">
-                        <p class="text-lg font-black text-white leading-none">${ex.series}<span class="text-blue-500 text-xs mx-0.5">x</span>${ex.reps}</p>
-                        <p class="text-[10px] font-bold text-gray-500 tracking-widest uppercase mt-1">${ex.carga} KG</p>
-                    </div>
-                    <button onclick="removerExercicio(${ex.id})" class="p-2 text-gray-700 hover:text-red-500 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </div>
+                <button onclick="removerExercicio(${ex.id})" class="btn-delete">🗑️</button>
             </div>`;
     });
+}
 
+function prepararRegistro() {
+    showView('registro');
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    const titulo = document.getElementById('nome-ficha-ativa');
+    if(titulo) titulo.innerText = "TREINANDO: " + ativa.toUpperCase();
+    renderizarLogTreino();
+}
 
 function removerExercicio(id) {
-    bancoDeDados.fichas[fichaAtiva] = bancoDeDados.fichas[fichaAtiva].filter(t => t.id !== id);
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(t => t.id !== id);
     salvarBanco();
-    renderizarTreino();
+    renderizarLogTreino();
 }
 
 function limparTreino() {
-    if (confirm(`Limpar todos os exercícios da ficha ${fichaAtiva}?`)) {
-        bancoDeDados.fichas[fichaAtiva] = [];
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    if (confirm(`Limpar todos os exercícios da ficha ${ativa}?`)) {
+        bancoDeDados.fichas[ativa] = [];
         salvarBanco();
-        renderizarTreino();
+        renderizarLogTreino();
     }
 }
 
@@ -306,8 +318,8 @@ function gerarCalendario() {
             <div onclick="toggleDia(${i})" class="flex flex-col items-center cursor-pointer group">
                 <span class="text-[10px] font-bold text-gray-500 mb-1">${dia}</span>
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-all border-2 
-                    ${jaTreinou ? 'bg-blue-600 border-blue-400 shadow-lg shadow-blue-900/40' : 'bg-gray-900 border-gray-800 hover:border-gray-600'} 
-                    ${i === hoje ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-[#0b0f1a]' : ''}">
+                    ${jaTreinou ? 'bg-blue-600 border-blue-400' : 'bg-gray-900 border-gray-800'} 
+                    ${i === hoje ? 'ring-2 ring-blue-500 ring-offset-2' : ''}">
                     ${jaTreinou ? '🔥' : ''}
                 </div>
             </div>`;
