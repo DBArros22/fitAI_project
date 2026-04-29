@@ -3,37 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitAI - Seu Personal Trainer Inteligente</title>
+    <title>FitAI - Gestor de Treinos</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans">
+<body class="bg-gray-900 text-white font-sans min-h-screen">
 
-    <nav class="p-6 border-b border-gray-800 flex justify-between items-center">
+    <nav class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
         <h1 class="text-2xl font-bold text-blue-500 underline decoration-2">FitAI</h1>
-        <span class="text-xs text-gray-400">Status: <span class="text-green-500 font-mono">Online</span></span>
+        <div id="data-atual" class="text-gray-400 font-mono text-sm"></div>
     </nav>
 
-    <main class="max-w-4xl mx-auto mt-10 p-4">
-        <div class="text-center mb-10">
-            <h2 class="text-4xl font-extrabold mb-2">Treino Gerado por IA</h2>
-            <p class="text-gray-400">IA especializada em hipertrofia e performance.</p>
-        </div>
-
-        <div class="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700">
-            <textarea id="userInput" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-lg focus:outline-none focus:border-blue-500" rows="3" placeholder="Ex: Sou iniciante, quero treinar 3x por semana focado em peito e pernas..."></textarea>
-            
-            <button onclick="gerarTreino()" id="btnGerar" class="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all">
-                Gerar Plano de Treino
-            </button>
-        </div>
-
-        <div id="resultado" class="mt-8 hidden p-6 bg-gray-800 rounded-xl border-l-4 border-blue-500">
-            <h3 class="text-xl font-bold mb-4">Sugestão do FitAI:</h3>
-            <div id="textoIA" class="text-gray-300 leading-relaxed whitespace-pre-line">
+    <main class="max-w-6xl mx-auto mt-10 p-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <section class="bg-gray-800 p-6 rounded-xl border border-gray-700 h-fit">
+            <h3 class="text-xl font-bold mb-4 text-blue-400">Novo Exercício</h3>
+            <div class="space-y-4">
+                <input type="text" id="nome-ex" placeholder="Ex: Supino Reto" class="w-full bg-gray-900 border border-gray-700 p-3 rounded text-white outline-none focus:border-blue-500">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="series-ex" placeholder="Séries" class="bg-gray-900 border border-gray-700 p-3 rounded text-white outline-none focus:border-blue-500">
+                    <input type="number" id="reps-ex" placeholder="Reps" class="bg-gray-900 border border-gray-700 p-3 rounded text-white outline-none focus:border-blue-500">
                 </div>
-        </div>
+                <input type="text" id="carga-ex" placeholder="Carga (kg)" class="w-full bg-gray-900 border border-gray-700 p-3 rounded text-white outline-none focus:border-blue-500">
+                <button onclick="adicionarExercicio()" class="w-full bg-blue-600 hover:bg-blue-700 font-bold py-3 rounded transition-all">ADICIONAR À LISTA</button>
+            </div>
+        </section>
+
+        <section class="md:col-span-2 bg-gray-800 p-6 rounded-xl border border-gray-700 min-h-[400px]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-blue-400">Treino de Hoje</h3>
+                <button onclick="limparTreino()" class="text-xs text-red-400 hover:underline">Limpar Tudo</button>
+            </div>
+            
+            <div id="lista-treino" class="space-y-3">
+                <p class="text-gray-500 italic text-center py-10">Nenhum exercício adicionado ainda...</p>
+            </div>
+        </section>
+
     </main>
 
-    <script src="script.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
