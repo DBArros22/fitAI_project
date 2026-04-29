@@ -1,0 +1,258 @@
+:root {
+    --bg-main: #05070a;
+    --bg-card: #111827;
+    --bg-input: #1a2236;
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --accent-green: #10b981;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --shadow-pro: 0 20px 50px rgba(0, 0, 0, 0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+}
+
+/* --- ESTRUTURA GERAL --- */
+#app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.hidden { display: none !important; }
+
+/* --- NAVBAR PREMIUM --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 5%;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0; z-index: 50;
+}
+
+/* --- TELA DE LOGIN/CADASTRO --- */
+#view-login {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+    background: radial-gradient(circle at top, #1e293b 0%, #05070a 100%);
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    padding: 40px; width: 100%; max-width: 440px;
+    box-shadow: var(--shadow-pro);
+}
+
+.logo-main {
+    font-size: 2.2rem; font-weight: 900; font-style: italic;
+    color: var(--accent-blue); text-align: center; margin-bottom: 30px;
+}
+
+/* --- TAB SYSTEM (SLIDING) --- */
+.tab-system {
+    display: flex; background: #000; padding: 4px;
+    border-radius: 14px; margin-bottom: 25px; position: relative;
+}
+
+.tab-btn {
+    flex: 1; padding: 12px; border: none; background: transparent;
+    color: var(--text-secondary); font-weight: 700; cursor: pointer;
+    position: relative; z-index: 2; transition: 0.3s;
+}
+
+.tab-system::before {
+    content: ""; position: absolute; top: 4px; left: 4px;
+    width: calc(50% - 4px); height: calc(100% - 8px);
+    background: var(--accent-blue); border-radius: 10px;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
+}
+
+.tab-system.cadastro-active::before { transform: translateX(100%); }
+.tab-btn.active { color: white; }
+
+/* --- INPUTS E SELECTS --- */
+.form-group { display: flex; flex-direction: column; gap: 16px; }
+
+.input-field, select {
+    width: 100%; background: var(--bg-input);
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px; padding: 14px;
+    color: white; font-size: 0.95rem; outline: none;
+}
+
+.input-field:focus, select:focus {
+    border-color: var(--accent-blue);
+    background: #232d45;
+}
+
+/* --- SAGUÃO (CARDS) --- */
+.content-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px; padding: 40px 5%; max-width: 1300px; margin: 0 auto;
+}
+
+.menu-card {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 28px; padding: 35px; cursor: pointer;
+    transition: all 0.4s ease; box-shadow: var(--shadow-pro);
+    display: flex; flex-direction: column; align-items: center;
+}
+
+.menu-card:hover {
+    transform: translateY(-8px); border-color: var(--accent-blue);
+}
+
+.card-icon {
+    font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 15px;
+}
+
+/* --- GRID DE REGISTRO --- */
+.registro-container {
+    display: grid; grid-template-columns: 1fr; gap: 30px;
+    padding: 30px 5%; max-width: 1400px; margin: 0 auto;
+}
+
+@media (min-width: 1024px) {
+    .registro-container { grid-template-columns: 400px 1fr; }
+}
+
+.glass-panel {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 24px; padding: 25px; box-shadow: var(--shadow-pro);
+}
+
+/* --- BOTÕES --- */
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
+    color: white; padding: 16px; border-radius: 14px; border: none;
+    font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s;
+}
+
+.btn-primary.success { background: linear-gradient(135deg, #10b981, #059669); }
+.btn-primary:hover { filter: brightness(1.1); transform: scale(1.01); }
+
+.btn-link {
+    background: none; border: none; color: var(--text-secondary);
+    cursor: pointer; align-self: center; font-size: 0.85rem;
+}
+
+.grid-2, .grid-3 { display: grid; gap: 12px; }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.treino-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s;
+}
+
+.treino-item:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--accent-blue);
+}
+
+.treino-info h4 {
+    font-size: 1rem;
+    color: var(--accent-blue);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.treino-info p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.treino-stats {
+    font-weight: 800;
+    color: #fff;
+    background: var(--bg-input);
+    padding: 4px 10px;
+    border-radius: 8px;
+}
+
+/* Botão de Lixeira */
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    font-size: 1.1rem;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+}
+
+/* Tipografia Estilizada */
+.italic-bold { font-weight: 900; font-style: italic; }
+
+.treino-item {
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.treino-info h4 {
+    color: var(--accent-blue);
+    font-size: 0.9rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.treino-info p {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+.treino-stats {
+    color: white;
+    font-weight: bold;
+}
+
+/* Estilo da Lixeira */
+.btn-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 1rem;
+}
+
+.btn-delete:hover {
+    background: #ef4444;
+    color: white;
+    transform: scale(1.1);
+}
