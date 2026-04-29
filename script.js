@@ -1,58 +1,119 @@
-// Configurações iniciais
-const API_KEY = "AIzaSyC5tl94NA-0LFpBDNigfRIxjPQjOapbWO8"; // Você vai colar a chave aqui depois
-const URL_API = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${'AIzaSyC5tl94NA-0LFpBDNigfRIxjPQjOapbWO8'}`;
+Sim, este é o seu app.js completo e revisado. Eu organizei a lógica para que ele gerencie a criação de exercícios, a exclusão e o salvamento automático no navegador.
 
-async function gerarTreino() {
-    const promptUsuario = document.getElementById('userInput').value;
-    const elementoTexto = document.getElementById('textoIA');
-    const boxResultado = document.getElementById('resultado');
-    const btn = document.getElementById('btnGerar');
+Pode copiar e colar no seu arquivo:
 
-    if (!promptUsuario) {
-        alert("Por favor, descreva seu objetivo ou treino.");
+JavaScript
+/**
+ * FitAI - Logica de Gestão de Treinos
+ * Funcionalidades: Adicionar, Listar, Remover e Persistência Local
+ */
+
+// 1. Exibir data atual formatada no topo
+const campoData = document.getElementById('data-atual');
+if (campoData) {
+    campoData.innerText = new Date().toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long' 
+    });
+}
+
+// 2. Inicializar lista de treinos buscando do LocalStorage (ou vazio se for a primeira vez)
+let treinos = JSON.parse(localStorage.getItem('meuTreino')) || [];
+
+/**
+ * Renderiza a lista de exercícios na tela
+ */
+function renderizarTreino() {
+    const lista = document.getElementById('lista-treino');
+    if (!lista) return;
+
+    lista.innerHTML = "";
+
+    if (treinos.length === 0) {
+        lista.innerHTML = `
+            <div class="text-center py-10">
+                <p class="text-gray-500 italic">Nenhum exercício na lista.</p>
+                <p class="text-gray-600 text-xs mt-2">Adicione seu primeiro exercício ao lado!</p>
+            </div>`;
         return;
     }
 
-    // Feedback visual de carregamento
-    btn.innerText = "Consultando Personal IA...";
-    btn.disabled = true;
-    boxResultado.classList.remove('hidden');
-    elementoTexto.innerText = "Analisando seus dados e montando a melhor estratégia...";
+    treinos.forEach((item, index) => {
+        lista.innerHTML += `
+            <div class="flex justify-between items-center bg-gray-900 p-4 rounded-lg border-l-4 border-blue-500 hover:border-blue-400 transition-all shadow-sm">
+                <div>
+                    <h4 class="font-bold text-white uppercase text-sm tracking-wide">${item.nome}</h4>
+                    <p class="text-gray-400 text-xs">
+                        ${item.series} Séries x ${item.reps} Reps | 
+                        Carga: <span class="text-blue-400 font-bold">${item.carga || '0'}kg</span>
+                    </p>
+                </div>
+                <button onclick="removerExercicio(${index})" class="text-gray-600 hover:text-red-500 transition-colors p-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+    });
 
-    // O "System Prompt" que torna a IA especialista em Fitness
-    const corpoRequisicao = {
-        contents: [{
-            parts: [{
-                text: `Você é um Personal Trainer IA de elite. 
-                Sua missão é criar treinos eficazes e seguros. 
-                O usuário disse: "${promptUsuario}".
-                Responda com uma estrutura clara: 
-                1. Divisão de Treino (Ex: A, B, C).
-                2. Lista de exercícios com Séries e Repetições.
-                3. Uma dica técnica de execução para o exercício principal.`
-            }]
-        }]
+    // Salva a lista atualizada no navegador
+    localStorage.setItem('meuTreino', JSON.stringify(treinos));
+}
+
+/**
+ * Captura os dados do formulário e adiciona ao array
+ */
+function adicionarExercicio() {
+    const inputNome = document.getElementById('nome-ex');
+    const inputSeries = document.getElementById('series-ex');
+    const inputReps = document.getElementById('reps-ex');
+    const inputCarga = document.getElementById('carga-ex');
+
+    // Validação básica
+    if (!inputNome.value || !inputSeries.value || !inputReps.value) {
+        alert("Ops! Preencha pelo menos o Nome, Séries e Repetições.");
+        return;
+    }
+
+    const novoExercicio = {
+        nome: inputNome.value,
+        series: inputSeries.value,
+        reps: inputReps.value,
+        carga: inputCarga.value || "0"
     };
 
-    try {
-        const resposta = await fetch(URL_API, {
-            method: 'POST',
-            body: JSON.stringify(corpoRequisicao),
-            headers: { 'Content-Type': 'application/json' }
-        });
+    // Adiciona ao início da lista
+    treinos.unshift(novoExercicio);
+    
+    // Limpar os campos do formulário
+    inputNome.value = "";
+    inputSeries.value = "";
+    inputReps.value = "";
+    inputCarga.value = "";
 
-        const dados = await resposta.json();
-        
-        // Extraindo a resposta da estrutura do Gemini
-        const textoFormatado = dados.candidates[0].content.parts[0].text;
-        
-        elementoTexto.innerText = textoFormatado;
-
-    } catch (erro) {
-        elementoTexto.innerText = "Erro ao conectar com a IA. Verifique sua chave API.";
-        console.error(erro);
-    } finally {
-        btn.innerText = "Gerar Plano de Treino";
-        btn.disabled = false;
-    }
+    renderizarTreino();
 }
+
+/**
+ * Remove um exercício específico pelo índice
+ */
+window.removerExercicio = function(index) {
+    treinos.splice(index, 1);
+    renderizarTreino();
+};
+
+/**
+ * Apaga todos os exercícios salvos
+ */
+window.limparTreino = function() {
+    if (confirm("Tem certeza que deseja apagar todo o treino?")) {
+        treinos = [];
+        renderizarTreino();
+    }
+};
+
+// Inicialização automática ao carregar o script
+renderizarTreino();
+console.log("FitAI: Sistema de gestão local carregado.");
