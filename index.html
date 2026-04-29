@@ -3,82 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitAI Pro - Gestor de Performance</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>AssistFit Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
-<body class="bg-[#0b0f1a] text-gray-100 font-sans min-h-screen">
 
-    <nav class="p-4 border-b border-gray-800 flex justify-between items-center bg-[#111827] sticky top-0 z-50">
-        <h1 class="text-xl font-black text-blue-500 tracking-tighter italic">FITAI <span class="text-white text-xs font-normal not-italic">PRO</span></h1>
-        <div id="data-atual" class="text-xs font-bold text-gray-400 bg-gray-800 px-3 py-1 rounded-full"></div>
+<body class="fade-in">
+
+<div id="view-login">
+    <div class="auth-card">
+        <h1 class="logo-main italic-bold">ASSISTFIT <span>PRO</span></h1>
+        
+        <div class="tab-system" id="auth-tab-selector">
+            <button onclick="toggleAuthTab('login')" id="btn-tab-login" class="tab-btn active">Entrar</button>
+            <button onclick="toggleAuthTab('cadastro')" id="btn-tab-cadastro" class="tab-btn">Cadastrar</button>
+        </div>
+
+        <div id="form-login" class="form-group">
+            <input type="email" id="login-email" placeholder="E-mail de acesso" class="input-field">
+            <input type="password" id="login-pass" placeholder="Sua senha" class="input-field">
+            <button onclick="handleLogin()" class="btn-primary">Acessar Painel</button>
+            <button onclick="handleRecuperar()" class="btn-link">Esqueceu a senha?</button>
+        </div>
+
+        <div id="form-cadastro" class="form-group hidden">
+            <input type="text" id="reg-nome" placeholder="Nome Completo" class="input-field">
+            <input type="email" id="reg-email" placeholder="E-mail" class="input-field">
+            <input type="tel" id="reg-tel" placeholder="WhatsApp" class="input-field">
+            <div class="grid-2">
+                <input type="password" id="reg-pass" placeholder="Senha" class="input-field">
+                <input type="password" id="reg-pass-conf" placeholder="Confirmar" class="input-field">
+            </div>
+            <button onclick="handleCadastro()" class="btn-primary success">Criar minha conta</button>
+        </div>
+    </div>
+</div>
+
+<div id="app-shell" class="hidden">
+    <nav class="navbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button onclick="showView('lobby')" class="btn-link" style="font-size: 1.5rem;">🏠</button>
+            <h1 class="italic-bold" style="color: var(--accent-blue); font-size: 1.5rem;">FITAI <span style="color: white; font-size: 0.7rem;">PRO</span></h1>
+        </div>
+        <button onclick="logout()" class="btn-link" style="color: #ef4444; font-weight: bold;">SAIR</button>
     </nav>
 
-    <main class="max-w-7xl mx-auto p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <div class="lg:col-span-4 space-y-6">
-            <section class="bg-[#111827] p-5 rounded-2xl border border-gray-800 shadow-xl">
-                <h3 class="text-sm font-bold text-gray-400 uppercase mb-4 tracking-widest text-center">Frequência Semanal</h3>
-                <div id="calendario" class="grid grid-cols-7 gap-2">
-                    </div>
-            </section>
-
-            <section class="bg-[#111827] p-6 rounded-2xl border border-gray-800 border-t-4 border-t-blue-500">
-    <h3 class="text-lg font-bold mb-4 italic">REGISTRAR TREINO</h3>
-    <div class="space-y-4">
-        <div>
-            <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">1. Grupamento</label>
-            <select id="select-grupo" onchange="atualizarListaExercicios()" class="w-full bg-[#0b0f1a] border border-gray-700 p-3 rounded-xl focus:border-blue-500 outline-none transition-all text-sm font-bold">
-                <option value="Peito">Peito</option>
-                <option value="Costas">Costas</option>
-                <option value="Pernas">Pernas</option>
-                <option value="Ombros">Ombros</option>
-                <option value="Braços">Braços</option>
-                <option value="Core">Core / Abdominal</option>
-            </select>
-        </div>
-        
-        <div>
-            <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">2. Exercício Específico</label>
-            <select id="select-exercicio" class="w-full bg-[#0b0f1a] border border-gray-700 p-3 rounded-xl focus:border-blue-500 outline-none transition-all text-sm">
-                </select>
-        </div>
-        
-        <div class="grid grid-cols-3 gap-2">
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Séries</label>
-                <input type="number" id="series-ex" placeholder="0" class="w-full bg-[#0b0f1a] border border-gray-700 p-3 rounded-xl focus:border-blue-500 outline-none text-center">
-            </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Reps</label>
-                <input type="number" id="reps-ex" placeholder="0" class="w-full bg-[#0b0f1a] border border-gray-700 p-3 rounded-xl focus:border-blue-500 outline-none text-center">
-            </div>
-            <div>
-                <label class="text-[10px] uppercase font-bold text-gray-500 ml-1">Carga</label>
-                <input type="number" id="carga-ex" placeholder="Kg" class="w-full bg-[#0b0f1a] border border-gray-700 p-3 rounded-xl focus:border-blue-500 outline-none text-center">
-            </div>
+    <main id="view-lobby" class="content-grid">
+        <div onclick="showView('planilhas')" class="menu-card">
+            <div class="card-icon">📋</div>
+            <h3 class="italic-bold uppercase">Registrar Treino</h3>
+            <p>Escolha uma ficha e marque suas cargas.</p>
         </div>
 
-        <button onclick="adicionarExercicio()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl transition-all shadow-lg uppercase text-sm tracking-widest mt-2">Salvar Exercício</button>
-    </div>
-</section>
-
+        <div onclick="showView('calendario')" class="menu-card">
+            <div class="card-icon">📅</div>
+            <h3 class="italic-bold uppercase">Cronograma</h3>
+            <p>Planejamento semanal e troca de série.</p>
         </div>
 
-        <div class="lg:col-span-8">
-            <div class="bg-[#111827] rounded-2xl border border-gray-800 shadow-xl overflow-hidden">
-                <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-[#161e2e]">
-                    <div>
-                        <h2 class="text-xl font-bold">Log de Performance</h2>
-                        <p class="text-xs text-gray-500">Histórico de volume e intensidade</p>
-                    </div>
-                    <button onclick="limparTreino()" class="text-xs bg-red-900/20 text-red-400 px-3 py-1 rounded-md hover:bg-red-900/40 transition-all">Limpar Log</button>
-                </div>
-
-                <div id="lista-treino" class="p-6 space-y-4 max-h-[600px] overflow-y-auto">
-                    </div>
-            </div>
+        <div onclick="showView('blog')" class="menu-card">
+            <div class="card-icon" style="color: var(--accent-green);">📈</div>
+            <h3 class="italic-bold uppercase" style="color: var(--accent-green);">Evolução</h3>
+            <p>Blog pessoal e fotos de progresso.</p>
         </div>
     </main>
+
+    <main id="view-planilhas" class="hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="italic-bold">MINHAS FICHAS</h2>
+                <button onclick="criarNovaFicha()" class="btn-primary" style="width: auto; padding: 10px 20px;">+ NOVA</button>
+            </div>
+            <div id="lista-fichas" class="form-group">
+                </div>
+        </div>
+    </main>
+
+    <main id="view-registro" class="hidden registro-container">
+        <aside class="form-group">
+            <section class="glass-panel">
+                <h3 class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue);">NOVO SET</h3>
+                <div class="form-group">
+                    <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
+                        <option value="Peito">Peito</option>
+                        <option value="Costas">Costas</option>
+                        <option value="Pernas">Pernas</option>
+                    </select>
+                    <select id="select-exercicio" class="input-field"></select>
+                    <div class="grid-3">
+                        <input type="number" id="series-ex" placeholder="Sets" class="input-field">
+                        <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
+                        <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
+                    </div>
+                    <button onclick="adicionarExercicio()" class="btn-primary">Salvar</button>
+                    <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
+                </div>
+            </section>
+        </aside>
+
+        <section class="glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
+                <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
+            </div>
+            <div id="lista-treino"></div>
+        </section>
+    </main>
+
+    <main id="view-calendario" class="hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="text-align: center;">
+            <h2 class="italic-bold">CRONOGRAMA</h2>
+            <p>Em breve: Planejamento automático.</p>
+        </div>
+    </main>
+
+    <main id="view-blog" class="hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="text-align: center;">
+            <h2 class="italic-bold" style="color: var(--accent-green);">DIÁRIO DE EVOLUÇÃO</h2>
+            <p>Módulo em desenvolvimento.</p>
+        </div>
+    </main>
+</div>
 
     <script src="script.js"></script>
 </body>
