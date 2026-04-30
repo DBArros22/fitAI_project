@@ -80,63 +80,73 @@
                 <h2 class="italic-bold">MINHAS FICHAS</h2>
                 <button onclick="criarNovaFicha()" class="btn-primary" style="width: auto; padding: 10px 20px;">+ NOVA</button>
             </div>
-            <div id="lista-fichas" class="form-group">
-                </div>
+            <div id="lista-fichas" class="form-group"></div>
         </div>
-      
-       <main id="view-consulta" class="hidden" style="padding: 20px 5%;">
-         <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
-           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-              <h2 id="titulo-consulta" class="italic-bold" style="color: var(--accent-blue);">NOME DA FICHA</h2>
-               <button onclick="showView('planilhas')" class="btn-link">Voltar</button>
-          </div>
-        
-           <div id="lista-exercicios-estaticos" class="form-group">
-            </div>
+    </main>
 
-        <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;">INICIAR ESTE TREINO AGORA</button>
+    <main id="view-consulta" class="hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="titulo-consulta" class="italic-bold" style="color: var(--accent-blue);">NOME DA FICHA</h2>
+                <button onclick="showView('planilhas')" class="btn-link">Voltar</button>
+            </div>
+            <div id="lista-exercicios-estaticos" class="form-group"></div>
+            <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;">INICIAR ESTE TREINO AGORA</button>
+        </div>
+    </main>
+
+    <main id="view-consulta-geral" class="hidden" style="padding: 20px 5%;">
+    <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 id="cabecalho-consulta" class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar Treinos</h2>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-link hidden">← Voltar</button>
+                <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-link">Sair</button>
+            </div>
+        </div>
+
+        <div id="lista-nomes-treinos" class="grid-2" style="gap: 15px;"></div>
+
+        <div id="detalhes-treino-consulta" class="hidden"></div>
     </div>
-        </main>
+</main>
 
     </main>
 
     <main id="view-registro" class="hidden registro-container">
-        <aside class="form-group">
-            <section class="glass-panel">
-                <h3 class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue);">NOVO SET</h3>
-                <div class="form-group">
-                    <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
-                        <option value="Peito">Peito</option>
-                        <option value="Costas">Costas</option>
-                        <option value="Pernas">Pernas</option>
-                    </select>
-                    <select id="select-exercicio" class="input-field"></select>
-                    <div class="grid-3">
-                        <input type="number" id="series-ex" placeholder="Sets" class="input-field">
-                        <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
-                        <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
-                    </div>
-                    <button onclick="adicionarExercicio()" class="btn-primary">Salvar</button>
-                    <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
-                </div>
-            </section>
-        </aside>
-
+    <aside class="form-group">
         <section class="glass-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
-                <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
+            <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue); text-transform: uppercase;">NOVO SET</h3>
+            <div class="form-group">
+                <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
+                    <option value="Peito">Peito</option>
+                    <option value="Costas">Costas</option>
+                    <option value="Pernas">Pernas</option>
+                    <option value="Ombros">Ombros</option>
+                    <option value="Braços">Braços</option>
+                    <option value="Core">Core</option>
+                </select>
+                <select id="select-exercicio" class="input-field"></select>
+                <div class="grid-3">
+                    <input type="number" id="series-ex" placeholder="Sets" class="input-field">
+                    <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
+                    <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
+                </div>
+                <button onclick="adicionarExercicio()" class="btn-primary">Salvar</button>
+                <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
             </div>
-            <div id="lista-treino"></div>
         </section>
+    </aside>
 
-        <section class="glass-panel" style="margin-bottom: 20px; border-left: 4px solid var(--accent-blue);">
-    <h3 class="italic-bold" style="font-size: 0.8rem; color: var(--text-secondary);">CONSULTA DE TREINO</h3>
-    <div id="resumo-exercicios-ficha" style="font-size: 0.85rem; margin-top: 10px; color: white;">
-        </div>
+<section class="glass-panel">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
+        <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
+    </div>
+    <div id="lista-treino"></div>
 </section>
-
-    </main>
+</main>
 
     <main id="view-calendario" class="hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="text-align: center;">
@@ -156,4 +166,3 @@
     <script src="script.js"></script>
 </body>
 </html>
-
