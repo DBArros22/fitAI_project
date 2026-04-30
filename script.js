@@ -13,10 +13,10 @@ const dicionarioExercicios = {
     "Core": ["Prancha Abdominal (Plank)", "Abdominal Supra (Crunch)", "Elevação de Pernas (Infra)", "Abdominal Roda (Ab Wheel)", "Prancha Lateral", "Russian Twist"]
 };
 
-// --- NAVEGAÇÃO ---
+// --- 1. NAVEGAÇÃO ---
 
 function showView(viewName) {
-    const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas', 'view-consulta'];
+    const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral'];
     
     views.forEach(v => {
         const el = document.getElementById(v);
@@ -35,9 +35,10 @@ function showView(viewName) {
 
     if (viewName === 'planilhas') renderizarFichas();
     if (viewName === 'registro') renderizarLogTreino();
+    if (viewName === 'consulta-geral') renderizarFichasConsulta();
 }
 
-// --- SISTEMA DE AUTENTICAÇÃO ---
+// --- 2. SISTEMA DE AUTENTICAÇÃO ---
 
 function toggleAuthTab(tab) {
     const selector = document.getElementById('auth-tab-selector');
@@ -55,54 +56,27 @@ function toggleAuthTab(tab) {
     }
 }
 
-if (!bancoDeDados.usuarios) {
-    bancoDeDados.usuarios = [];
-}
-
 function handleCadastro() {
     const nome = document.getElementById('reg-nome').value;
     const email = document.getElementById('reg-email').value;
+    const tel = document.getElementById('reg-tel').value;
     const senha = document.getElementById('reg-pass').value;
     const confirmaSenha = document.getElementById('reg-pass-conf').value;
 
-    if (!nome || !email || !senha) {
-        alert("Preencha todos os campos!");
-        return;
-    }
+    if (!nome || !email || !senha) return alert("Preencha todos os campos!");
+    if (senha !== confirmaSenha) return alert("As senhas não coincidem!");
 
-    if (senha !== confirmaSenha) {
-        alert("As senhas não coincidem!");
-        return;
-    }
-
-    const usuarioExiste = bancoDeDados.usuarios.find(u => u.email === email);
-    if (usuarioExiste) {
-        alert("Este e-mail já está cadastrado!");
-        return;
-    }
-
-    const novoUsuario = {
-        nome: nome,
-        email: email,
-        pass: senha, // Mantendo pass conforme seu handleLogin
-        fichas: {}
-    };
-
-    bancoDeDados.usuarios.push(novoUsuario);
+    const novoUsuario = { nome, email, tel, pass: senha, fichas: {} };
     usuariosCadastrados.push(novoUsuario);
     localStorage.setItem('fitai_users', JSON.stringify(usuariosCadastrados));
-    salvarBanco();
-    
-    alert("Conta criada com sucesso! Agora faça login.");
+    alert("Conta criada com sucesso!");
     toggleAuthTab('login');
 }
 
 function handleLogin() {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
-
     const user = usuariosCadastrados.find(u => u.email === email && u.pass === pass);
-
     if (user) {
         localStorage.setItem('fitai_session', JSON.stringify(user));
         showView('lobby');
@@ -111,66 +85,27 @@ function handleLogin() {
     }
 }
 
-function handleRecuperar() {
-    const email = prompt("Digite seu e-mail cadastrado para recuperação:");
-    const user = usuariosCadastrados.find(u => u.email === email);
-
-    if (user) {
-        alert(`Recuperação de conta para: ${user.nome}\nSua senha é: ${user.pass}`);
-    } else if (email) {
-        alert("E-mail não encontrado na base de dados.");
-    }
-}
-
 function logout() {
     localStorage.removeItem('fitai_session');
     location.reload();
 }
 
-// --- GESTÃO DE FICHAS ---
+// --- 3. GESTÃO DE FICHAS ---
 
-function renderizarFichasConsulta() {
-    const container = document.getElementById('lista-fichas-consulta');
+function renderizarFichas() {
+    const container = document.getElementById('lista-fichas');
     if (!container) return;
     container.innerHTML = "";
-
-    const nomesFichas = Object.keys(bancoDeDados.fichas);
-
-    nomesFichas.forEach(nome => {
+    Object.keys(bancoDeDados.fichas).forEach(nome => {
         container.innerHTML += `
-            <div onclick="verDetalhesConsulta('${nome}')" 
-                 style="background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; white-space: nowrap;">
-                <span class="italic-bold uppercase" style="color: white; font-size: 0.8rem;">${nome}</span>
+            <div class="ficha-item" onclick="abrirFicha('${nome}')">
+                <div class="treino-info">
+                    <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
+                    <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
+                </div>
+                <button onclick="event.stopPropagation(); excluirFicha('${nome}')" class="btn-delete">🗑️</button>
             </div>`;
     });
-}
-
-function verDetalhesConsulta(nome) {
-    const container = document.getElementById('detalhes-treino-consulta');
-    const exercicios = bancoDeDados.fichas[nome] || [];
-
-    // Título do treino selecionado
-    let html = `<h4 class="italic-bold uppercase" style="color: var(--accent-blue); margin-bottom: 15px;">Exercícios de ${nome}</h4>`;
-
-    if (exercicios.length === 0) {
-        html += `<p style="color: gray;">Nenhum exercício registrado para consulta.</p>`;
-    } else {
-        exercicios.forEach(ex => {
-            html += `
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="font-size: 9px; color: var(--accent-blue); font-weight: bold; text-transform: uppercase;">${ex.grupo}</span>
-                        <h4 style="color: white; margin: 2px 0; text-transform: uppercase; font-size: 0.9rem;">${ex.nome}</h4>
-                    </div>
-                    <div style="text-align: right;">
-                        <p style="color: white; font-weight: 900; margin: 0;">${ex.series || ex.sets}x${ex.reps}</p>
-                        <p style="color: gray; font-size: 10px; margin: 0; font-weight: bold;">${ex.carga} KG</p>
-                    </div>
-                </div>`;
-        });
-    }
-
-    container.innerHTML = html;
 }
 
 function criarNovaFicha() {
@@ -179,27 +114,30 @@ function criarNovaFicha() {
         bancoDeDados.fichas[nome] = [];
         salvarBanco();
         renderizarFichas();
-    } else if (bancoDeDados.fichas[nome]) {
-        alert("Este nome já existe!");
     }
 }
 
 function abrirFicha(nome) {
-    // 1. Define qual ficha está ativa para o sistema saber onde salvar
     fichaAtivaNoMomento = nome;
-    fichaAtiva = nome; 
-
-    // 2. Muda para a tela de REGISTRO (onde estão os campos de salvar e a lista)
-    showView('registro'); 
-    
-    // 3. Atualiza o título para o usuário saber qual treino abriu
-    const titulo = document.getElementById('nome-ficha-ativa');
-    if (titulo) titulo.innerText = "TREINO: " + nome.toUpperCase();
-
-    // 4. Carrega os exercícios que já foram salvos nessa ficha anteriormente
-    renderizarLogTreino();
+    fichaAtiva = nome;
+    showView('consulta');
+    const titulo = document.getElementById('titulo-consulta');
+    if(titulo) titulo.innerText = nome.toUpperCase();
+    renderizarResumoFicha(nome);
 }
 
+function renderizarResumoFicha(nome) {
+    const container = document.getElementById('lista-exercicios-estaticos');
+    if(!container) return;
+    container.innerHTML = "";
+    bancoDeDados.fichas[nome].forEach(ex => {
+        container.innerHTML += `
+            <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin-bottom:5px;">
+                <strong style="color:white; display:block;">${ex.nome}</strong>
+                <small style="color:gray;">${ex.series}x${ex.reps} — ${ex.carga}kg</small>
+            </div>`;
+    });
+}
 
 function excluirFicha(nome) {
     if (confirm(`Excluir permanentemente o ${nome}?`)) {
@@ -209,121 +147,187 @@ function excluirFicha(nome) {
     }
 }
 
-function salvarBanco() {
-    localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
+// --- 4. SISTEMA DE CONSULTA ---
+
+function renderizarFichasConsulta() {
+    const containerLista = document.getElementById('lista-nomes-treinos');
+    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
+
+    if (!containerLista) return;
+
+    containerLista.classList.remove('hidden');
+    containerDetalhes.classList.add('hidden');
+    if(btnVoltar) btnVoltar.classList.add('hidden');
+    if(btnSair) btnSair.classList.remove('hidden');
+    if(titulo) titulo.innerText = "Consultar Treinos";
+    
+    containerLista.innerHTML = "";
+    Object.keys(bancoDeDados.fichas).forEach(nome => {
+        containerLista.innerHTML += `
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card" style="margin:0; background:rgba(255,255,255,0.05);">
+                <h3 class="italic-bold uppercase" style="color:white;">${nome}</h3>
+                <p style="color:var(--accent-blue);">Ver exercícios</p>
+            </div>`;
+    });
 }
 
-// --- GESTÃO DE EXERCÍCIOS ---
+function verExerciciosConsulta(nome) {
+    const containerLista = document.getElementById('lista-nomes-treinos');
+    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
+
+    containerLista.classList.add('hidden');
+    containerDetalhes.classList.remove('hidden');
+    if(btnVoltar) btnVoltar.classList.remove('hidden');
+    if(btnSair) btnSair.classList.add('hidden');
+    if(titulo) titulo.innerText = nome.toUpperCase();
+
+    const exercicios = bancoDeDados.fichas[nome] || [];
+    containerDetalhes.innerHTML = exercicios.map(ex => `
+        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <span style="font-size:9px; color:var(--accent-blue); font-weight:bold; text-transform:uppercase;">${ex.grupo}</span>
+                <h4 style="color:white; margin:2px 0;">${ex.nome}</h4>
+            </div>
+            <div style="text-align:right;">
+                <p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps}</p>
+                <p style="color:gray; font-size:10px; margin:0;">${ex.carga} KG</p>
+            </div>
+        </div>`).join('') || "<p style='color:gray; text-align:center;'>Nenhum exercício salvo.</p>";
+}
+
+function voltarListaConsulta() {
+    renderizarFichasConsulta();
+}
+
+// --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 
 function atualizarListaExercicios() {
     const grupo = document.getElementById('select-grupo').value;
     const selectEx = document.getElementById('select-exercicio');
     if (!selectEx) return;
-    selectEx.innerHTML = "";
-    dicionarioExercicios[grupo].forEach(ex => {
-        let option = document.createElement("option");
-        option.value = ex;
-        option.textContent = ex;
-        selectEx.appendChild(option);
-    });
+    selectEx.innerHTML = dicionarioExercicios[grupo].map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
 function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if (!ativa) return alert("Selecione uma ficha primeiro!");
-
-    const grupo = document.getElementById('select-grupo').value;
-    const nome = document.getElementById('select-exercicio').value;
-    const series = document.getElementById('series-ex').value;
-    const reps = document.getElementById('reps-ex').value;
-    const carga = document.getElementById('carga-ex').value;
-
-    if (!series || !reps) return alert("Preencha Séries e Repetições!");
+    if (!ativa) return alert("Selecione uma ficha!");
 
     const novo = {
         id: Date.now(),
-        grupo, nome, series, reps,
-        sets: series, // Para compatibilidade com seus outros renders
-        carga: carga || 0,
-        hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+        grupo: document.getElementById('select-grupo').value,
+        nome: document.getElementById('select-exercicio').value,
+        series: document.getElementById('series-ex').value,
+        reps: document.getElementById('reps-ex').value,
+        carga: document.getElementById('carga-ex').value || 0
     };
 
-    if (!bancoDeDados.fichas[ativa]) bancoDeDados.fichas[ativa] = [];
+    if (!novo.series || !novo.reps) return alert("Preencha séries e repetições!");
+
     bancoDeDados.fichas[ativa].unshift(novo);
     salvarBanco();
-    
-    document.getElementById('series-ex').value = "";
-    document.getElementById('reps-ex').value = "";
-    document.getElementById('carga-ex').value = "";
-    
     renderizarLogTreino();
 }
 
 function renderizarLogTreino() {
     const container = document.getElementById('lista-treino');
-    if(!container) return;
-    container.innerHTML = ''; 
-
     const ativa = fichaAtivaNoMomento || fichaAtiva;
+    
+    if(!container || !ativa) return;
+    
+    container.innerHTML = "";
     const exercicios = bancoDeDados.fichas[ativa] || [];
 
-    exercicios.forEach((ex, index) => {
+    exercicios.forEach(ex => {
         container.innerHTML += `
-            <div class="treino-item fade-in">
+            <div class="treino-item" style="display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
                 <div class="treino-info">
-                    <h4>${ex.nome}</h4>
-                    <p>${ex.grupo} • <span class="treino-stats">${ex.series || ex.sets}x${ex.reps} — ${ex.carga}kg</span></p>
+                    <h4 class="italic-bold" style="color: white !important; text-transform: uppercase; margin: 0;">${ex.nome}</h4>
+                    <p style="color: #64748b !important; font-size: 11px; margin-top: 4px;">
+                        ${ex.series}x${ex.reps} — <span style="color: #3b82f6 !important; font-weight: bold;">${ex.carga}kg</span>
+                    </p>
                 </div>
-                <button onclick="removerExercicio(${ex.id})" class="btn-delete">🗑️</button>
+                <div style="display: flex !important; gap: 15px !important; align-items: center !important;">
+                    <button onclick="editarExercicio(${ex.id})" style="background: none !important; border: none !important; cursor: pointer !important; font-size: 1.2rem !important; display: inline-block !important;">✏️</button>
+                    <button onclick="removerExercicio(${ex.id})" style="background: none !important; border: none !important; cursor: pointer !important; font-size: 1.2rem !important; display: inline-block !important;">🗑️</button>
+                </div>
             </div>`;
     });
 }
 
+function editarExercicio(id) {
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    const index = bancoDeDados.fichas[ativa].findIndex(t => t.id === id);
+    if (index === -1) return;
+
+    const ex = bancoDeDados.fichas[ativa][index];
+
+    const nS = prompt("Séries:", ex.series);
+    if (nS === null) return;
+    const nR = prompt("Reps:", ex.reps);
+    if (nR === null) return;
+    const nC = prompt("Carga (kg):", ex.carga);
+    if (nC === null) return;
+
+    bancoDeDados.fichas[ativa][index].series = nS;
+    bancoDeDados.fichas[ativa][index].reps = nR;
+    bancoDeDados.fichas[ativa][index].carga = nC;
+
+    salvarBanco();
+    renderizarLogTreino();
+}
+
 function prepararRegistro() {
     showView('registro');
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
     const titulo = document.getElementById('nome-ficha-ativa');
-    if(titulo) titulo.innerText = "TREINANDO: " + ativa.toUpperCase();
+    if(titulo) titulo.innerText = "TREINANDO: " + (fichaAtivaNoMomento || "TREINO").toUpperCase();
     renderizarLogTreino();
 }
 
 function removerExercicio(id) {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(t => t.id !== id);
-    salvarBanco();
-    renderizarLogTreino();
+    if (confirm("Deseja excluir este registro?")) {
+        bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(t => t.id !== id);
+        salvarBanco();
+        renderizarLogTreino();
+    }
 }
 
 function limparTreino() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if (confirm(`Limpar todos os exercícios da ficha ${ativa}?`)) {
+    if (ativa && confirm(`Limpar todos os exercícios de ${ativa}?`)) {
         bancoDeDados.fichas[ativa] = [];
         salvarBanco();
         renderizarLogTreino();
     }
 }
 
-// --- CALENDÁRIO ---
+function salvarBanco() {
+    localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
+}
+
+// --- 6. CALENDÁRIO ---
 
 function gerarCalendario() {
     const calEl = document.getElementById('calendario');
     if (!calEl) return;
     const diasSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-    const hoje = new Date().getDay();
-    calEl.innerHTML = "";
-
-    diasSemana.forEach((dia, i) => {
+    calEl.innerHTML = diasSemana.map((dia, i) => {
         const jaTreinou = diasTreinados.includes(i);
-        calEl.innerHTML += `
-            <div onclick="toggleDia(${i})" class="flex flex-col items-center cursor-pointer group">
+        return `
+            <div onclick="toggleDia(${i})" class="flex flex-col items-center cursor-pointer">
                 <span class="text-[10px] font-bold text-gray-500 mb-1">${dia}</span>
-                <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-all border-2 
-                    ${jaTreinou ? 'bg-blue-600 border-blue-400' : 'bg-gray-900 border-gray-800'} 
-                    ${i === hoje ? 'ring-2 ring-blue-500 ring-offset-2' : ''}">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center border-2 
+                    ${jaTreinou ? 'bg-blue-600 border-blue-400' : 'bg-gray-900 border-gray-800'}">
                     ${jaTreinou ? '🔥' : ''}
                 </div>
             </div>`;
-    });
+    }).join('');
 }
 
 function toggleDia(index) {
@@ -336,19 +340,12 @@ function toggleDia(index) {
     gerarCalendario();
 }
 
-// --- INICIALIZAÇÃO ---
+// --- 7. INICIALIZAÇÃO ---
 
 window.addEventListener('DOMContentLoaded', () => {
     const session = localStorage.getItem('fitai_session');
-    const elData = document.getElementById('data-atual');
-    if (elData) elData.innerText = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
-
-    if (session) {
-        showView('lobby');
-    } else {
-        showView('login');
-    }
-    
+    if (session) showView('lobby');
+    else showView('login');
     atualizarListaExercicios();
     gerarCalendario();
 });
