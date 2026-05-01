@@ -114,55 +114,62 @@
 
     </main>
 
-    <main id="view-registro" class="hidden registro-container">
+<main id="view-registro" class="hidden registro-container">
     <aside class="form-group">
         <section class="glass-panel">
             <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue); text-transform: uppercase;">NOVO SET</h3>
             <div class="form-group">
                 <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
-                    <option value="Peito">Peito</option>
-                    <option value="Costas">Costas</option>
-                    <option value="Pernas">Pernas</option>
-                    <option value="Ombros">Ombros</option>
-                    <option value="Braços">Braços</option>
-                    <option value="Core">Core</option>
+                    <option value="">Selecione o Grupo...</option>
+                    <option value="Peitoral">Peitoral</option>
+                    <option value="Dorsais">Dorsais</option>
+                    <option value="Quadríceps">Quadríceps</option>
+                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                    <option value="Tríceps Braquial">Tríceps Braquial</option>
+                    <option value="Core/Abdominal">Core/Abdominal</option>
+                    <option value="Panturrilhas">Panturrilhas</option>
+                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
                 </select>
+                
                 <select id="select-exercicio" class="input-field"></select>
-                <div class="grid-3">
+
+             <div id="campos-forca" class="grid-3">
                     <input type="number" id="series-ex" placeholder="Sets" class="input-field">
                     <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
                     <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
-                </div>
-                <button onclick="adicionarExercicio()" class="btn-primary">Salvar</button>
+          </div>
+
+    <div id="campos-cardio" class="hidden">                 
+    <div style="position: relative; width: 100%;">
+        <input type="text" 
+               id="tempo-ex" 
+               placeholder="00:00:00" 
+               inputmode="numeric" 
+               oninput="mascaraTempo(this)"
+               class="input-field" 
+               style="width: 100%; letter-spacing: 2px; font-weight: bold; text-align: center;">
+        <small style="color: gray; font-size: 9px; display: block; text-align: center; margin-top: 5px;">FORMATO: HH:MM:SS</small>
+          </div>
+    </div>
+
+                <button onclick="adicionarExercicio()" class="btn-primary" style="margin-top:10px;">Salvar</button>
                 <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
             </div>
         </section>
     </aside>
 
-<section class="glass-panel">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
-        <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
-    </div>
-    <div id="lista-treino"></div>
-</section>
+    <section class="glass-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
+            <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
+        </div>
+        <div id="lista-treino"></div>
+    </section>
 </main>
 
-    <main id="view-calendario" class="hidden" style="padding: 20px 5%;">
-        <div class="glass-panel" style="text-align: center;">
-            <h2 class="italic-bold">CRONOGRAMA</h2>
-            <p>Em breve: Planejamento automático.</p>
-        </div>
-    </main>
-
-    <main id="view-blog" class="hidden" style="padding: 20px 5%;">
-        <div class="glass-panel" style="text-align: center;">
-            <h2 class="italic-bold" style="color: var(--accent-green);">DIÁRIO DE EVOLUÇÃO</h2>
-            <p>Módulo em desenvolvimento.</p>
-        </div>
-    </main>
 </div>
-
     <script src="script.js"></script>
 </body>
 </html>
