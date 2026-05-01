@@ -1,26 +1,75 @@
-// Variáveis Globais (Escopo do Código)
 let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} };
 let diasTreinados = JSON.parse(localStorage.getItem('frequenciaTreino')) || [];
 let usuariosCadastrados = JSON.parse(localStorage.getItem('fitai_users')) || [];
 let lembretes = JSON.parse(localStorage.getItem('fitai_lembretes')) || [];
-let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; // Nova variável para o Blog
+let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; 
+let midiaAnexada = null; // Controle de anexo do blog
 
 let fichaAtivaNoMomento = "";
 let fichaAtiva = null;
 
-//  váriaveis do cronômetro
+// Variáveis do cronômetro
 let timerInterval;
 let milissegundosTotais = 0;
 let isTimerRunning = false;
 let isCountdownMode = false;
 
+// --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
-    "Peito": ["Supino Reto (Barra)", "Supino Inclinado (Halter)", "Crucifixo Máquina (Peck Deck)", "Crossover Polia Alta", "Supino Declinado", "Flexão de Braços (Push-up)", "Dips (Paralelas - Foco Peito)"],
-    "Costas": ["Puxada Alta (Lat Pulldown)", "Remada Baixa Sentado", "Remada Curvada (Barra)", "Pull Down Corda", "Levantamento Terra (Deadlift)", "Barra Fixa (Pull-up)", "Remada Unilateral (Serrote)"],
-    "Pernas": ["Agachamento Livre (Back Squat)", "Leg Press 45°", "Cadeira Extensora", "Mesa Flexora", "Afundo / Passada", "Hack Squat", "Elevação de Gêmeos (Panturrilha)", "Stiff (Peso Morto Romeno)"],
-    "Ombros": ["Desenvolvimento Militar (Overhead Press)", "Elevação Lateral (Halter)", "Elevação Frontal", "Crucifixo Inverso (Posterior de Ombro)", "Desenvolvimento Arnold", "Encolhimento (Trapézio)"],
-    "Braços": ["Rosca Direta (Barra W)", "Tríceps Pulley (Corda)", "Rosca Martelo", "Tríceps Testa", "Rosca Concentrada", "Tríceps Coice (Halter)", "Rosca Scott"],
-    "Core": ["Prancha Abdominal (Plank)", "Abdominal Supra (Crunch)", "Elevação de Pernas (Infra)", "Abdominal Roda (Ab Wheel)", "Prancha Lateral", "Russian Twist"]
+    "Peitoral": [
+        "Supino Reto (Barra Olímpica)", "Supino Inclinado (Halteres)", 
+        "Crossover Polia Alta", "Peck Deck (Voador)", 
+        "Supino Articulado Vertical", "Crucifixo Reto (Halteres)", 
+        "Dips (Paralelas - Foco Peito)", "Flexão de Braços (Push-up)"
+    ],
+    "Dorsais": [
+        "Lat Pulldown (Puxada Aberta)", "Remada Curvada (Barra)", 
+        "Remada Baixa (Triângulo)", "Pull-Down Corda (Polia Alta)", 
+        "Remada Unilateral (Serrote)", "Barra Fixa (Pull-up)", 
+        "Remada Cavalinho (T-Bar)", "Levantamento Terra (Deadlift)"
+    ],
+    "Quadríceps": [
+        "Agachamento Livre (Back Squat)", "Leg Press 45°", 
+        "Cadeira Extensora", "Agachamento Hack", 
+        "Afundo / Passada", "Agachamento Búlgaro", 
+        "Sissy Squat"
+    ],
+    "Posteriores/Glúteos": [
+        "Stiff (Romanian Deadlift)", "Mesa Flexora", 
+        "Cadeira Flexora", "Elevação Pélvica (Hip Thrust)", 
+        "Glúteo Cabo (Coice)", "Bom dia (Good Morning)", 
+        "Abdução de Quadril"
+    ],
+    "Deltoides (Ombros)": [
+        "Desenvolvimento Militar (OHP)", "Elevação Lateral (Halter/Cabo)", 
+        "Elevação Frontal", "Crucifixo Inverso (Posterior)", 
+        "Desenvolvimento Arnold", "Remada Alta (Pegada Aberta)", 
+        "Encolhimento (Trapézio)"
+    ],
+    "Bíceps/Braquial": [
+        "Rosca Direta (Barra EZ)", "Rosca Martelo", 
+        "Rosca Scott", "Rosca Alternada (Halteres)", 
+        "Rosca Inversa (Braquiorradial)", "Rosca Concentrada"
+    ],
+    "Tríceps Braquial": [
+        "Tríceps Pulley (Corda)", "Tríceps Testa (Barra W)", 
+        "Tríceps Francês", "Supino Fechado", 
+        "Tríceps Coice (Polia/Halter)", "Mergulho (Dips no Banco)"
+    ],
+    "Core/Abdominal": [
+        "Abdominal Supra (Crunch)", "Elevação de Pernas (Infra)", 
+        "Prancha Isométrica (Plank)", "Ab Wheel (Roda Abdominal)", 
+        "Russian Twist", "Vaccum Abdominal"
+    ],
+    "Panturrilhas": [
+        "Gêmeos em Pé (Máquina)", "Gêmeos Sentado (Burrinho)", 
+        "Panturrilha no Leg Press", "Flexão Tibial"
+    ],
+    "Cardio & Aeróbico": [
+        "Esteira (Corrida/Caminhada)", "Bike Ergométrica", 
+        "Elíptico / Transport", "Corda (Pular)", 
+        "Remo Indoor", "Subida de Escada (Stairmaster)"
+    ]
 };
 
 // --- NOVO SISTEMA DE NOTIFICAÇÃO (MODAL) ---
@@ -176,6 +225,31 @@ function abrirFicha(nome) {
     renderizarResumoFicha(nome);
 }
 
+function mascaraTempo(input) {
+    let v = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+    if (v.length > 6) v = v.slice(0, 6); // Limita a 6 dígitos
+
+    if (v.length >= 5) {
+        v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
+    } else if (v.length >= 3) {
+        v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
+    }
+    input.value = v;
+}
+
+// Função para formatar a exibição final com siglas (Ex: 01h 20m 30s)
+function formatarTempoParaExibicao(valor) {
+    if (!valor) return "";
+    const partes = valor.split(':');
+    
+    if (partes.length === 3) {
+        return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
+    } else if (partes.length === 2) {
+        return `${partes[0]}m ${partes[1]}s`;
+    }
+    return valor + "s";
+}
+
 function renderizarResumoFicha(nome) {
     const container = document.getElementById('lista-exercicios-estaticos');
     if(!container) return;
@@ -183,14 +257,17 @@ function renderizarResumoFicha(nome) {
     const exercicios = bancoDeDados.fichas[nome] || [];
 
     exercicios.forEach(ex => {
+        // Lógica de exibição: Se for tempo, mostra o tempo formatado, senão mostra séries/carga
+        const infoExibicao = ex.tipo === 'tempo' 
+            ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
+
         container.innerHTML += `
             <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex: 1;">
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
                     <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">
-                        <span style="color: #94a3b8; font-size: 12px;">
-                            ${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span>
-                        </span>
+                        ${infoExibicao}
                     </div>
                 </div>
                 <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 15px;">
@@ -249,14 +326,22 @@ function verExerciciosConsulta(nome) {
     if(titulo) titulo.innerText = nome.toUpperCase();
 
     const exercicios = bancoDeDados.fichas[nome] || [];
-    containerDetalhes.innerHTML = exercicios.map(ex => `
+    
+    containerDetalhes.innerHTML = exercicios.map(ex => {
+        // Lógica para decidir se mostra Tempo ou Carga
+        const infoDireita = ex.tipo === 'tempo' 
+            ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
+            : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps}</p>
+               <p style="color:gray; font-size:10px; margin:0;">${ex.carga} KG</p>`;
+
+        return `
         <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <div><h4 style="color:white; margin:0;">${ex.nome}</h4></div>
+            <div><h4 style="color:white; margin:0; text-transform: uppercase;">${ex.nome}</h4></div>
             <div style="text-align:right;">
-                <p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps}</p>
-                <p style="color:gray; font-size:10px; margin:0;">${ex.carga} KG</p>
+                ${infoDireita}
             </div>
-        </div>`).join('') || "<p style='color:gray; text-align:center;'>Vazio.</p>";
+        </div>`;
+    }).join('') || "<p style='color:gray; text-align:center;'>Vazio.</p>";
 }
 
 function voltarListaConsulta() {
@@ -267,7 +352,25 @@ function voltarListaConsulta() {
 function atualizarListaExercicios() {
     const grupo = document.getElementById('select-grupo').value;
     const selectEx = document.getElementById('select-exercicio');
+    const camposForca = document.getElementById('campos-forca');
+    const camposCardio = document.getElementById('campos-cardio');
+    
     if (!selectEx) return;
+    
+    if (!grupo) {
+        selectEx.innerHTML = "";
+        return;
+    }
+
+    // Lógica para alternar campos entre Peso e Tempo
+    if (grupo === "Cardio & Aeróbico") {
+        camposForca.classList.add('hidden');
+        camposCardio.classList.remove('hidden');
+    } else {
+        camposForca.classList.remove('hidden');
+        camposCardio.classList.add('hidden');
+    }
+
     selectEx.innerHTML = dicionarioExercicios[grupo].map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
@@ -275,20 +378,46 @@ function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     if (!ativa) return mostrarAviso("Selecione uma ficha!");
 
+    const grupo = document.getElementById('select-grupo').value;
+    const isCardio = (grupo === "Cardio & Aeróbico");
+
     const novo = {
         id: Date.now(),
-        grupo: document.getElementById('select-grupo').value,
+        grupo: grupo,
         nome: document.getElementById('select-exercicio').value,
         series: document.getElementById('series-ex').value,
         reps: document.getElementById('reps-ex').value,
-        carga: document.getElementById('carga-ex').value || 0
+        carga: document.getElementById('carga-ex').value || 0,
+        tempo: document.getElementById('tempo-ex').value, // Novo campo
+        tipo: isCardio ? 'tempo' : 'forca' // Marcador para renderização
     };
 
-    if (!novo.series || !novo.reps) return mostrarAviso("Preencha séries e repetições!");
+    if (isCardio) {
+        if (!novo.tempo) return mostrarAviso("Informe o tempo do cardio!");
+    } else {
+        if (!novo.series || !novo.reps) return mostrarAviso("Preencha séries e repetições!");
+    }
 
     bancoDeDados.fichas[ativa].unshift(novo);
     salvarBanco();
     renderizarLogTreino();
+    
+    // Limpa campos após salvar
+    document.getElementById('series-ex').value = "";
+    document.getElementById('reps-ex').value = "";
+    document.getElementById('carga-ex').value = "";
+    document.getElementById('tempo-ex').value = "";
+}
+
+function formatarTempoParaExibicao(valor) {
+    if (!valor) return "00s";
+    const partes = valor.split(':');
+    if (partes.length === 3) {
+        return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
+    } else if (partes.length === 2) {
+        return `${partes[0]}m ${partes[1]}s`;
+    }
+    return valor + "s";
 }
 
 function renderizarLogTreino() {
@@ -300,12 +429,22 @@ function renderizarLogTreino() {
     const exercicios = bancoDeDados.fichas[ativa] || [];
 
     exercicios.forEach(ex => {
+        // Lógica de exibição condicional (Tempo vs Força)
+        let infoBadge;
+
+        if (ex.tipo === 'tempo') {
+            const tempoFormatado = formatarTempoParaExibicao(ex.tempo);
+            infoBadge = `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${tempoFormatado}</span>`;
+        } else {
+            infoBadge = `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
+        }
+
         container.innerHTML += `
             <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
                 <div style="flex: 1;">
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
                     <div id="dados-log-${ex.id}" style="margin-top: 5px;">
-                        <span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>
+                        ${infoBadge}
                     </div>
                 </div>
                 <div id="acoes-log-${ex.id}" style="display: flex; gap: 15px;">
@@ -390,6 +529,7 @@ function salvarBanco() {
     localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
 }
 
+
 // --- 6. CRONOGRAMA, RELÓGIO MULTIFUNÇÃO E LEMBRETES ---
 function renderizarPaginaCronograma() {
     const container = document.getElementById('view-calendario');
@@ -430,9 +570,12 @@ function renderizarPaginaCronograma() {
             </div>
             
             <div style="margin-bottom: 25px;">
-                <h3 style="color: white; font-size: 12px; margin-bottom: 12px;" class="italic-bold uppercase">Frequência da Semana</h3>
-                <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
-            </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência da Semana                         (Aperte para modificar a letra)</h3>
+        <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
+    </div>
+    <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
+</div>
 
             <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);">
                 <h3 style="color: white; font-size: 12px; margin-bottom: 12px;" class="italic-bold uppercase">Bloco de anotações</h3>
@@ -459,33 +602,66 @@ function renderizarPaginaCronograma() {
 
 // --- LÓGICA DO CALENDÁRIO COM DATAS REAIS ---
 function gerarCalendario() {
-    const calEl = document.getElementById('calendario-semanal');
-    if (!calEl) return;
-    
-    const diasSiglas = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-    const hoje = new Date();
-    const diaAtualSemana = hoje.getDay();
-    
-    calEl.innerHTML = "";
+    const calContainer = document.getElementById('calendario-semanal');
+    if (!calContainer) return;
 
+    const diasSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
+    calContainer.innerHTML = "";
+
+    // Criamos os 7 dias da semana
     for (let i = 0; i < 7; i++) {
-        // Calcula a data de cada dia da semana atual (de Domingo a Sábado)
-        const dataDia = new Date();
-        dataDia.setDate(hoje.getDate() - (diaAtualSemana - i));
-        
-        const dataString = dataDia.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-        const idUnico = dataDia.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-        const jaTreinou = diasTreinados.includes(idUnico);
-        const ehHoje = i === diaAtualSemana;
+        // Busca se já existe uma marcação para esse dia no array diasTreinados
+        // diasTreinados agora salvará objetos: { dia: 0, treino: 'A' }
+        const registro = diasTreinados.find(d => d.dia === i);
+        const letraTreino = registro ? registro.treino : ""; 
+        const ativo = registro ? "border: 2px solid #3b82f6; background: rgba(59,130,246,0.2);" : "border: 1px solid rgba(255,255,255,0.1);";
 
-        calEl.innerHTML += `
-            <div onclick="toggleDia('${idUnico}')" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-                <span style="font-size: 9px; color: ${ehHoje ? '#3b82f6' : 'gray'}; margin-bottom: 4px; font-weight: bold;">${diasSiglas[i]}</span>
-                <div style="width: 100%; aspect-ratio: 1/1; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid ${jaTreinou ? '#3b82f6' : (ehHoje ? 'rgba(59,130,246,0.5)' : '#1e293b')}; background: ${jaTreinou ? 'rgba(59,130,246,0.2)' : 'transparent'}; transition: 0.2s;">
-                    <span style="font-size: 9px; color: ${jaTreinou ? 'white' : 'gray'}; font-weight: bold;">${dataDia.getDate()}</span>
-                    ${jaTreinou ? '<span style="font-size: 10px; margin-top: 2px;">🔥</span>' : ''}
+        calContainer.innerHTML += `
+            <div onclick="alternarTreinoDia(${i})" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <span style="font-size: 10px; color: gray; font-weight: bold;">${diasSemana[i]}</span>
+                <div id="dia-${i}" style="width: 40px; height: 40px; ${ativo} border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 1.2rem; transition: all 0.2s;">
+                    ${letraTreino}
                 </div>
-            </div>`;
+            </div>
+        `;
+    }
+}
+
+function alternarTreinoDia(index) {
+    // Ordem do ciclo: "" -> "A" -> "B" -> "C" -> ""
+    const ciclos = ["", "A", "B", "C"];
+    
+    // Encontra o registro atual
+    let registroIdx = diasTreinados.findIndex(d => d.dia === index);
+    let novaLetra = "";
+
+    if (registroIdx === -1) {
+        // Se não existia, começa com A
+        novaLetra = "A";
+        diasTreinados.push({ dia: index, treino: novaLetra });
+    } else {
+        // Se existia, pega a próxima letra do ciclo
+        let atualLetra = diasTreinados[registroIdx].treino;
+        let proximoIdx = (ciclos.indexOf(atualLetra) + 1) % ciclos.length;
+        novaLetra = ciclos[proximoIdx];
+
+        if (novaLetra === "") {
+            diasTreinados.splice(registroIdx, 1); // Remove se voltar ao vazio
+        } else {
+            diasTreinados[registroIdx].treino = novaLetra;
+        }
+    }
+
+    // Salva e atualiza a interface
+    localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+    gerarCalendario();
+}
+
+function limparFrequencia() {
+    if (confirm("Deseja zerar todas as marcações da semana?")) {
+        diasTreinados = [];
+        localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+        gerarCalendario();
     }
 }
 
@@ -655,34 +831,38 @@ function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
 
+    // Aplicando um fundo exclusivo para a seção do blog
+    container.style.background = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)";
+    container.style.minHeight = "100vh";
+
     container.innerHTML = `
-        <div class="glass-panel" style="padding: 20px; margin-bottom: 20px; min-height: 80vh;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: bold;">← VOLTAR</button>
-                <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 1px;">DIÁRIO DE EVOLUÇÃO</h2>
+        <div style="max-width: 500px; margin: 0 auto; padding-bottom: 50px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;">← Voltar</button>
+                <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.2rem; letter-spacing: 2px;">FEED EVOLUÇÃO</h2>
             </div>
 
-            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid rgba(59,130,246,0.3); margin-bottom: 25px;">
-                <textarea id="post-texto" placeholder="Como foi o treino de hoje? Algum novo recorde?" 
-                    style="width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; resize: none; min-height: 60px; font-family: sans-serif;"></textarea>
+            <div class="glass-panel" style="padding: 15px; border-radius: 24px; border: 1px solid rgba(59,130,246,0.2); margin-bottom: 30px; background: rgba(255,255,255,0.03);">
+                <textarea id="post-texto" placeholder="No que você está pensando?" 
+                    style="width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; resize: none; min-height: 50px; font-family: sans-serif;"></textarea>
                 
-                <div id="media-preview" class="hidden" style="margin-top: 10px; position: relative; border-radius: 10px; overflow: hidden;">
-                    <button onclick="limparMedia()" style="position: absolute; top: 5px; right: 5px; background: #ef4444; border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; z-index: 10;">✕</button>
-                    <div id="preview-content"></div>
+                <div id="media-preview" class="hidden" style="margin: 10px 0; position: relative; width: 120px; height: 120px; border-radius: 15px; overflow: hidden; border: 2px solid #3b82f6;">
+                    <button onclick="limparMedia()" style="position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); border: none; color: white; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; z-index: 10; font-size: 10px;">✕</button>
+                    <div id="preview-content" style="width: 100%; height: 100%;"></div>
                 </div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                    <div style="display: flex; gap: 20px;">
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <span style="font-size: 1.2rem;">🖼️</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
+                    <div style="display: flex; gap: 15px;">
+                        <label style="cursor: pointer;" title="Foto/Vídeo">
+                            <span style="font-size: 1.4rem;">🖼️</span>
                             <input type="file" id="input-media" accept="image/*,video/*" style="display:none;" onchange="previewMidia(event)">
                         </label>
-                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
-                            <span style="font-size: 1.2rem;">🎙️</span>
+                        <label style="cursor: pointer;" title="Áudio">
+                            <span style="font-size: 1.4rem;">🎙️</span>
                             <input type="file" id="input-audio" accept="audio/*" style="display:none;" onchange="previewMidia(event)">
                         </label>
                     </div>
-                    <button onclick="postarEvolucao()" style="background: #3b82f6; border: none; color: white; padding: 10px 25px; border-radius: 12px; font-weight: bold; cursor: pointer;">POSTAR</button>
+                    <button onclick="postarEvolucao()" style="background: #3b82f6; border: none; color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 12px;">POSTAR</button>
                 </div>
             </div>
 
@@ -704,37 +884,14 @@ function previewMidia(event) {
     previewArea.classList.remove('hidden');
     previewContent.innerHTML = "";
 
+    // No preview, usamos object-fit cover para ficar um quadradinho bonito
     if (file.type.startsWith('image/')) {
-        previewContent.innerHTML = `<img src="${url}" style="width: 100%; border-radius: 10px; display: block;">`;
+        previewContent.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
     } else if (file.type.startsWith('video/')) {
-        previewContent.innerHTML = `<video src="${url}" style="width: 100%; border-radius: 10px;" controls></video>`;
+        previewContent.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
     } else if (file.type.startsWith('audio/')) {
-        previewContent.innerHTML = `<audio src="${url}" controls style="width: 100%; margin-top: 10px;"></audio>`;
+        previewContent.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; font-size: 20px;">🎙️</div>`;
     }
-}
-
-function postarEvolucao() {
-    const textoArea = document.getElementById('post-texto');
-    const texto = textoArea.value;
-    
-    if (!texto.trim() && !midiaAnexada) return alert("Escreva algo ou anexe uma mídia!");
-
-    const agora = new Date();
-    const dataPost = agora.toLocaleDateString('pt-BR') + " às " + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-    const novoPost = {
-        id: Date.now(),
-        texto: texto,
-        midia: midiaAnexada ? { ...midiaAnexada } : null,
-        data: dataPost
-    };
-
-    feedEvolucao.unshift(novoPost);
-    localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-    
-    textoArea.value = "";
-    limparMedia();
-    exibirPosts();
 }
 
 function exibirPosts() {
@@ -742,44 +899,78 @@ function exibirPosts() {
     if (!container) return;
 
     if (feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px; font-size: 0.8rem;">Nenhum registro no seu feed ainda.</p>`;
+        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 0.9rem;">Compartilhe sua primeira vitória!</p>`;
         return;
     }
 
     container.innerHTML = feedEvolucao.map(post => `
-        <div style="background: rgba(255,255,255,0.03); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
-            <div style="padding: 15px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="color: #3b82f6; font-size: 10px; font-weight: bold;">${post.data}</span>
-                    <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;">🗑️</button>
-                </div>
-                ${post.texto ? `<p style="color: white; font-size: 14px; line-height: 1.4; margin: 0;">${post.texto}</p>` : ''}
-            </div>
+        <div style="background: rgba(30, 41, 59, 0.7); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            
             ${post.midia ? renderMediaHtml(post.midia) : ''}
+
+            <div style="padding: 16px 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="color: #3b82f6; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">${post.data}</span>
+                    <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; opacity: 0.6;">EXCLUIR</button>
+                </div>
+                ${post.texto ? `<p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin: 0;">${post.texto}</p>` : ''}
+            </div>
         </div>
     `).join('');
 }
 
 function renderMediaHtml(midia) {
-    if (midia.type.startsWith('image/')) return `<img src="${midia.url}" style="width: 100%; display: block;">`;
-    if (midia.type.startsWith('video/')) return `<video src="${midia.url}" style="width: 100%; display: block;" controls></video>`;
-    if (midia.type.startsWith('audio/')) return `<div style="padding: 0 15px 15px;"><audio src="${midia.url}" controls style="width: 100%;"></audio></div>`;
+    // Definimos uma altura fixa máxima para o feed para não ficar gigante
+    const mediaContainerStyle = `width: 100%; max-height: 350px; overflow: hidden; display: flex; justify-content: center; background: #000;`;
+    const mediaElementStyle = `width: 100%; max-height: 350px; object-fit: cover;`;
+
+    if (midia.type.startsWith('image/')) {
+        return `<div style="${mediaContainerStyle}"><img src="${midia.url}" style="${mediaElementStyle}"></div>`;
+    } 
+    if (midia.type.startsWith('video/')) {
+        return `<div style="${mediaContainerStyle}"><video src="${midia.url}" style="${mediaElementStyle}" controls></video></div>`;
+    }
+    if (midia.type.startsWith('audio/')) {
+        return `
+            <div style="padding: 20px; background: rgba(59, 130, 246, 0.1);">
+                <audio src="${midia.url}" controls style="width: 100%; height: 35px;"></audio>
+            </div>`;
+    }
     return "";
+}
+
+function postarEvolucao() {
+    const textoArea = document.getElementById('post-texto');
+    const texto = textoArea.value;
+    if (!texto.trim() && !midiaAnexada) return;
+
+    const agora = new Date();
+    const dataPost = agora.toLocaleDateString('pt-BR') + " às " + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    feedEvolucao.unshift({
+        id: Date.now(),
+        texto: texto,
+        midia: midiaAnexada ? { ...midiaAnexada } : null,
+        data: dataPost
+    });
+
+    localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
+    textoArea.value = "";
+    limparMedia();
+    exibirPosts();
 }
 
 function limparMedia() {
     midiaAnexada = null;
     const preview = document.getElementById('media-preview');
     if (preview) preview.classList.add('hidden');
-    // Limpa os inputs de arquivo para permitir selecionar o mesmo arquivo novamente se desejar
     const im = document.getElementById('input-media');
     const ia = document.getElementById('input-audio');
-    if(im) im.value = "";
-    if(ia) ia.value = "";
+    if(im) im.value = ""; if(ia) ia.value = "";
 }
 
 function excluirPost(id) {
-    if (confirm("Deseja remover este registro de evolução?")) {
+    if (confirm("Remover este momento da sua história?")) {
         feedEvolucao = feedEvolucao.filter(p => p.id !== id);
         localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
         exibirPosts();
