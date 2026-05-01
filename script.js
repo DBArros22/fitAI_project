@@ -1,15 +1,18 @@
+// Variáveis Globais (Escopo do Código)
 let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} };
 let diasTreinados = JSON.parse(localStorage.getItem('frequenciaTreino')) || [];
 let usuariosCadastrados = JSON.parse(localStorage.getItem('fitai_users')) || [];
 let lembretes = JSON.parse(localStorage.getItem('fitai_lembretes')) || [];
+let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; // Nova variável para o Blog
+
 let fichaAtivaNoMomento = "";
 let fichaAtiva = null;
 
-// Variáveis do Cronômetro Multi-Função
+//  váriaveis do cronômetro
 let timerInterval;
-let timerSeconds = 0;
+let milissegundosTotais = 0;
 let isTimerRunning = false;
-let isCountdownMode = false; // Alterna entre Cronômetro e Temporizador
+let isCountdownMode = false;
 
 const dicionarioExercicios = {
     "Peito": ["Supino Reto (Barra)", "Supino Inclinado (Halter)", "Crucifixo Máquina (Peck Deck)", "Crossover Polia Alta", "Supino Declinado", "Flexão de Braços (Push-up)", "Dips (Paralelas - Foco Peito)"],
@@ -44,6 +47,7 @@ function mostrarAviso(mensagem) {
 }
 
 // --- 1. NAVEGAÇÃO ---
+
 function showView(viewName) {
     const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral'];
     
@@ -66,6 +70,9 @@ function showView(viewName) {
     if (viewName === 'registro') renderizarLogTreino();
     if (viewName === 'consulta-geral') renderizarFichasConsulta();
     if (viewName === 'calendario') renderizarPaginaCronograma();
+    
+    // LINHA ADICIONADA PARA O BLOG:
+    if (viewName === 'blog') renderizarBlog(); 
 }
 
 // --- 2. SISTEMA DE AUTENTICAÇÃO ---
@@ -637,13 +644,144 @@ function removerLembrete(id) {
 // --- 7. INICIALIZAÇÃO ---
 window.addEventListener('DOMContentLoaded', () => {
     const session = localStorage.getItem('fitai_session');
-    if (session) {
-        showView('lobby');
-    } else {
-        showView('login');
-    }
+    if (session) showView('lobby'); else showView('login');
     
-    atualizarListaExercicios();
-    // Inicia o calendário caso o elemento já exista (fallback)
+    // Essas funções abaixo serão declaradas no final da página
+    atualizarListaExercicios(); 
     gerarCalendario();
 });
+
+function renderizarBlog() {
+    const container = document.getElementById('view-blog');
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="glass-panel" style="padding: 20px; margin-bottom: 20px; min-height: 80vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: bold;">← VOLTAR</button>
+                <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 1px;">DIÁRIO DE EVOLUÇÃO</h2>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; border: 1px solid rgba(59,130,246,0.3); margin-bottom: 25px;">
+                <textarea id="post-texto" placeholder="Como foi o treino de hoje? Algum novo recorde?" 
+                    style="width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; resize: none; min-height: 60px; font-family: sans-serif;"></textarea>
+                
+                <div id="media-preview" class="hidden" style="margin-top: 10px; position: relative; border-radius: 10px; overflow: hidden;">
+                    <button onclick="limparMedia()" style="position: absolute; top: 5px; right: 5px; background: #ef4444; border: none; color: white; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; z-index: 10;">✕</button>
+                    <div id="preview-content"></div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                    <div style="display: flex; gap: 20px;">
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 1.2rem;">🖼️</span>
+                            <input type="file" id="input-media" accept="image/*,video/*" style="display:none;" onchange="previewMidia(event)">
+                        </label>
+                        <label style="cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 1.2rem;">🎙️</span>
+                            <input type="file" id="input-audio" accept="audio/*" style="display:none;" onchange="previewMidia(event)">
+                        </label>
+                    </div>
+                    <button onclick="postarEvolucao()" style="background: #3b82f6; border: none; color: white; padding: 10px 25px; border-radius: 12px; font-weight: bold; cursor: pointer;">POSTAR</button>
+                </div>
+            </div>
+
+            <div id="feed-container" style="display: flex; flex-direction: column; gap: 20px;"></div>
+        </div>
+    `;
+    exibirPosts();
+}
+
+function previewMidia(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const previewArea = document.getElementById('media-preview');
+    const previewContent = document.getElementById('preview-content');
+    const url = URL.createObjectURL(file);
+    
+    midiaAnexada = { url: url, type: file.type };
+    previewArea.classList.remove('hidden');
+    previewContent.innerHTML = "";
+
+    if (file.type.startsWith('image/')) {
+        previewContent.innerHTML = `<img src="${url}" style="width: 100%; border-radius: 10px; display: block;">`;
+    } else if (file.type.startsWith('video/')) {
+        previewContent.innerHTML = `<video src="${url}" style="width: 100%; border-radius: 10px;" controls></video>`;
+    } else if (file.type.startsWith('audio/')) {
+        previewContent.innerHTML = `<audio src="${url}" controls style="width: 100%; margin-top: 10px;"></audio>`;
+    }
+}
+
+function postarEvolucao() {
+    const textoArea = document.getElementById('post-texto');
+    const texto = textoArea.value;
+    
+    if (!texto.trim() && !midiaAnexada) return alert("Escreva algo ou anexe uma mídia!");
+
+    const agora = new Date();
+    const dataPost = agora.toLocaleDateString('pt-BR') + " às " + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const novoPost = {
+        id: Date.now(),
+        texto: texto,
+        midia: midiaAnexada ? { ...midiaAnexada } : null,
+        data: dataPost
+    };
+
+    feedEvolucao.unshift(novoPost);
+    localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
+    
+    textoArea.value = "";
+    limparMedia();
+    exibirPosts();
+}
+
+function exibirPosts() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
+    if (feedEvolucao.length === 0) {
+        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px; font-size: 0.8rem;">Nenhum registro no seu feed ainda.</p>`;
+        return;
+    }
+
+    container.innerHTML = feedEvolucao.map(post => `
+        <div style="background: rgba(255,255,255,0.03); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="color: #3b82f6; font-size: 10px; font-weight: bold;">${post.data}</span>
+                    <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 1rem;">🗑️</button>
+                </div>
+                ${post.texto ? `<p style="color: white; font-size: 14px; line-height: 1.4; margin: 0;">${post.texto}</p>` : ''}
+            </div>
+            ${post.midia ? renderMediaHtml(post.midia) : ''}
+        </div>
+    `).join('');
+}
+
+function renderMediaHtml(midia) {
+    if (midia.type.startsWith('image/')) return `<img src="${midia.url}" style="width: 100%; display: block;">`;
+    if (midia.type.startsWith('video/')) return `<video src="${midia.url}" style="width: 100%; display: block;" controls></video>`;
+    if (midia.type.startsWith('audio/')) return `<div style="padding: 0 15px 15px;"><audio src="${midia.url}" controls style="width: 100%;"></audio></div>`;
+    return "";
+}
+
+function limparMedia() {
+    midiaAnexada = null;
+    const preview = document.getElementById('media-preview');
+    if (preview) preview.classList.add('hidden');
+    // Limpa os inputs de arquivo para permitir selecionar o mesmo arquivo novamente se desejar
+    const im = document.getElementById('input-media');
+    const ia = document.getElementById('input-audio');
+    if(im) im.value = "";
+    if(ia) ia.value = "";
+}
+
+function excluirPost(id) {
+    if (confirm("Deseja remover este registro de evolução?")) {
+        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
+        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
+        exibirPosts();
+    }
+}
