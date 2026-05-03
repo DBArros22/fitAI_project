@@ -833,172 +833,123 @@ window.addEventListener('DOMContentLoaded', () => {
     gerarCalendario();
 });
 
+// --- 7. SISTEMA DE BLOG / EVOLUÇÃO (CONCERTADO PARA HTML FIXO) ---
+
 function renderizarBlog() {
-    const container = document.getElementById('view-blog');
+    // Como os botões agora estão fixos no HTML, 
+    // esta função apenas garante que o feed de posts seja carregado.
+    exibirPosts();
+}
+
+function exibirPosts() {
+    const container = document.getElementById('feed-container') || document.getElementById('feed-evolucoes');
     if (!container) return;
 
-    container.innerHTML = `
-        <div style="max-width: 500px; margin: 0 auto; padding: 20px;">
-            <h2 class="italic-bold">FEED EVOLUÇÃO</h2>
-            <div class="glass-panel" style="padding: 15px; margin-bottom: 20px;">
-                <textarea id="post-texto" placeholder="Como foi o treino?" class="input-field" style="min-height: 60px;"></textarea>
-                
-                <div id="media-preview" class="hidden" style="margin: 15px 0; padding: 10px; background: rgba(59,130,246,0.1); border-radius: 12px;"></div>
+    if (feedEvolucao.length === 0) {
+        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma evolução postada ainda.</p>`;
+        return;
+    }
 
-                <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
-                    <button id="btn-mic" onclick="toggleGravacao()" 
-                        style="background: #3b82f6; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
-                        🎤
-                    </button>
-                    <span id="timer-gravacao" class="hidden" style="color: #ef4444; font-weight: bold; font-family: monospace;">00:00</span>
-                    
-                    <input type="file" id="input-media" accept="image/*,video/*" style="display:none" onchange="previewMidia(event)">
-                    <button onclick="document.getElementById('input-media').click()" class="btn-link">🖼️ Foto/Vídeo</button>
-                    
-                    <button onclick="postarEvolucao()" class="btn-primary" style="width: auto; margin-left: auto;">Postar</button>
-                </div>
+    container.innerHTML = feedEvolucao.map((post, index) => `
+        <div class="glass-panel" style="margin-bottom: 20px; padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <small style="color: #3b82f6; font-weight: bold;">${post.data}</small>
+                <button onclick="excluirPost(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px;">EXCLUIR</button>
             </div>
-            <div id="feed-container"></div>
+            <p style="color: white; white-space: pre-wrap; margin-bottom: 15px;">${post.texto}</p>
+            ${post.midia ? (post.tipoMidia.includes('video') 
+                ? `<video src="${post.midia}" controls style="width: 100%; border-radius: 10px;"></video>` 
+                : `<img src="${post.midia}" style="width: 100%; border-radius: 10px;">`) : ''}
         </div>
-    `;
-    exibirPosts();
+    `).join('');
 }
 
 function previewMidia(event) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const previewArea = document.getElementById('media-preview');
-    const previewContent = document.getElementById('preview-content');
-    
-    // Convertendo para Base64 para persistência simples no LocalStorage
     const reader = new FileReader();
     reader.onload = function(e) {
-        const url = e.target.result;
-        midiaAnexada = { url: url, type: file.type };
-        
-        previewArea.classList.remove('hidden');
-        previewContent.innerHTML = "";
-
-        if (file.type.startsWith('image/')) {
-            previewContent.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
-        } else if (file.type.startsWith('video/')) {
-            previewContent.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
-        } else if (file.type.startsWith('audio/')) {
-            previewContent.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; font-size: 20px;">🎙️</div>`;
+        midiaAnexada = e.target.result;
+        const preview = document.getElementById('preview-container');
+        if(preview) {
+            preview.innerHTML = `<div style="position: relative;">
+                <button onclick="midiaAnexada=null; this.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">X</button>
+                <p style="color: #3b82f6; font-size: 10px;">Mídia pronta para postar!</p>
+            </div>`;
         }
     };
     reader.readAsDataURL(file);
 }
 
-function exibirPosts() {
-    const container = document.getElementById('feed-container');
-    container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="margin-bottom: 15px; padding: 15px;">
-            <div style="display: flex; justify-content: space-between;">
-                <small style="color: #3b82f6;">${post.data}</small>
-                <button onclick="excluirPost(${post.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px;">EXCLUIR</button>
-            </div>
-            <p style="margin: 10px 0;">${post.texto}</p>
-            ${post.midia ? renderizarMidiaPost(post.midia) : ''}
-        </div>
-    `).join('');
-}
-
-function renderizarMidiaPost(midia) {
-    if (midia.type.includes('audio')) {
-        return `<audio src="${midia.url}" controls style="width: 100%; margin-top: 10px;"></audio>`;
-    }
-    return `<img src="${midia.url}" style="width:100%; border-radius:10px; margin-top: 10px;">`;
-}
-
-function renderMediaHtml(midia) {
-    const mediaContainerStyle = `width: 100%; max-height: 350px; overflow: hidden; display: flex; justify-content: center; background: #000;`;
-    const mediaElementStyle = `width: 100%; max-height: 350px; object-fit: cover;`;
-
-    if (midia.type.startsWith('image/')) {
-        return `<div style="${mediaContainerStyle}"><img src="${midia.url}" style="${mediaElementStyle}"></div>`;
-    } 
-    if (midia.type.startsWith('video/')) {
-        return `<div style="${mediaContainerStyle}"><video src="${midia.url}" style="${mediaElementStyle}" controls></video></div>`;
-    }
-    if (midia.type.startsWith('audio/')) {
-        return `<div style="padding: 20px; background: rgba(59, 130, 246, 0.1);"><audio src="${midia.url}" controls style="width: 100%; height: 35px;"></audio></div>`;
-    }
-    return "";
-}
-
 function postarEvolucao() {
-    const textoArea = document.getElementById('post-texto');
-    const texto = textoArea.value;
-    if (!texto.trim() && !midiaAnexada) return;
+    const texto = document.getElementById('texto-evolucao').value;
+    if (!texto && !midiaAnexada) return mostrarAviso("Escreva algo ou anexe uma foto/vídeo!");
 
-    const agora = new Date();
-    const dataPost = agora.toLocaleDateString('pt-BR') + " às " + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-    feedEvolucao.unshift({
-        id: Date.now(),
+    const novoPost = {
         texto: texto,
-        midia: midiaAnexada ? { ...midiaAnexada } : null,
-        data: dataPost
-    });
+        midia: midiaAnexada,
+        tipoMidia: midiaAnexada ? (midiaAnexada.includes('video') ? 'video' : 'image') : null,
+        data: new Date().toLocaleString('pt-BR')
+    };
 
+    feedEvolucao.unshift(novoPost);
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-    textoArea.value = "";
-    limparMedia();
-    exibirPosts();
-}
-
-function limparMedia() {
+    
+    // Limpar campos
+    document.getElementById('texto-evolucao').value = "";
     midiaAnexada = null;
-    const preview = document.getElementById('media-preview');
-    if (preview) preview.classList.add('hidden');
-    const im = document.getElementById('input-media');
-    const ia = document.getElementById('input-audio');
-    if(im) im.value = ""; if(ia) ia.value = "";
+    const preview = document.getElementById('preview-container');
+    if(preview) preview.innerHTML = "";
+    
+    exibirPosts();
+    mostrarAviso("Evolução postada com sucesso!");
 }
 
-async function toggleGravacao() {
+function excluirPost(index) {
+    if (confirm("Deseja excluir esta postagem?")) {
+        feedEvolucao.splice(index, 1);
+        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
+        exibirPosts();
+    }
+}
+
+// --- FUNÇÕES DE ÁUDIO (PARA O BOTÃO DE MICROFONE NO HTML) ---
+
+function toggleGravacao() {
     const btn = document.getElementById('btn-mic');
-    const timerDisplay = document.getElementById('timer-gravacao');
+    const timer = document.getElementById('timer-gravacao');
 
     if (!gravando) {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
             mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-
-            mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
-
-            mediaRecorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
-                const reader = new FileReader();
-                reader.readAsDataURL(audioBlob);
-                reader.onloadend = () => {
-                    midiaAnexada = { url: reader.result, type: 'audio/mpeg' };
-                    mostrarPreviewAudio();
-                };
-                // Para de usar o microfone
-                stream.getTracks().forEach(track => track.stop());
-            };
-
             mediaRecorder.start();
             gravando = true;
-            btn.style.background = "#ef4444"; // Muda para vermelho gravando
-            btn.innerHTML = "⏹️";
-            timerDisplay.classList.remove('hidden');
-            iniciarTimer(timerDisplay);
-        } catch (err) {
-            alert("Erro ao acessar microfone. Verifique as permissões.");
-        }
+            btn.style.background = "#ef4444"; // Cor de gravando
+            if(timer) timer.classList.remove('hidden');
+            mostrarAviso("Gravando áudio...");
+            
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                // Aqui você pode implementar lógica para salvar o áudio se desejar
+                audioChunks = [];
+            };
+        }).catch(() => mostrarAviso("Erro ao acessar microfone."));
     } else {
         mediaRecorder.stop();
         gravando = false;
-        btn.style.background = "#3b82f6";
-        btn.innerHTML = "🎤";
-        timerDisplay.classList.add('hidden');
+        btn.style.background = "#3b82f6"; // Volta ao azul
+        if(timer) timer.classList.add('hidden');
+        mostrarAviso("Gravação finalizada.");
     }
 }
+
+// Inicialização automática ao carregar
+window.onload = () => {
+    const session = localStorage.getItem('fitai_session');
+    if (session) showView('lobby');
+};
 
 function mostrarPreviewAudio() {
     const preview = document.getElementById('media-preview');
@@ -1039,3 +990,4 @@ function excluirPost(id) {
         exibirPosts();
     }
 }
+
