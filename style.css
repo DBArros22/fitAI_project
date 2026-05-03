@@ -1,23 +1,42 @@
 :root {
-    --bg-main: #05070a;
-    --bg-card: #111827;
-    --bg-input: #1a2236;
-    --accent-blue: #3b82f6;
-    --accent-blue-hover: #2563eb;
+    /* Tons de Fundo e Painéis */
+    --bg-main: #020617;        /* Azul espacial profundo */
+    --bg-card: #0f172a;        /* Azul marinho premium */
+    --bg-input: #1e293b;       /* Tom para campos e fundos de ícones */
+    
+    /* Cores de Destaque e Ação */
+    --accent-blue: #38bdf8;    /* Azul celeste vibrante (mais limpo) */
+    --accent-blue-hover: #0ea5e9;
     --accent-green: #10b981;
-    --border-color: rgba(255, 255, 255, 0.12);
-    --text-primary: #ffffff;
+    
+    /* Tipografia e Bordas */
+    --text-primary: #f8fafc;   /* Branco Platinado Principal */
     --text-secondary: #94a3b8;
-    --shadow-pro: 0 20px 50px rgba(0, 0, 0, 0.6);
+    --border-color: rgba(56, 189, 248, 0.15); /* Borda levemente azulada */
+    
+    /* Efeitos */
+    --shadow-pro: 0 20px 50px rgba(0, 0, 0, 0.7);
+
+    /* Arte dos Ícones (Sua nova implementação) */
+    --icon-bg: #020617;        /* Fundo azul escuro profundo para o ícone */
+    --icon-platinum: #f8fafc;  /* Desenho em Branco platinado */
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-font-smoothing: antialiased; 
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+}
 
 body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
+    line-height: 1.5;
 }
 
 /* --- ESTRUTURA GERAL --- */
@@ -30,7 +49,8 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 1.25rem 5%;
-    background: var(--bg-card);
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     position: sticky;
     top: 0; z-index: 50;
@@ -40,7 +60,7 @@ body {
 #view-login {
     display: flex; align-items: center; justify-content: center;
     min-height: 100vh; padding: 20px;
-    background: radial-gradient(circle at top, #1e293b 0%, #05070a 100%);
+    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
 }
 
 .auth-card {
@@ -54,12 +74,14 @@ body {
 .logo-main {
     font-size: 2.2rem; font-weight: 900; font-style: italic;
     color: var(--accent-blue); text-align: center; margin-bottom: 30px;
+    text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
 /* --- TAB SYSTEM (SLIDING) --- */
 .tab-system {
-    display: flex; background: #000; padding: 4px;
-    border-radius: 14px; margin-bottom: 25px; position: relative;
+    display: flex; background: #020617; padding: 5px;
+    border-radius: 16px; margin-bottom: 25px; position: relative;
+    border: 1px solid var(--border-color);
 }
 
 .tab-btn {
@@ -69,14 +91,15 @@ body {
 }
 
 .tab-system::before {
-    content: ""; position: absolute; top: 4px; left: 4px;
-    width: calc(50% - 4px); height: calc(100% - 8px);
-    background: var(--accent-blue); border-radius: 10px;
+    content: ""; position: absolute; top: 5px; left: 5px;
+    width: calc(50% - 5px); height: calc(100% - 10px);
+    background: var(--accent-blue); border-radius: 12px;
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
 }
 
 .tab-system.cadastro-active::before { transform: translateX(100%); }
-.tab-btn.active { color: white; }
+.tab-btn.active { color: #020617; }
 
 /* --- INPUTS E SELECTS --- */
 .form-group { display: flex; flex-direction: column; gap: 16px; }
@@ -86,11 +109,13 @@ body {
     border: 1.5px solid var(--border-color);
     border-radius: 14px; padding: 14px;
     color: white; font-size: 0.95rem; outline: none;
+    transition: 0.2s ease;
 }
 
 .input-field:focus, select:focus {
     border-color: var(--accent-blue);
-    background: #232d45;
+    background: #2d3748;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
 /* --- SAGUÃO (CARDS) --- */
@@ -102,67 +127,127 @@ body {
 .menu-card {
     background: var(--bg-card); border: 1px solid var(--border-color);
     border-radius: 28px; padding: 35px; cursor: pointer;
-    transition: all 0.4s ease; box-shadow: var(--shadow-pro);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    box-shadow: var(--shadow-pro);
     display: flex; flex-direction: column; align-items: center;
+    text-align: center;
 }
 
 .menu-card:hover {
-    transform: translateY(-8px); border-color: var(--accent-blue);
+    transform: translateY(-10px); border-color: var(--accent-blue);
+    background: #1e293b;
 }
 
+/* Arte do Ícone tipo "Placa de Sinalização" */
 .card-icon {
-    font-size: 2.5rem; color: var(--accent-blue); margin-bottom: 15px;
+    width: 70px;
+    height: 70px;
+    background: var(--icon-bg);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    transition: 0.3s;
 }
 
-/* --- GRID DE REGISTRO --- */
-.registro-container {
-    display: grid; grid-template-columns: 1fr; gap: 30px;
-    padding: 30px 5%; max-width: 1400px; margin: 0 auto;
+.card-icon svg {
+    width: 35px;
+    height: 35px;
+    color: var(--icon-platinum);
+    stroke-width: 2.5;
+    transition: 0.3s;
+    filter: drop-shadow(0 0 8px rgba(248, 250, 252, 0.2));
 }
 
-@media (min-width: 1024px) {
-    .registro-container { grid-template-columns: 400px 1fr; }
+.menu-card:hover .card-icon {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
 }
 
-.glass-panel {
-    background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 24px; padding: 25px; box-shadow: var(--shadow-pro);
+.menu-card:hover .card-icon svg {
+    color: var(--bg-main);
+    filter: none;
 }
 
 /* --- BOTÕES --- */
 .btn-primary {
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
-    color: white; padding: 16px; border-radius: 14px; border: none;
-    font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.2s;
+    color: #020617; padding: 16px; border-radius: 14px; border: none;
+    font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s;
 }
 
-.btn-primary.success { background: linear-gradient(135deg, #10b981, #059669); }
-.btn-primary:hover { filter: brightness(1.1); transform: scale(1.01); }
+.btn-primary.success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
 
 .btn-link {
     background: none; border: none; color: var(--text-secondary);
-    cursor: pointer; align-self: center; font-size: 0.85rem;
+    cursor: pointer; align-self: center; font-size: 0.85rem; font-weight: 600;
 }
 
-.grid-2, .grid-3 { display: grid; gap: 12px; }
-.grid-2 { grid-template-columns: 1fr 1fr; }
-.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
-
-.treino-item {
-    background: rgba(255, 255, 255, 0.03);
+/* --- LISTAGEM E AÇÕES --- */
+.treino-item, .ficha-item {
+    background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: 16px;
+    border-radius: 18px;
     padding: 16px;
     margin-bottom: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: 0.3s;
+    transition: 0.3s ease;
 }
 
-.treino-item:hover {
-    background: rgba(255, 255, 255, 0.07);
+.ficha-item { background: var(--bg-card); border-radius: 20px; padding: 20px; }
+
+.treino-item:hover, .ficha-item:hover {
     border-color: var(--accent-blue);
+    transform: scale(1.02);
+}
+
+/* Botões de Ação Dinâmicos */
+.btn-action {
+    background: var(--icon-bg);
+    color: var(--icon-platinum);
+    border: 1px solid var(--border-color);
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background: var(--accent-blue);
+    color: var(--bg-main);
+    border-color: var(--accent-blue);
+    transform: translateY(-3px) scale(1.1);
+}
+
+.btn-delete-action:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+/* Tipografia */
+.italic-bold { 
+    font-weight: 900; 
+    font-style: italic; 
+    letter-spacing: -0.02em;
+}
+
+.menu-card h3 {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
 }
 
 .treino-info h4 {
@@ -170,137 +255,17 @@ body {
     color: var(--accent-blue);
     margin-bottom: 4px;
     text-transform: uppercase;
-}
-
-.treino-info p {
-    font-size: 0.85rem;
-    color: var(--text-secondary);
-}
-
-.treino-stats {
     font-weight: 800;
-    color: #fff;
-    background: var(--bg-input);
-    padding: 4px 10px;
-    border-radius: 8px;
 }
 
-/* Botão de Lixeira */
-.btn-delete {
-    appearance: none;
-    -webkit-appearance: none;
-    background: #ef444422;
-    color: #ef4444;
-    border: none;
-    padding: 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    line-height: 1;
+/* Animações */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
+.fade-in { animation: fadeIn 0.5s ease forwards; }
 
-.btn-delete:hover {
-    background: #ef4444;
-    color: white;
-    transform: scale(1.1);
-}
-
-/* Tipografia Estilizada */
-.italic-bold { font-weight: 900; font-style: italic; }
-
-.treino-item {
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    animation: fadeIn 0.3s ease;
-}
-
-.treino-info h4 {
-    color: var(--accent-blue);
-    font-size: 0.9rem;
-    font-weight: 800;
-    margin-bottom: 4px;
-}
-
-.treino-info p {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-}
-
-.treino-stats {
-    color: white;
-    font-weight: bold;
-}
-
-/* Estilo da Lixeira */
-.btn-delete {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-    border: none;
-    padding: 8px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-size: 1rem;
-}
-
-.btn-delete:hover {
-    background: #ef4444;
-    color: white;
-    transform: scale(1.1);
-}
-
-.ficha-item {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 18px;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-bottom: 12px;
-}
-
-.ficha-item:hover {
-    border-color: var(--accent-blue);
-    background: #1a2236;
-    transform: translateX(5px);
-}
-
-/* LOG DE TREINO (Onde fica a lixeira) */
-.treino-item {
-    background: var(--bg-input);
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    padding: 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.btn-delete {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ff4d4d;
-    border: none;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    transition: 0.2s;
-}
-
-.btn-delete:hover {
-    background: #ef4444;
-    color: white;
+.glass-panel {
+    background: var(--bg-card); border: 1px solid var(--border-color);
+    border-radius: 24px; padding: 25px; box-shadow: var(--shadow-pro);
 }
