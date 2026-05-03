@@ -5,10 +5,16 @@ let lembretes = JSON.parse(localStorage.getItem('fitai_lembretes')) || [];
 let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; 
 let midiaAnexada = null; // Controle de anexo do blog
 
+// Váriaveis gravador audio
+let mediaRecorder;
+let audioChunks = [];
+let gravando = false;
+
+// Váriaveis Registro de treinos
 let fichaAtivaNoMomento = "";
 let fichaAtiva = null;
 
-// Variáveis do cronômetro
+// Variáveis cronômetro
 let timerInterval;
 let milissegundosTotais = 0;
 let isTimerRunning = false;
@@ -831,42 +837,28 @@ function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
 
-    // Aplicando fundo e estrutura visual original do usuário
-    container.style.background = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)";
-    container.style.minHeight = "100vh";
-
     container.innerHTML = `
-        <div style="max-width: 500px; margin: 0 auto; padding: 20px 15px 50px 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;">← Voltar</button>
-                <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.2rem; letter-spacing: 2px;">FEED EVOLUÇÃO</h2>
-            </div>
-
-            <div class="glass-panel" style="padding: 15px; border-radius: 24px; border: 1px solid rgba(59,130,246,0.2); margin-bottom: 30px; background: rgba(255,255,255,0.03);">
-                <textarea id="post-texto" placeholder="No que você está pensando?" 
-                    style="width: 100%; background: transparent; border: none; color: white; outline: none; font-size: 14px; resize: none; min-height: 50px; font-family: sans-serif;"></textarea>
+        <div style="max-width: 500px; margin: 0 auto; padding: 20px;">
+            <h2 class="italic-bold">FEED EVOLUÇÃO</h2>
+            <div class="glass-panel" style="padding: 15px; margin-bottom: 20px;">
+                <textarea id="post-texto" placeholder="Como foi o treino?" class="input-field" style="min-height: 60px;"></textarea>
                 
-                <div id="media-preview" class="hidden" style="margin: 10px 0; position: relative; width: 120px; height: 120px; border-radius: 15px; overflow: hidden; border: 2px solid #3b82f6;">
-                    <button onclick="limparMedia()" style="position: absolute; top: 5px; right: 5px; background: rgba(239, 68, 68, 0.9); border: none; color: white; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; z-index: 10; font-size: 10px;">✕</button>
-                    <div id="preview-content" style="width: 100%; height: 100%;"></div>
-                </div>
+                <div id="media-preview" class="hidden" style="margin: 15px 0; padding: 10px; background: rgba(59,130,246,0.1); border-radius: 12px;"></div>
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px;">
-                    <div style="display: flex; gap: 15px;">
-                        <label style="cursor: pointer;" title="Foto/Vídeo">
-                            <span style="font-size: 1.4rem;">🖼️</span>
-                            <input type="file" id="input-media" accept="image/*,video/*" style="display:none;" onchange="previewMidia(event)">
-                        </label>
-                        <label style="cursor: pointer;" title="Áudio">
-                            <span style="font-size: 1.4rem;">🎙️</span>
-                            <input type="file" id="input-audio" accept="audio/*" style="display:none;" onchange="previewMidia(event)">
-                        </label>
-                    </div>
-                    <button onclick="postarEvolucao()" style="background: #3b82f6; border: none; color: white; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; font-size: 12px;">POSTAR</button>
+                <div style="display: flex; align-items: center; gap: 15px; margin-top: 10px;">
+                    <button id="btn-mic" onclick="toggleGravacao()" 
+                        style="background: #3b82f6; border: none; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.3s;">
+                        🎤
+                    </button>
+                    <span id="timer-gravacao" class="hidden" style="color: #ef4444; font-weight: bold; font-family: monospace;">00:00</span>
+                    
+                    <input type="file" id="input-media" accept="image/*,video/*" style="display:none" onchange="previewMidia(event)">
+                    <button onclick="document.getElementById('input-media').click()" class="btn-link">🖼️ Foto/Vídeo</button>
+                    
+                    <button onclick="postarEvolucao()" class="btn-primary" style="width: auto; margin-left: auto;">Postar</button>
                 </div>
             </div>
-
-            <div id="feed-container" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            <div id="feed-container"></div>
         </div>
     `;
     exibirPosts();
@@ -901,25 +893,23 @@ function previewMidia(event) {
 
 function exibirPosts() {
     const container = document.getElementById('feed-container');
-    if (!container) return;
-
-    if (feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 0.9rem;">Compartilhe sua primeira vitória!</p>`;
-        return;
-    }
-
     container.innerHTML = feedEvolucao.map(post => `
-        <div style="background: rgba(30, 41, 59, 0.7); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            ${post.midia ? renderMediaHtml(post.midia) : ''}
-            <div style="padding: 16px 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <span style="color: #3b82f6; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">${post.data}</span>
-                    <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px; opacity: 0.6;">EXCLUIR</button>
-                </div>
-                ${post.texto ? `<p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin: 0;">${post.texto}</p>` : ''}
+        <div class="glass-panel" style="margin-bottom: 15px; padding: 15px;">
+            <div style="display: flex; justify-content: space-between;">
+                <small style="color: #3b82f6;">${post.data}</small>
+                <button onclick="excluirPost(${post.id})" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:10px;">EXCLUIR</button>
             </div>
+            <p style="margin: 10px 0;">${post.texto}</p>
+            ${post.midia ? renderizarMidiaPost(post.midia) : ''}
         </div>
     `).join('');
+}
+
+function renderizarMidiaPost(midia) {
+    if (midia.type.includes('audio')) {
+        return `<audio src="${midia.url}" controls style="width: 100%; margin-top: 10px;"></audio>`;
+    }
+    return `<img src="${midia.url}" style="width:100%; border-radius:10px; margin-top: 10px;">`;
 }
 
 function renderMediaHtml(midia) {
@@ -966,6 +956,80 @@ function limparMedia() {
     const im = document.getElementById('input-media');
     const ia = document.getElementById('input-audio');
     if(im) im.value = ""; if(ia) ia.value = "";
+}
+
+async function toggleGravacao() {
+    const btn = document.getElementById('btn-mic');
+    const timerDisplay = document.getElementById('timer-gravacao');
+
+    if (!gravando) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = (event) => audioChunks.push(event.data);
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mpeg' });
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = () => {
+                    midiaAnexada = { url: reader.result, type: 'audio/mpeg' };
+                    mostrarPreviewAudio();
+                };
+                // Para de usar o microfone
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            gravando = true;
+            btn.style.background = "#ef4444"; // Muda para vermelho gravando
+            btn.innerHTML = "⏹️";
+            timerDisplay.classList.remove('hidden');
+            iniciarTimer(timerDisplay);
+        } catch (err) {
+            alert("Erro ao acessar microfone. Verifique as permissões.");
+        }
+    } else {
+        mediaRecorder.stop();
+        gravando = false;
+        btn.style.background = "#3b82f6";
+        btn.innerHTML = "🎤";
+        timerDisplay.classList.add('hidden');
+    }
+}
+
+function mostrarPreviewAudio() {
+    const preview = document.getElementById('media-preview');
+    preview.classList.remove('hidden');
+    preview.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <audio src="${midiaAnexada.url}" controls style="height: 30px; flex: 1;"></audio>
+            <button onclick="limparMedia()" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
+        </div>
+    `;
+}
+
+function iniciarTimer(display) {
+    let seg = 0;
+    const interval = setInterval(() => {
+        if (!gravando) {
+            clearInterval(interval);
+            display.innerText = "00:00";
+            return;
+        }
+        seg++;
+        const m = Math.floor(seg / 60).toString().padStart(2, '0');
+        const s = (seg % 60).toString().padStart(2, '0');
+        display.innerText = `${m}:${s}`;
+    }, 1000);
+}
+
+function limparMedia() {
+    midiaAnexada = null;
+    document.getElementById('media-preview').classList.add('hidden');
+    document.getElementById('media-preview').innerHTML = "";
 }
 
 function excluirPost(id) {
