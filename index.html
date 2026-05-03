@@ -1,3 +1,8 @@
+O seu código HTML está bem estruturado, mas havia um pequeno erro de fechamento de tags (uma tag </main> sobrando) que poderia causar bugs no layout.
+
+Aqui está o código HTML corrigido. Copie e substitua o seu arquivo atual por este para garantir que o Blog (Evolução) e o Cronograma funcionem perfeitamente com o JavaScript que você já tem:
+
+HTML
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -67,12 +72,12 @@
             <p>Blog pessoal e fotos de progresso.</p>
         </div>
 
-<div onclick="showView('consulta-geral')" class="menu-card">
-    <div class="card-icon" style="color: var(--accent-blue);">📋</div>
-    <h3 class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar</h3>
-    <p>Visualize seus treinos e exercícios salvos.</p>
-</div>
-</main>
+        <div onclick="showView('consulta-geral')" class="menu-card">
+            <div class="card-icon" style="color: var(--accent-blue);">📋</div>
+            <h3 class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar</h3>
+            <p>Visualize seus treinos e exercícios salvos.</p>
+        </div>
+    </main>
 
     <main id="view-planilhas" class="hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
@@ -96,80 +101,71 @@
     </main>
 
     <main id="view-consulta-geral" class="hidden" style="padding: 20px 5%;">
-    <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 id="cabecalho-consulta" class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar Treinos</h2>
-            
-            <div style="display: flex; gap: 10px;">
-                <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-link hidden">← Voltar</button>
-                <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-link">Sair</button>
+        <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 id="cabecalho-consulta" class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar Treinos</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-link hidden">← Voltar</button>
+                    <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-link">Sair</button>
+                </div>
             </div>
+            <div id="lista-nomes-treinos" class="grid-2" style="gap: 15px;"></div>
+            <div id="detalhes-treino-consulta" class="hidden"></div>
         </div>
-
-        <div id="lista-nomes-treinos" class="grid-2" style="gap: 15px;"></div>
-
-        <div id="detalhes-treino-consulta" class="hidden"></div>
-    </div>
-</main>
-
     </main>
 
-<main id="view-registro" class="hidden registro-container">
-    <aside class="form-group">
+    <main id="view-registro" class="hidden registro-container">
+        <aside class="form-group">
+            <section class="glass-panel">
+                <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue); text-transform: uppercase;">NOVO SET</h3>
+                <div class="form-group">
+                    <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
+                        <option value="">Selecione o Grupo...</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Dorsais">Dorsais</option>
+                        <option value="Quadríceps">Quadríceps</option>
+                        <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                        <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                        <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                        <option value="Tríceps Braquial">Tríceps Braquial</option>
+                        <option value="Core/Abdominal">Core/Abdominal</option>
+                        <option value="Panturrilhas">Panturrilhas</option>
+                        <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                    </select>
+                    
+                    <select id="select-exercicio" class="input-field"></select>
+
+                    <div id="campos-forca" class="grid-3">
+                        <input type="number" id="series-ex" placeholder="Sets" class="input-field">
+                        <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
+                        <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
+                    </div>
+
+                    <div id="campos-cardio" class="hidden">                 
+                        <div style="position: relative; width: 100%;">
+                            <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="width: 100%; letter-spacing: 2px; font-weight: bold; text-align: center;">
+                            <small style="color: gray; font-size: 9px; display: block; text-align: center; margin-top: 5px;">FORMATO: HH:MM:SS</small>
+                        </div>
+                    </div>
+
+                    <button onclick="adicionarExercicio()" class="btn-primary" style="margin-top:10px;">Salvar</button>
+                    <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
+                </div>
+            </section>
+        </aside>
+
         <section class="glass-panel">
-            <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue); text-transform: uppercase;">NOVO SET</h3>
-            <div class="form-group">
-                <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
-                    <option value="">Selecione o Grupo...</option>
-                    <option value="Peitoral">Peitoral</option>
-                    <option value="Dorsais">Dorsais</option>
-                    <option value="Quadríceps">Quadríceps</option>
-                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
-                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-                    <option value="Tríceps Braquial">Tríceps Braquial</option>
-                    <option value="Core/Abdominal">Core/Abdominal</option>
-                    <option value="Panturrilhas">Panturrilhas</option>
-                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-                </select>
-                
-                <select id="select-exercicio" class="input-field"></select>
-
-             <div id="campos-forca" class="grid-3">
-                    <input type="number" id="series-ex" placeholder="Sets" class="input-field">
-                    <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
-                    <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
-          </div>
-
-    <div id="campos-cardio" class="hidden">                 
-    <div style="position: relative; width: 100%;">
-        <input type="text" 
-               id="tempo-ex" 
-               placeholder="00:00:00" 
-               inputmode="numeric" 
-               oninput="mascaraTempo(this)"
-               class="input-field" 
-               style="width: 100%; letter-spacing: 2px; font-weight: bold; text-align: center;">
-        <small style="color: gray; font-size: 9px; display: block; text-align: center; margin-top: 5px;">FORMATO: HH:MM:SS</small>
-          </div>
-    </div>
-
-                <button onclick="adicionarExercicio()" class="btn-primary" style="margin-top:10px;">Salvar</button>
-                <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
+                <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
             </div>
+            <div id="lista-treino"></div>
         </section>
-    </aside>
+    </main>
 
-    <section class="glass-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
-            <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
-        </div>
-        <div id="lista-treino"></div>
-    </section>
-</main>
+    <main id="view-blog" class="hidden"></main>
+    <main id="view-calendario" class="hidden"></main>
 
-</div>
-    <script src="script.js"></script>
+</div> <script src="script.js"></script>
 </body>
 </html>
