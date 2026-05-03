@@ -1,8 +1,3 @@
-O seu código HTML está bem estruturado, mas havia um pequeno erro de fechamento de tags (uma tag </main> sobrando) que poderia causar bugs no layout.
-
-Aqui está o código HTML corrigido. Copie e substitua o seu arquivo atual por este para garantir que o Blog (Evolução) e o Cronograma funcionem perfeitamente com o JavaScript que você já tem:
-
-HTML
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -48,35 +43,45 @@ HTML
     <nav class="navbar">
         <div style="display: flex; align-items: center; gap: 15px;">
             <button onclick="showView('lobby')" class="btn-link" style="font-size: 1.5rem;">🏠</button>
-            <h1 class="italic-bold" style="color: var(--accent-blue); font-size: 1.5rem;">FITAI <span style="color: white; font-size: 0.7rem;">PRO</span></h1>
+            <h1 class="italic-bold" style="color: var(--accent-blue); font-size: 1.5rem;"> AssisFiT <span style="color: white; font-size: 0.7rem;">PRO</span></h1>
         </div>
         <button onclick="logout()" class="btn-link" style="color: #ef4444; font-weight: bold;">SAIR</button>
     </nav>
 
-    <main id="view-lobby" class="content-grid">
-        <div onclick="showView('planilhas')" class="menu-card">
-            <div class="card-icon">📋</div>
-            <h3 class="italic-bold uppercase">Registrar Treino</h3>
-            <p>Crie e edite seus treinos.</p>
+  <main id="view-lobby" class="content-grid">
+    <div onclick="showView('planilhas')" class="menu-card">
+        <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
         </div>
+        <h3 class="italic-bold uppercase">Registrar Treino</h3>
+        <p>Crie e edite seus treinos.</p>
+    </div>
 
-        <div onclick="showView('calendario')" class="menu-card">
-            <div class="card-icon">📅</div>
-            <h3 class="italic-bold uppercase">Cronograma</h3>
-            <p>Planejamento semanal e troca de série.</p>
+    <div onclick="showView('calendario')" class="menu-card">
+        <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
         </div>
+        <h3 class="italic-bold uppercase">Cronograma</h3>
+        <p>Planejamento semanal.</p>
+    </div>
 
-        <div onclick="showView('blog')" class="menu-card">
-            <div class="card-icon" style="color: var(--accent-green);">📈</div>
-            <h3 class="italic-bold uppercase" style="color: var(--accent-green);">Evolução</h3>
-            <p>Blog pessoal e fotos de progresso.</p>
+    <div onclick="showView('blog')" class="menu-card">
+        <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
         </div>
+        <h3 class="italic-bold uppercase">Evolução</h3>
+        <p>Blog pessoal e progresso.</p>
+    </div>
 
-        <div onclick="showView('consulta-geral')" class="menu-card">
-            <div class="card-icon" style="color: var(--accent-blue);">📋</div>
-            <h3 class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar</h3>
-            <p>Visualize seus treinos e exercícios salvos.</p>
+    <div onclick="showView('consulta-geral')" class="menu-card">
+        <div class="card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
+        <h3 class="italic-bold uppercase">Consultar</h3>
+        <p>Visualize seus treinos.</p>
+    </div>
+</main>
+
     </main>
 
     <main id="view-planilhas" class="hidden" style="padding: 20px 5%;">
@@ -96,7 +101,7 @@ HTML
                 <button onclick="showView('planilhas')" class="btn-link">Voltar</button>
             </div>
             <div id="lista-exercicios-estaticos" class="form-group"></div>
-            <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;">INICIAR ESTE TREINO AGORA</button>
+            <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;"> Adicionar exercícios </button>
         </div>
     </main>
 
