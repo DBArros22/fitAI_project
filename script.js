@@ -831,12 +831,12 @@ function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
 
-    // Aplicando um fundo exclusivo para a seção do blog
+    // Aplicando fundo e estrutura visual original do usuário
     container.style.background = "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)";
     container.style.minHeight = "100vh";
 
     container.innerHTML = `
-        <div style="max-width: 500px; margin: 0 auto; padding-bottom: 50px;">
+        <div style="max-width: 500px; margin: 0 auto; padding: 20px 15px 50px 15px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;">← Voltar</button>
                 <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.2rem; letter-spacing: 2px;">FEED EVOLUÇÃO</h2>
@@ -878,20 +878,25 @@ function previewMidia(event) {
 
     const previewArea = document.getElementById('media-preview');
     const previewContent = document.getElementById('preview-content');
-    const url = URL.createObjectURL(file);
     
-    midiaAnexada = { url: url, type: file.type };
-    previewArea.classList.remove('hidden');
-    previewContent.innerHTML = "";
+    // Convertendo para Base64 para persistência simples no LocalStorage
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const url = e.target.result;
+        midiaAnexada = { url: url, type: file.type };
+        
+        previewArea.classList.remove('hidden');
+        previewContent.innerHTML = "";
 
-    // No preview, usamos object-fit cover para ficar um quadradinho bonito
-    if (file.type.startsWith('image/')) {
-        previewContent.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
-    } else if (file.type.startsWith('video/')) {
-        previewContent.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
-    } else if (file.type.startsWith('audio/')) {
-        previewContent.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; font-size: 20px;">🎙️</div>`;
-    }
+        if (file.type.startsWith('image/')) {
+            previewContent.innerHTML = `<img src="${url}" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else if (file.type.startsWith('video/')) {
+            previewContent.innerHTML = `<video src="${url}" style="width: 100%; height: 100%; object-fit: cover;"></video>`;
+        } else if (file.type.startsWith('audio/')) {
+            previewContent.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #3b82f6; color: white; font-size: 20px;">🎙️</div>`;
+        }
+    };
+    reader.readAsDataURL(file);
 }
 
 function exibirPosts() {
@@ -905,9 +910,7 @@ function exibirPosts() {
 
     container.innerHTML = feedEvolucao.map(post => `
         <div style="background: rgba(30, 41, 59, 0.7); border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-            
             ${post.midia ? renderMediaHtml(post.midia) : ''}
-
             <div style="padding: 16px 20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <span style="color: #3b82f6; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px;">${post.data}</span>
@@ -920,7 +923,6 @@ function exibirPosts() {
 }
 
 function renderMediaHtml(midia) {
-    // Definimos uma altura fixa máxima para o feed para não ficar gigante
     const mediaContainerStyle = `width: 100%; max-height: 350px; overflow: hidden; display: flex; justify-content: center; background: #000;`;
     const mediaElementStyle = `width: 100%; max-height: 350px; object-fit: cover;`;
 
@@ -931,10 +933,7 @@ function renderMediaHtml(midia) {
         return `<div style="${mediaContainerStyle}"><video src="${midia.url}" style="${mediaElementStyle}" controls></video></div>`;
     }
     if (midia.type.startsWith('audio/')) {
-        return `
-            <div style="padding: 20px; background: rgba(59, 130, 246, 0.1);">
-                <audio src="${midia.url}" controls style="width: 100%; height: 35px;"></audio>
-            </div>`;
+        return `<div style="padding: 20px; background: rgba(59, 130, 246, 0.1);"><audio src="${midia.url}" controls style="width: 100%; height: 35px;"></audio></div>`;
     }
     return "";
 }
