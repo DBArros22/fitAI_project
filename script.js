@@ -9,6 +9,7 @@ let tempoMestreAtivo = null;
 let milisegundosAcumulados = 0;
 let timestampInicio = null;
 
+const salvarDados = salvarBanco;
 const series = parseInt(document.getElementById('series-ex').value) || 0;
 const reps = parseInt(document.getElementById('reps-ex').value) || 0;
 const carga = parseFloat(document.getElementById('carga-ex').value) || 0;
@@ -185,8 +186,40 @@ function handleLogin() {
 }
 
 function logout() {
-    localStorage.removeItem('fitai_session');
-    location.reload();
+    // Cria o modal de confirmação com o estilo platinado
+    const modalSair = document.createElement('div');
+    modalSair.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
+
+    modalSair.innerHTML = `
+        <div class="glass-panel fade-in" style="max-width: 320px; width: 100%; padding: 35px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); border-radius: 28px;">
+            <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--text-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--text-secondary);">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </div>
+            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">ENCERRAR SESSÃO?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Você voltará para a tela de login.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-cancelar-sair" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
+                <button id="btn-confirmar-sair" style="flex: 1; background: var(--text-primary); color: #020617; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);">SAIR</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalSair);
+
+    // Lógica dos botões
+    document.getElementById('btn-cancelar-sair').onclick = () => modalSair.remove();
+
+    document.getElementById('btn-confirmar-sair').onclick = () => {
+        // Agora sim, executa a sua lógica original
+        localStorage.removeItem('fitai_session');
+        location.reload();
+    };
 }
 
 // --- 3. GESTÃO TREINOS ---
@@ -216,18 +249,79 @@ function renderizarFichas() {
                     <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
                     <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
                 </div>
-                <button onclick="event.stopPropagation(); excluirFicha('${nome}')" class="btn-delete">🗑️</button>
+                <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
             </div>`;
     });
 }
 
 function criarNovaFicha() {
-    const nome = prompt("Nome do Treino:");
-    if (nome && !bancoDeDados.fichas[nome]) {
-        bancoDeDados.fichas[nome] = [];
-        salvarBanco();
-        renderizarFichas();
-    }
+    // Chamamos o modal moderno em vez do prompt
+    solicitarNomeFichaCustom((nome) => {
+        // Esta parte só executa quando o usuário clica em "CRIAR" no modal
+        if (nome && !bancoDeDados.fichas[nome]) {
+            bancoDeDados.fichas[nome] = [];
+            salvarBanco();
+            renderizarFichas();
+            mostrarAviso(`Treino ${nome} criado com sucesso!`);
+        } else if (bancoDeDados.fichas[nome]) {
+            mostrarAviso("Este nome de treino já existe.");
+        }
+    });
+}
+
+function solicitarNomeFichaCustom(callback) {
+    const modalInput = document.createElement('div');
+    modalInput.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
+
+    modalInput.innerHTML = `
+        <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
+            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+            <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
+            <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
+            
+            <div class="form-group" style="margin-bottom: 25px;">
+                <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
+            </div>
+
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
+                <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalInput);
+    
+    const inputField = document.getElementById('input-nome-ficha');
+    inputField.focus();
+
+    // Fecha ao cancelar
+    document.getElementById('btn-cancelar-nome').onclick = () => modalInput.remove();
+
+    // Lógica de confirmação
+    document.getElementById('btn-confirmar-nome').onclick = () => {
+        const nome = inputField.value.trim().toUpperCase();
+        if (nome) {
+            callback(nome);
+            modalInput.remove();
+        } else {
+            inputField.style.borderColor = "#ef4444";
+        }
+    };
+
+    // Confirmar com a tecla Enter
+    inputField.onkeydown = (e) => {
+        if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
+    };
 }
 
 function abrirFicha(nome) {
@@ -271,7 +365,6 @@ function renderizarResumoFicha(nome) {
     const exercicios = bancoDeDados.fichas[nome] || [];
 
     exercicios.forEach(ex => {
-        // Lógica de exibição: Se for tempo, mostra o tempo formatado, senão mostra séries/carga
         const infoExibicao = ex.tipo === 'tempo' 
             ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
@@ -280,24 +373,35 @@ function renderizarResumoFicha(nome) {
             <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                 <div style="flex: 1;">
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
-                    <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">
-                        ${infoExibicao}
-                    </div>
+                    <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
                 </div>
-                <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 15px;">
-                    <button onclick="ativarEdicaoInline(${ex.id}, 'resumo')" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; filter: brightness(1.5);">✏️</button>
-                    <button onclick="removerExercicio(${ex.id}, 'resumo')" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">🗑️</button>
+                <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
+                    <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
                 </div>
             </div>`;
     });
 }
 
 function excluirFicha(nome) {
-    if (confirm(`Excluir permanentemente o ${nome}?`)) {
+    // 1. Remove a ficha do objeto local
+    if (bancoDeDados.fichas[nome]) {
         delete bancoDeDados.fichas[nome];
-        salvarBanco();
+        
+        // 2. CHAMA O NOME CORRETO: salvarBanco (que você já usa em outras partes)
+        salvarBanco(); 
+        
+        // 3. Atualiza a tela para a ficha sumir da lista
         renderizarFichas();
-        mostrarAviso("Ficha excluída.");
+        
+        // 4. Feedback visual para o usuário
+        mostrarAviso("Ficha excluída com sucesso!");
+    } else {
+        console.error("Ficha não encontrada para exclusão:", nome);
     }
 }
 
@@ -566,27 +670,23 @@ function renderizarLogTreino() {
     const exercicios = bancoDeDados.fichas[ativa] || [];
 
     exercicios.forEach(ex => {
-        // Lógica de exibição condicional (Tempo vs Força)
-        let infoBadge;
-
-        if (ex.tipo === 'tempo') {
-            const tempoFormatado = formatarTempoParaExibicao(ex.tempo);
-            infoBadge = `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${tempoFormatado}</span>`;
-        } else {
-            infoBadge = `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
-        }
+        let infoBadge = ex.tipo === 'tempo' 
+            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
 
         container.innerHTML += `
             <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
                 <div style="flex: 1;">
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
-                    <div id="dados-log-${ex.id}" style="margin-top: 5px;">
-                        ${infoBadge}
-                    </div>
+                    <div id="dados-log-${ex.id}" style="margin-top: 5px;">${infoBadge}</div>
                 </div>
-                <div id="acoes-log-${ex.id}" style="display: flex; gap: 15px;">
-                    <button onclick="ativarEdicaoInline(${ex.id}, 'log')" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; filter: brightness(1.5);">✏️</button>
-                    <button onclick="removerExercicio(${ex.id}, 'log')" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">🗑️</button>
+                <div id="acoes-log-${ex.id}" style="display: flex; gap: 10px;">
+                    <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </button>
+                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome} do treino atual?', () => removerExercicio(${ex.id}, 'log'))">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    </button>
                 </div>
             </div>`;
     });
@@ -641,15 +741,22 @@ function prepararRegistro() {
     renderizarLogTreino();
 }
 
-function removerExercicio(id, tipo) {
+function removerExercicio(id, contexto) {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if (confirm("Deseja excluir este registro?")) {
-        bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(t => t.id !== id);
-        salvarBanco();
-        if(tipo === 'resumo') renderizarResumoFicha(ativa);
-        else renderizarLogTreino();
-        mostrarAviso("Exercício removido.");
+    if (!ativa) return;
+
+    // Filtra o exercício para remover
+    bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(ex => ex.id !== id);
+    
+    // CORREÇÃO AQUI: de salvarDados() para salvarBanco()
+    salvarBanco(); 
+
+    if (contexto === 'resumo') {
+        renderizarResumoFicha(ativa);
+    } else {
+        renderizarLogTreino();
     }
+    mostrarAviso("Exercício removido.");
 }
 
 function limparTreino() {
@@ -1267,5 +1374,37 @@ function excluirPost(id) {
         
         // 5. Aviso de sucesso
         mostrarAviso("Post removido com sucesso.");
+    };
+}
+
+function confirmarAcaoOriginal(titulo, mensagem, callback) {
+    const modalConfirm = document.createElement('div');
+    modalConfirm.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
+
+    modalConfirm.innerHTML = `
+        <div class="glass-panel" style="max-width: 340px; width: 100%; padding: 30px; text-align: center; border: 1px solid #ef4444;">
+            <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem;">${titulo}</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px;">${mensagem}</p>
+            <div style="display: flex; gap: 10px;">
+                <button id="confirm-cancel" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
+                <button id="confirm-ok" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px;">EXCLUIR</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalConfirm);
+
+    document.getElementById('confirm-cancel').onclick = () => modalConfirm.remove();
+    document.getElementById('confirm-ok').onclick = () => {
+        callback();
+        modalConfirm.remove();
     };
 }
