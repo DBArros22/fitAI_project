@@ -4,6 +4,14 @@ let usuariosCadastrados = JSON.parse(localStorage.getItem('fitai_users')) || [];
 let lembretes = JSON.parse(localStorage.getItem('fitai_lembretes')) || [];
 let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; 
 let midiaAnexada = null; // Controle de anexo do blog
+let cronometrosAtivos = {}; // Armazena os intervalos de cada exercício
+let tempoMestreAtivo = null;
+let milisegundosAcumulados = 0;
+let timestampInicio = null;
+
+const series = parseInt(document.getElementById('series-ex').value) || 0;
+const reps = parseInt(document.getElementById('reps-ex').value) || 0;
+const carga = parseFloat(document.getElementById('carga-ex').value) || 0;
 
 // Váriaveis gravador audio
 let mediaRecorder;
@@ -334,20 +342,143 @@ function verExerciciosConsulta(nome) {
     const exercicios = bancoDeDados.fichas[nome] || [];
     
     containerDetalhes.innerHTML = exercicios.map(ex => {
-        // Lógica para decidir se mostra Tempo ou Carga
-        const infoDireita = ex.tipo === 'tempo' 
+        const infoEsquerda = ex.tipo === 'tempo' 
             ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
-            : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps}</p>
-               <p style="color:gray; font-size:10px; margin:0;">${ex.carga} KG</p>`;
+            : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps} <span style="color:gray; font-size:10px;">${ex.carga}KG</span></p>`;
 
         return `
-        <div style="background:rgba(255,255,255,0.03); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <div><h4 style="color:white; margin:0; text-transform: uppercase;">${ex.nome}</h4></div>
-            <div style="text-align:right;">
-                ${infoDireita}
+        <div class="glass-panel" style="margin-bottom: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 15px;">
+            <div style="flex: 1;">
+                <h4 style="color:white; margin:0; text-transform: uppercase; font-size: 13px;">${ex.nome}</h4>
+                ${infoEsquerda}
+                <small id="last-time-${ex.id}" style="color: #3b82f6; font-size: 10px; font-weight: bold;">Último: --</small>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 12px;">
+                <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 40px; text-align: center;">0s</span>
+                <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})" 
+                    style="background: #3b82f6; border: none; border-radius: 8px; width: 35px; height: 35px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                    ▶️
+                </button>
             </div>
         </div>`;
     }).join('') || "<p style='color:gray; text-align:center;'>Vazio.</p>";
+    setTimeout(recuperarCronometrosAtivos, 100);
+}
+
+// Cronometro página de consulta 
+function controlarCronometroSet(id) {
+    const display = document.getElementById(`timer-set-${id}`);
+    const btn = document.getElementById(`btn-timer-set-${id}`);
+    const lastDisplay = document.getElementById(`last-time-${id}`);
+
+    // Se NÃO está rodando, vamos INICIAR
+    if (!cronometrosAtivos[id]) {
+        const startTime = Date.now();
+        localStorage.setItem(`timer_start_${id}`, startTime);
+        
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
+        btn.style.background = "#ef4444";
+
+        cronometrosAtivos[id] = setInterval(() => {
+            const passados = Date.now() - startTime;
+            
+            const h = Math.floor(passados / 3600000);
+            const m = Math.floor((passados % 3600000) / 60000);
+            const s = Math.floor((passados % 60000) / 1000);
+            const ms = Math.floor((passados % 1000) / 10);
+
+            let texto = "";
+            if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
+            texto += (m < 10 ? "0"+m : m) + ":";
+            texto += (s < 10 ? "0"+s : s) + ".";
+            texto += (ms < 10 ? "0"+ms : ms);
+            
+            if (display) display.innerText = texto;
+        }, 40);
+
+    } else {
+        // --- A ORDEM AQUI É CRUCIAL PARA NÃO ZERAR ---
+        
+        // 1. Primeiro, capturamos o tempo que está no visor AGORA
+        const tempoCapturado = display.innerText; 
+
+        // 2. Paramos o relógio
+        clearInterval(cronometrosAtivos[id]);
+        
+        // 3. Deletamos o registro de atividade
+        delete cronometrosAtivos[id];
+        localStorage.removeItem(`timer_start_${id}`);
+
+        // 4. Atualizamos o ícone
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
+        btn.style.background = "var(--accent-blue)";
+        
+        // 5. Só agora jogamos o valor capturado para o "Último"
+        if(lastDisplay && tempoCapturado !== "00:00.00") {
+            lastDisplay.innerText = "Último: " + tempoCapturado;
+        }
+
+        // 6. Por fim, limpamos o visor principal para o próximo set
+        display.innerText = "00:00.00";
+    }
+}
+
+function recuperarCronometrosAtivos() {
+    Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('timer_start_')) {
+            const id = key.replace('timer_start_', '');
+            // Se o elemento existe na tela, clica nele para retomar a contagem automaticamente
+            // Ou simplesmente chamamos a função novamente passando o ID
+            const startTimeOriginal = parseInt(localStorage.getItem(key));
+            const display = document.getElementById(`timer-set-${id}`);
+            const btn = document.getElementById(`btn-timer-set-${id}`);
+
+            if (display && btn) {
+                // Reinicia a interface sem criar um novo tempo de início
+                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
+                btn.style.background = "#ef4444";
+
+                cronometrosAtivos[id] = setInterval(() => {
+                    const passados = Date.now() - startTimeOriginal;
+                    const h = Math.floor(passados / 3600000);
+                    const m = Math.floor((passados % 3600000) / 60000);
+                    const s = Math.floor((passados % 60000) / 1000);
+                    const ms = Math.floor((passados % 1000) / 10);
+                    
+                    let texto = "";
+                    if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
+                    texto += (m < 10 ? "0"+m : m) + ":";
+                    texto += (s < 10 ? "0"+s : s) + ".";
+                    texto += (ms < 10 ? "0"+ms : ms);
+                    display.innerText = texto;
+                }, 40);
+            }
+        }
+    });
+}
+
+// Função auxiliar que cuida apenas da atualização do texto na tela
+function executarRelogio(id, startTime) {
+    const display = document.getElementById(`timer-set-${id}`);
+    
+    cronometrosAtivos[id] = setInterval(() => {
+        const agora = Date.now();
+        const passados = agora - startTime;
+        
+        const h = Math.floor(passados / 3600000);
+        const m = Math.floor((passados % 3600000) / 60000);
+        const s = Math.floor((passados % 60000) / 1000);
+        const ms = Math.floor((passados % 1000) / 10);
+
+        let texto = "";
+        if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
+        texto += (m < 10 ? "0"+m : m) + ":";
+        texto += (s < 10 ? "0"+s : s) + ".";
+        texto += (ms < 10 ? "0"+ms : ms);
+        
+        if (display) display.innerText = texto;
+    }, 40);
 }
 
 function voltarListaConsulta() {
@@ -833,115 +964,222 @@ window.addEventListener('DOMContentLoaded', () => {
     gerarCalendario();
 });
 
-// --- 7. SISTEMA DE BLOG / EVOLUÇÃO (CONCERTADO PARA HTML FIXO) ---
+// --- 7 - FUNÇÕES PAGINA BLOG EVOLUÇÕES
 
 function renderizarBlog() {
-    // Como os botões agora estão fixos no HTML, 
-    // esta função apenas garante que o feed de posts seja carregado.
-    exibirPosts();
-}
-
-function exibirPosts() {
-    const container = document.getElementById('feed-container') || document.getElementById('feed-evolucoes');
+    const container = document.getElementById('view-blog');
     if (!container) return;
 
-    if (feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma evolução postada ainda.</p>`;
-        return;
-    }
-
-    container.innerHTML = feedEvolucao.map((post, index) => `
-        <div class="glass-panel" style="margin-bottom: 20px; padding: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <small style="color: #3b82f6; font-weight: bold;">${post.data}</small>
-                <button onclick="excluirPost(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px;">EXCLUIR</button>
+    container.innerHTML = `
+        <div class="glass-panel" style="padding: 20px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 5px; vertical-align: middle;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
+                </button>
+                <div style="text-align: right;">
+                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">FEED</h2>
+                    <p style="color: #3b82f6; font-size: 9px; margin: 0; font-weight: 900; letter-spacing: 1px;">EVOLUÇÃO PRO</p>
+                </div>
             </div>
-            <p style="color: white; white-space: pre-wrap; margin-bottom: 15px;">${post.texto}</p>
-            ${post.midia ? (post.tipoMidia.includes('video') 
-                ? `<video src="${post.midia}" controls style="width: 100%; border-radius: 10px;"></video>` 
-                : `<img src="${post.midia}" style="width: 100%; border-radius: 10px;">`) : ''}
+
+            <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 18px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." 
+                    style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 15px; font-size: 14px; min-height: 60px;"></textarea>
+                
+                <div id="preview-midia" style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
+                    <div style="display: flex; gap: 12px;">
+                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
+                            <input type="file" accept="image/*" onchange="anexarMidia(this)" style="display: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </label>
+                        <button id="btn-mic" onclick="toggleGravacaoAudio()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </button>
+                    </div>
+                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 10px 25px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
+                </div>
+            </div>
+
+            <div id="feed-container" style="display: flex; flex-direction: column; gap: 20px;"></div>
         </div>
-    `).join('');
+    `;
+    atualizarFeedUI();
 }
 
-function previewMidia(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        midiaAnexada = e.target.result;
-        const preview = document.getElementById('preview-container');
-        if(preview) {
-            preview.innerHTML = `<div style="position: relative;">
-                <button onclick="midiaAnexada=null; this.parentElement.remove()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">X</button>
-                <p style="color: #3b82f6; font-size: 10px;">Mídia pronta para postar!</p>
-            </div>`;
-        }
-    };
-    reader.readAsDataURL(file);
+function anexarMidia(input) {
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            midiaAnexada = { tipo: 'foto', data: e.target.result };
+            document.getElementById('preview-midia').innerHTML = `
+                <div style="position: relative; display: inline-block;">
+                    <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #3b82f6;">
+                    <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" 
+                        style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">X</button>
+                </div>`;
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
-function postarEvolucao() {
-    const texto = document.getElementById('texto-evolucao').value;
-    if (!texto && !midiaAnexada) return mostrarAviso("Escreva algo ou anexe uma foto/vídeo!");
+async function toggleGravacaoAudio() {
+    const btn = document.getElementById('btn-mic');
+    if (!gravando) {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                midiaAnexada = { tipo: 'audio', data: e.target.result };
+                document.getElementById('preview-midia').innerHTML = `
+                    <div style="background: #1e293b; padding: 10px; border-radius: 10px; color: #3b82f6; display: flex; align-items: center; gap: 10px;">
+                        🎙️ Áudio Gravado <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="color: red; border: none; background: none; cursor: pointer;">Remover</button>
+                    </div>`;
+            };
+            reader.readAsDataURL(audioBlob);
+        };
+        mediaRecorder.start();
+        gravando = true;
+        btn.style.background = "#ef4444";
+        btn.innerHTML = "⏹️";
+    } else {
+        mediaRecorder.stop();
+        gravando = false;
+        btn.style.background = "rgba(59,130,246,0.1)";
+        btn.innerHTML = "🎙️";
+    }
+}
+
+function postarNoFeed() {
+    const texto = document.getElementById('post-texto').value;
+    if (!texto && !midiaAnexada) return mostrarAviso("O post não pode estar vazio!");
 
     const novoPost = {
+        id: Date.now(),
+        data: new Date().toLocaleString('pt-BR'),
         texto: texto,
-        midia: midiaAnexada,
-        tipoMidia: midiaAnexada ? (midiaAnexada.includes('video') ? 'video' : 'image') : null,
-        data: new Date().toLocaleString('pt-BR')
+        midia: midiaAnexada
     };
 
     feedEvolucao.unshift(novoPost);
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
     
-    // Limpar campos
-    document.getElementById('texto-evolucao').value = "";
     midiaAnexada = null;
-    const preview = document.getElementById('preview-container');
-    if(preview) preview.innerHTML = "";
-    
-    exibirPosts();
-    mostrarAviso("Evolução postada com sucesso!");
+    document.getElementById('post-texto').value = "";
+    document.getElementById('preview-midia').innerHTML = "";
+    atualizarFeedUI();
+    mostrarAviso("Postagem realizada!");
 }
 
-function excluirPost(index) {
-    if (confirm("Deseja excluir esta postagem?")) {
-        feedEvolucao.splice(index, 1);
+function atualizarFeedUI() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
+    container.innerHTML = feedEvolucao.map(post => `
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; border-radius: 10px; background: linear-gradient(45deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 14px;">F</div>
+                    <div>
+                        <p style="color: white; font-size: 12px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Atleta FitAI</p>
+                        <p style="color: #64748b; font-size: 9px; margin: 0;">${post.data}</p>
+                    </div>
+                </div>
+                <button onclick="excluirPost(${post.id})" style="background: rgba(239, 68, 68, 0.1); border: none; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+            
+            <p style="color: #e2e8f0; margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; font-weight: 400;">${post.texto}</p>
+            
+            ${post.midia ? (post.midia.tipo === 'foto' ? 
+                `<div style="border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
+                    <img src="${post.midia.data}" style="width: 100%; display: block;">
+                </div>` : 
+                `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 15px; margin-top: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(59,130,246,0.2);">
+                    <div style="background: #3b82f6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    </div>
+                    <audio controls src="${post.midia.data}" style="flex: 1; height: 30px; filter: invert(1);"></audio>
+                </div>`) : ''}
+        </div>
+    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 12px; letter-spacing: 1px;">AINDA NÃO HÁ ATIVIDADES NO FEED</p>`;
+}
+
+function excluirPost(id) {
+    if (confirm("Deseja remover esta postagem?")) {
+        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
         localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-        exibirPosts();
+        atualizarFeedUI();
     }
 }
-
 // --- FUNÇÕES DE ÁUDIO (PARA O BOTÃO DE MICROFONE NO HTML) ---
 
-function toggleGravacao() {
+async function toggleGravacao() {
     const btn = document.getElementById('btn-mic');
     const timer = document.getElementById('timer-gravacao');
 
     if (!gravando) {
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        try {
+            // Limpa chunks anteriores antes de começar
+            audioChunks = []; 
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
+            
+            mediaRecorder.ondataavailable = e => {
+                if (e.data.size > 0) audioChunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Vincula o áudio gravado à variável de mídia do post
+                    midiaAnexada = { tipo: 'audio', data: reader.result };
+                    atualizarPreviewMidia(); // Mostra para o usuário que o áudio está pronto
+                };
+                reader.readAsDataURL(audioBlob);
+
+                // Desliga o microfone (libera o hardware)
+                stream.getTracks().forEach(track => track.stop());
+            };
+
             mediaRecorder.start();
             gravando = true;
-            btn.style.background = "#ef4444"; // Cor de gravando
+            
+            // Estilo visual de gravando
+            btn.style.background = "#ef4444"; 
+            btn.classList.add('mic-gravando');
             if(timer) timer.classList.remove('hidden');
             mostrarAviso("Gravando áudio...");
-            
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                // Aqui você pode implementar lógica para salvar o áudio se desejar
-                audioChunks = [];
-            };
-        }).catch(() => mostrarAviso("Erro ao acessar microfone."));
+
+        } catch (err) {
+            console.error("Erro ao capturar áudio:", err);
+            if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                mostrarAviso("Nenhum microfone foi detectado no seu dispositivo.");
+            } else {
+                mostrarAviso("Erro ao acessar microfone. Verifique as permissões.");
+            }
+        }
     } else {
-        mediaRecorder.stop();
+        // Para a gravação
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+        }
         gravando = false;
-        btn.style.background = "#3b82f6"; // Volta ao azul
+        
+        // Restaura o visual original
+        btn.style.background = "rgba(255,255,255,0.05)"; 
+        btn.classList.remove('mic-gravando');
         if(timer) timer.classList.add('hidden');
-        mostrarAviso("Gravação finalizada.");
+        mostrarAviso("Gravação finalizada e anexada.");
     }
 }
 
@@ -984,10 +1222,50 @@ function limparMedia() {
 }
 
 function excluirPost(id) {
-    if (confirm("Remover este momento da sua história?")) {
-        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
-        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-        exibirPosts();
-    }
-}
+    // Cria um modal de confirmação customizado e platinado
+    const modalConfirm = document.createElement('div');
+    modalConfirm.id = 'modal-confirmacao-exclusao';
+    modalConfirm.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(10px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
 
+    modalConfirm.innerHTML = `
+        <div class="glass-panel" style="max-width: 340px; width: 100%; padding: 30px; text-align: center; border: 1px solid #ef4444; background: var(--bg-card); border-radius: 28px; box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);">
+            <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">EXCLUIR POST?</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Essa ação não pode ser desfeita e removerá este momento da sua história.</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-cancelar-exclusao" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">CANCELAR</button>
+                <button id="btn-confirmar-exclusao" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">EXCLUIR</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalConfirm);
+
+    // Lógica dos botões do modal
+    document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
+
+    document.getElementById('btn-confirmar-exclusao').onclick = () => {
+        // 1. Filtra o array
+        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
+        
+        // 2. Salva no LocalStorage
+        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
+        
+        // 3. Remove o modal
+        modalConfirm.remove();
+        
+        // 4. Atualiza a tela INSTANTANEAMENTE (usando o nome correto da função)
+        atualizarFeedUI(); 
+        
+        // 5. Aviso de sucesso
+        mostrarAviso("Post removido com sucesso.");
+    };
+}
