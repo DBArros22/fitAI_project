@@ -142,14 +142,24 @@
                         <option value="Panturrilhas">Panturrilhas</option>
                         <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
                     </select>
-                    
+                     
                     <select id="select-exercicio" class="input-field"></select>
 
-                    <div id="campos-forca" class="grid-3">
-                        <input type="number" id="series-ex" placeholder="Sets" class="input-field">
-                        <input type="number" id="reps-ex" placeholder="Reps" class="input-field">
-                        <input type="number" id="carga-ex" placeholder="Kg" class="input-field">
-                    </div>
+<div id="campos-forca" class="grid-3">
+    <div class="input-wrapper">
+        <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field-custom">
+        <span class="input-suffix">x</span>
+    </div>
+    
+    <div class="input-wrapper">
+        <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field-custom">
+    </div>
+    
+    <div class="input-wrapper">
+        <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field-custom">
+        <span class="input-suffix">kg</span>
+    </div>
+</div>
 
                     <div id="campos-cardio" class="hidden">                 
                         <div style="position: relative; width: 100%;">
@@ -192,9 +202,13 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                 </button>
                 
-                <button onclick="postarEvolucao()" class="btn-primary" style="width: auto; margin-left: auto; padding: 10px 25px;">Postar</button>
-            </div>
-            
+                <button onclick="postarEvolucao()" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+    </svg>
+    POSTAR
+</button>
             <div id="preview-container" style="margin-top: 15px;"></div>
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
             <div id="feed-container"></div> </div>
