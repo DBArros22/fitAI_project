@@ -1,279 +1,909 @@
 :root {
+
     /* Tons de Fundo e Painéis */
-    --bg-main: #020617;        /* Azul espacial profundo */
-    --bg-card: #0f172a;        /* Azul marinho premium */
-    --bg-input: #1e293b;       /* Tom para campos e fundos de ícones */
+
+    --bg-main: #020617;         /* Azul espacial profundo */
+
+    --bg-card: #0f172a;         /* Azul marinho premium */
+
+    --bg-input: #1e293b;        /* Tom para campos e fundos de ícones */
+
     
+
     /* Cores de Destaque e Ação */
-    --accent-blue: #38bdf8;    /* Azul celeste vibrante (mais limpo) */
+
+    --accent-blue: #38bdf8;     /* Azul celeste vibrante (mais limpo) */
+
     --accent-blue-hover: #0ea5e9;
+
     --accent-green: #10b981;
+
     
+
     /* Tipografia e Bordas */
-    --text-primary: #f8fafc;   /* Branco Platinado Principal */
+
+    --text-primary: #f8fafc;    /* Branco Platinado Principal */
+
     --text-secondary: #94a3b8;
+
     --border-color: rgba(56, 189, 248, 0.15); /* Borda levemente azulada */
+
     
+
     /* Efeitos */
+
     --shadow-pro: 0 20px 50px rgba(0, 0, 0, 0.7);
 
+
+
     /* Arte dos Ícones (Sua nova implementação) */
-    --icon-bg: #020617;        /* Fundo azul escuro profundo para o ícone */
-    --icon-platinum: #f8fafc;  /* Desenho em Branco platinado */
+
+    --icon-bg: #020617;         /* Fundo azul escuro profundo para o ícone */
+
+    --icon-platinum: #f8fafc;   /* Desenho em Branco platinado */
+
 }
+
+
 
 * { 
+
     box-sizing: border-box; 
+
     margin: 0; 
+
     padding: 0; 
+
     -webkit-font-smoothing: antialiased; 
+
     -moz-osx-font-smoothing: grayscale;
+
     letter-spacing: -0.01em;
+
 }
+
+
 
 body {
+
     background-color: var(--bg-main);
+
     color: var(--text-primary);
+
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+
     min-height: 100vh;
+
     line-height: 1.5;
+
 }
+
+
 
 /* --- ESTRUTURA GERAL --- */
+
 #app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+
 .hidden { display: none !important; }
 
+
+
 /* --- NAVBAR PREMIUM --- */
+
 .navbar {
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     padding: 1.25rem 5%;
+
     background: rgba(15, 23, 42, 0.8);
+
     backdrop-filter: blur(12px);
+
     border-bottom: 1px solid var(--border-color);
+
     position: sticky;
+
     top: 0; z-index: 50;
+
 }
+
+
 
 /* --- TELA DE LOGIN/CADASTRO --- */
+
 #view-login {
+
     display: flex; align-items: center; justify-content: center;
+
     min-height: 100vh; padding: 20px;
+
     background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+
 }
+
+
 
 .auth-card {
+
     background: var(--bg-card);
+
     border: 1px solid var(--border-color);
+
     border-radius: 28px;
+
     padding: 40px; width: 100%; max-width: 440px;
+
     box-shadow: var(--shadow-pro);
+
 }
+
+
 
 .logo-main {
+
     font-size: 2.2rem; font-weight: 900; font-style: italic;
+
     color: var(--accent-blue); text-align: center; margin-bottom: 30px;
+
     text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+
 }
+
+
 
 /* --- TAB SYSTEM (SLIDING) --- */
+
 .tab-system {
+
     display: flex; background: #020617; padding: 5px;
+
     border-radius: 16px; margin-bottom: 25px; position: relative;
+
     border: 1px solid var(--border-color);
+
 }
+
+
 
 .tab-btn {
+
     flex: 1; padding: 12px; border: none; background: transparent;
+
     color: var(--text-secondary); font-weight: 700; cursor: pointer;
+
     position: relative; z-index: 2; transition: 0.3s;
+
 }
+
+
 
 .tab-system::before {
+
     content: ""; position: absolute; top: 5px; left: 5px;
+
     width: calc(50% - 5px); height: calc(100% - 10px);
+
     background: var(--accent-blue); border-radius: 12px;
+
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;
+
     box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+
 }
+
+
 
 .tab-system.cadastro-active::before { transform: translateX(100%); }
+
 .tab-btn.active { color: #020617; }
 
+
+
 /* --- INPUTS E SELECTS --- */
+
 .form-group { display: flex; flex-direction: column; gap: 16px; }
 
+
+
 .input-field, select {
+
     width: 100%; background: var(--bg-input);
+
     border: 1.5px solid var(--border-color);
+
     border-radius: 14px; padding: 14px;
+
     color: white; font-size: 0.95rem; outline: none;
+
     transition: 0.2s ease;
+
 }
+
+
 
 .input-field:focus, select:focus {
+
     border-color: var(--accent-blue);
+
     background: #2d3748;
+
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+
 }
+
+
 
 /* --- SAGUÃO (CARDS) --- */
+
 .content-grid {
+
     display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
     gap: 24px; padding: 40px 5%; max-width: 1300px; margin: 0 auto;
+
 }
+
+
 
 .menu-card {
+
     background: var(--bg-card); border: 1px solid var(--border-color);
+
     border-radius: 28px; padding: 35px; cursor: pointer;
+
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+
     box-shadow: var(--shadow-pro);
+
     display: flex; flex-direction: column; align-items: center;
+
     text-align: center;
+
 }
+
+
 
 .menu-card:hover {
+
     transform: translateY(-10px); border-color: var(--accent-blue);
+
     background: #1e293b;
+
 }
+
+
 
 /* Arte do Ícone tipo "Placa de Sinalização" */
+
 .card-icon {
+
     width: 70px;
+
     height: 70px;
+
     background: var(--icon-bg);
+
     border-radius: 20px;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     margin-bottom: 20px;
+
     border: 1px solid var(--border-color);
+
     transition: 0.3s;
+
 }
+
+
 
 .card-icon svg {
+
     width: 35px;
+
     height: 35px;
+
     color: var(--icon-platinum);
+
     stroke-width: 2.5;
+
     transition: 0.3s;
+
     filter: drop-shadow(0 0 8px rgba(248, 250, 252, 0.2));
+
 }
+
+
 
 .menu-card:hover .card-icon {
+
     background: var(--accent-blue);
+
     border-color: var(--accent-blue);
+
     box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+
 }
+
+
 
 .menu-card:hover .card-icon svg {
+
     color: var(--bg-main);
+
     filter: none;
+
 }
+
+
 
 /* --- BOTÕES --- */
+
 .btn-primary {
+
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
+
     color: #020617; padding: 16px; border-radius: 14px; border: none;
+
     font-weight: 800; cursor: pointer; text-transform: uppercase; transition: 0.3s;
+
 }
+
+
 
 .btn-primary.success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+
 .btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
 
+
+
 .btn-link {
+
     background: none; border: none; color: var(--text-secondary);
+
     cursor: pointer; align-self: center; font-size: 0.85rem; font-weight: 600;
+
 }
 
+
+
 /* --- LISTAGEM E AÇÕES --- */
+
 .treino-item, .ficha-item {
+
     background: var(--bg-input);
+
     border: 1px solid var(--border-color);
+
     border-radius: 18px;
+
     padding: 16px;
+
     margin-bottom: 12px;
+
     display: flex;
+
     justify-content: space-between;
+
     align-items: center;
+
     transition: 0.3s ease;
+
 }
+
+
 
 .ficha-item { background: var(--bg-card); border-radius: 20px; padding: 20px; }
 
+
+
 .treino-item:hover, .ficha-item:hover {
+
     border-color: var(--accent-blue);
+
     transform: scale(1.02);
+
 }
+
+
 
 /* Botões de Ação Dinâmicos */
+
 .btn-action {
+
     background: var(--icon-bg);
+
     color: var(--icon-platinum);
+
     border: 1px solid var(--border-color);
+
     width: 42px;
+
     height: 42px;
+
     border-radius: 12px;
+
     cursor: pointer;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
     font-size: 1.1rem;
+
     transition: all 0.2s ease;
+
 }
+
+
 
 .btn-action:hover {
+
     background: var(--accent-blue);
+
     color: var(--bg-main);
+
     border-color: var(--accent-blue);
+
     transform: translateY(-3px) scale(1.1);
+
 }
+
+
 
 .btn-delete-action:hover {
+
     background: #ef4444;
+
     border-color: #ef4444;
+
     color: white;
+
 }
+
+
 
 /* Tipografia */
+
 .italic-bold { 
+
     font-weight: 900; 
+
     font-style: italic; 
+
     letter-spacing: -0.02em;
+
 }
+
+
 
 .menu-card h3 {
+
     font-size: 1.1rem;
+
     color: var(--text-primary);
+
     margin-bottom: 8px;
+
     text-transform: uppercase;
+
 }
+
+
 
 .treino-info h4 {
+
     font-size: 1rem;
+
     color: var(--accent-blue);
+
     margin-bottom: 4px;
+
     text-transform: uppercase;
+
     font-weight: 800;
+
 }
+
+
 
 /* Animações */
+
 @keyframes fadeIn {
+
     from { opacity: 0; transform: translateY(10px); }
+
     to { opacity: 1; transform: translateY(0); }
+
 }
+
 .fade-in { animation: fadeIn 0.5s ease forwards; }
 
+
+
 .glass-panel {
+
     background: var(--bg-card); border: 1px solid var(--border-color);
+
     border-radius: 24px; padding: 25px; box-shadow: var(--shadow-pro);
+
 }
 
-/* Classe especial para quando o microfone estiver ativo */
+
+
+/* --- TELA DE REGISTRO (LADO A LADO) --- */
+
+.registro-container {
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr; /* Divide em duas colunas iguais */
+
+    gap: 30px;
+
+    padding: 30px 5%;
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    align-items: start;
+
+}
+
+
+
+/* Responsividade para Mobile: volta a ser um abaixo do outro */
+
+@media (max-width: 900px) {
+
+    .registro-container {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}
+
+
+
+.grid-3 {
+
+    display: grid;
+
+    grid-template-columns: repeat(3, 1fr); /* 3 colunas iguais */
+
+    gap: 10px;
+
+    width: 100%;
+
+}
+
+
+
+/* Garante que o wrapper ocupe a largura total da coluna do grid */
+
+.input-wrapper {
+
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+}
+
+
+
+/* Ajuste fino no input para ele não deformar */
+
+.input-field-custom {
+
+    width: 100%;
+
+    background: var(--bg-input);
+
+    border: 1.5px solid var(--border-color);
+
+    border-radius: 14px;
+
+    padding: 14px 5px; /* Reduzi o padding lateral para o texto não sumir em telas pequenas */
+
+    color: white;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    outline: none;
+
+    transition: 0.2s ease;
+
+    text-align: center;
+
+}
+
+
+
 .mic-gravando {
+
     background: #ef4444 !important;
+
     color: white !important;
+
     border-color: #ef4444 !important;
+
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+
+}
+
+
+
+/* Estilo customizado do input para acomodar o sufixo */
+
+.input-field-custom {
+
+    width: 100%;
+
+    background: var(--bg-input);
+
+    border: 1.5px solid var(--border-color);
+
+    border-radius: 14px;
+
+    padding: 14px;
+
+    padding-right: 28px; /* Espaço para o sufixo não sobrepor o número */
+
+    color: white;
+
+    font-size: 1rem;
+
+    font-weight: 700;
+
+    outline: none;
+
+    transition: 0.2s ease;
+
+    text-align: center;
+
+}
+
+
+
+.input-field-custom:focus {
+
+    border-color: var(--accent-blue);
+
+    background: #2d3748;
+
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+
+}
+
+
+
+/* O sufixo visual (x e kg) */
+
+.input-suffix {
+
+    position: absolute;
+
+    right: 12px;
+
+    color: var(--accent-blue);
+
+    font-weight: 900;
+
+    font-style: italic;
+
+    pointer-events: none; /* Garante que o clique passe para o input */
+
+    font-size: 0.85rem;
+
+    opacity: 0.8;
+
+}
+
+
+
+/* Remove setas residuais de qualquer input number no projeto */
+
+input::-webkit-outer-spin-button,
+
+input::-webkit-inner-spin-button {
+
+    -webkit-appearance: none;
+
+    margin: 0;
+
+}
+
+
+
+input[type=number] {
+
+    -moz-appearance: textfield; /* Para Firefox */
+
+    appearance: textfield;      /* Padrão moderno */
+
+}
+
+
+
+/* --- CORREÇÃO DO MODAL DE NOTIFICAÇÃO (PARA FICAR NO CENTRO DA TELA) --- */
+
+#modal-notificacao {
+
+    position: fixed !important;
+
+    top: 0 !important;
+
+    left: 0 !important;
+
+    width: 100vw !important;
+
+    height: 100vh !important;
+
+    background: rgba(2, 6, 23, 0.85) !important;
+
+    backdrop-filter: blur(12px) !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    z-index: 10000 !important;
+
+    padding: 20px;
+
+}
+
+
+
+.modal-feedback {
+
+    position: fixed;
+
+    top: 50%;
+
+    left: 50%;
+
+    transform: translate(-50%, -50%) scale(0.9);
+
+    background: var(--bg-card);
+
+    border: 1px solid var(--accent-blue);
+
+    padding: 30px;
+
+    border-radius: 24px;
+
+    z-index: 1000;
+
+    text-align: center;
+
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+
+    opacity: 0;
+
+    transition: 0.3s;
+
+    pointer-events: none;
+
+}
+
+
+
+.modal-feedback.active {
+
+    opacity: 1;
+
+    transform: translate(-50%, -50%) scale(1);
+
+    pointer-events: all;
+
+}
+
+
+
+.check-icon-pro {
+
+    width: 60px;
+
+    height: 60px;
+
+    background: var(--icon-bg);
+
+    border: 2px solid var(--accent-blue);
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin: 0 auto 15px;
+
+    color: var(--accent-blue);
+
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+
+}
+
+
+
+/* --- AJUSTES DE RESPONSIVIDADE EXTRAS --- */
+
+@media (max-width: 600px) {
+
+    .content-grid {
+
+        padding: 20px 4%;
+
+        grid-template-columns: 1fr;
+
+    }
+
+    .navbar {
+
+        padding: 1rem 4%;
+
+    }
+
+    .auth-card {
+
+        padding: 30px 20px;
+
+    }
+
+    #display-timer {
+
+        font-size: 2.5rem !important;
+
+    }
+
+}
+
+/* --- ESTILOS DO BLOG / FEED --- */
+
+#feed-container {
+
+    width: 100%;
+
+    max-width: 650px;
+
+    margin: 0 auto;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+}
+
+.glass-panel {
+
+    backdrop-filter: blur(10px);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
 }
