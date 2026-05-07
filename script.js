@@ -145,6 +145,7 @@ function toggleAuthTab(tab) {
     const loginForm = document.getElementById('form-login');
     const cadastroForm = document.getElementById('form-cadastro');
     
+    // 1. Alterna a visibilidade das abas
     if (tab === 'login') {
         selector.classList.remove('cadastro-active');
         loginForm.classList.remove('hidden');
@@ -154,6 +155,21 @@ function toggleAuthTab(tab) {
         loginForm.classList.add('hidden');
         cadastroForm.classList.remove('hidden');
     }
+
+    // 2. Limpeza inteligente dos campos
+    const todosInputs = document.querySelectorAll('.auth-card .input-field');
+    const emailSalvo = localStorage.getItem('fitai_remember_email');
+
+    todosInputs.forEach(input => {
+        // Se estivermos voltando para o Login e este for o campo de e-mail com dado salvo, não limpa
+        if (tab === 'login' && input.id === 'login-email' && emailSalvo) {
+            input.value = emailSalvo;
+            return;
+        }
+        
+        // Limpa todos os outros campos (senhas, nomes, campos de cadastro, etc)
+        input.value = '';
+    });
 }
 
 function handleCadastro() {
@@ -176,9 +192,21 @@ function handleCadastro() {
 function handleLogin() {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
+    const rememberMe = document.getElementById('remember-me').checked; // Captura o checkbox
+    
     const user = usuariosCadastrados.find(u => u.email === email && u.pass === pass);
+    
     if (user) {
+        // Lógica de Sessão
         localStorage.setItem('fitai_session', JSON.stringify(user));
+        
+        // Lógica de "Lembrar de Mim"
+        if (rememberMe) {
+            localStorage.setItem('fitai_remember_email', email);
+        } else {
+            localStorage.removeItem('fitai_remember_email');
+        }
+        
         showView('lobby');
     } else {
         mostrarAviso("E-mail ou senha incorretos!");
@@ -1408,3 +1436,14 @@ function confirmarAcaoOriginal(titulo, mensagem, callback) {
         modalConfirm.remove();
     };
 }
+
+window.addEventListener('load', () => {
+    const emailSalvo = localStorage.getItem('fitai_remember_email');
+    const campoEmail = document.getElementById('login-email');
+    const checkbox = document.getElementById('remember-me');
+
+    if (emailSalvo && campoEmail) {
+        campoEmail.value = emailSalvo;
+        if (checkbox) checkbox.checked = true;
+    }
+});
