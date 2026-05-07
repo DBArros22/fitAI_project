@@ -22,6 +22,14 @@
         <div id="form-login" class="form-group">
             <input type="email" id="login-email" placeholder="E-mail de acesso" class="input-field">
             <input type="password" id="login-pass" placeholder="Sua senha" class="input-field">
+            
+            <div style="display: flex; align-items: center; gap: 10px; margin: -5px 0 5px 5px;">
+                <input type="checkbox" id="remember-me" style="accent-color: var(--accent-blue); cursor: pointer; width: 16px; height: 16px;">
+                <label for="remember-me" style="color: var(--text-secondary); font-size: 0.85rem; cursor: pointer; font-weight: 600; user-select: none;">
+                    Lembrar meu e-mail
+                </label>
+            </div>
+
             <button onclick="handleLogin()" class="btn-primary">Acessar Painel</button>
             <button onclick="handleRecuperar()" class="btn-link">Esqueceu a senha?</button>
         </div>
