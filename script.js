@@ -1566,12 +1566,11 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    // Puxa os dados reais salvos no perfil/cadastro
     const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
     const fotoAtleta = localStorage.getItem('user_foto');
 
     container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; margin-bottom:15px;">
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; margin-bottom:15px; position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 35px; height: 35px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
@@ -1582,8 +1581,20 @@ function atualizarFeedUI() {
                         <p style="color: #64748b; font-size: 9px; margin: 0;">${post.data}</p>
                     </div>
                 </div>
-                </div>
+
+                <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    &times;
+                </button>
             </div>
+
+            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px;">${post.texto}</p>` : ''}
+
+            ${post.midia && post.midia.data ? `
+                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;">
+                    <img src="${post.midia.data}" style="width: 100%; display: block; object-fit: cover; max-height: 350px;">
+                </div>
+            ` : ''}
+        </div>
     `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px;">SEM ATIVIDADES</p>`;
 }
 
