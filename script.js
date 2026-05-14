@@ -20,6 +20,7 @@ const salvarDados = () => { if (typeof salvarBanco === 'function') salvarBanco()
 const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
 const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
 const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();   // audio alert EMOM or AMRAP
 
 // Váriaveis gravador audio
 let mediaRecorder;
@@ -1644,58 +1645,124 @@ function calcularCargasCF() {
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+function tocarBeep(freq, dur) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.frequency.value = freq;
+    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+}
+
 function setTimerMode(modo) {
     cfModo = modo;
     const btnAmrap = document.getElementById('btn-amrap');
     const btnEmom = document.getElementById('btn-emom');
     const status = document.getElementById('status-timer');
+    const groupSec = document.getElementById('group-seconds'); // Container dos segundos
+    const labelTempo = document.getElementById('label-tempo-wod'); // Label instrutiva
 
     if (modo === 'AMRAP') {
         btnAmrap.style.opacity = "1";
         btnAmrap.style.border = "2px solid var(--accent-blue)";
-        btnEmom.style.opacity = "0.4";
+        btnAmrap.style.filter = "brightness(1.2)";
+        btnEmom.style.opacity = "0.3";
         btnEmom.style.border = "none";
+        btnEmom.style.filter = "none";
         status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
+        
+        // UX: No AMRAP só precisamos da duração total em minutos
+        if (groupSec) groupSec.style.display = "none";
+        if (labelTempo) labelTempo.innerText = "Duração Total (Minutos)";
     } else {
         btnEmom.style.opacity = "1";
         btnEmom.style.border = "2px solid var(--accent-blue)";
-        btnAmrap.style.opacity = "0.4";
+        btnEmom.style.filter = "brightness(1.2)";
+        btnAmrap.style.opacity = "0.3";
         btnAmrap.style.border = "none";
-        status.innerText = "EMOM (ALERTA POR MINUTO)";
+        btnAmrap.style.filter = "none";
+        status.innerText = "EMOM (ALERTA POR INTERVALO)";
+        
+        // UX: No EMOM habilitamos segundos para intervalos personalizados (ex: 30s)
+        if (groupSec) groupSec.style.display = "flex";
+        if (labelTempo) labelTempo.innerText = "Intervalo do Alerta (Min:Seg)";
     }
     resetarTimerCF();
 }
 
 function iniciarTimerCF() {
-    if (cfTimerInterval) return;
+    const btnStart = document.getElementById('btn-start-wod');
+
+    // Lógica de Pausa/Retomada
+    if (cfTimerInterval && !cfIsPaused) {
+        pausarTimerCF();
+        return;
+    }
+
+    if (cfIsPaused) {
+        cfIsPaused = false;
+        cfStartTime = Date.now() - (cfTempoDecorridoAcumulado * 1000);
+        if (btnStart) btnStart.innerText = "PAUSAR";
+        executarWodReal(parseInt(document.getElementById('wod-minutes').value) || 0);
+        return;
+    }
 
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
-    const minSet = parseInt(document.getElementById('wod-minutes').value);
+    const minSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     
+    if (btnStart) btnStart.innerText = "PAUSAR";
+
     let prep = 10;
     status.innerText = "PREPARAR...";
-    display.style.color = "#ffae00"; // Laranja Preparação
+    display.style.color = "#ffae00"; 
 
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
-            display.innerText = `00:${prep.toString().padStart(2, '0')}:000`;
+            tocarBeep(600, 0.1); // Beep de contagem
+            display.innerText = `00:${prep.toString().padStart(2, '0')}:00`;
             prep--;
         } else {
             clearInterval(cfTimerInterval);
+            tocarBeep(880, 0.5); // Beep de início
+            cfTempoDecorridoAcumulado = 0;
+            cfStartTime = Date.now();
             executarWodReal(minSet);
         }
     }, 1000);
 }
 
-function executarWodReal(minutos) {
+function pausarTimerCF() {
+    const btnStart = document.getElementById('btn-start-wod');
+    if (!cfTimerInterval) return;
+    
+    clearInterval(cfTimerInterval);
+    cfTimerInterval = null;
+    cfIsPaused = true;
+    
+    const agora = Date.now();
+    cfTempoDecorridoAcumulado = (agora - cfStartTime) / 1000;
+    
+    document.getElementById('status-timer').innerText = "PAUSADO";
+    document.getElementById('timer-display').style.color = "#94a3b8";
+    if (btnStart) btnStart.innerText = "RETOMAR";
+}
+
+function executarWodReal() {
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
-    const limiteSegundos = minutos * 60;
+    const btnPause = document.getElementById('btn-pause-wod');
     
-    cfStartTime = Date.now();
+    // Captura os valores de tempo definidos no HTML
+    const mSet = parseInt(document.getElementById('wod-minutes').value) || 0;
+    const sSet = parseInt(document.getElementById('wod-seconds')?.value) || 0;
+    const intervaloTotalSegundos = (mSet * 60) + sSet;
+
+    if (btnPause) btnPause.style.display = 'block';
     status.innerText = "WORK!";
-    display.style.color = "#22c55e"; // Verde Treino
+    display.style.color = "#22c55e"; 
 
     cfTimerInterval = setInterval(() => {
         const agora = Date.now();
@@ -1703,50 +1770,76 @@ function executarWodReal(minutos) {
         let tempoFinal = 0;
 
         if (cfModo === 'AMRAP') {
-            // Lógica Regressiva
-            tempoFinal = limiteSegundos - decorrido;
-            if (tempoFinal <= 0) return finalizarTudo();
-        } else {
-            // Lógica Progressiva EMOM
-            tempoFinal = decorrido;
-            // Alerta a cada minuto (pisca azul)
-            if (Math.floor(decorrido) > 0 && Math.floor(decorrido) % 60 === 0 && (decorrido % 1) < 0.1) {
-                display.style.color = "#00d4ff";
-                setTimeout(() => display.style.color = "#22c55e", 500);
+            // Lógica AMRAP: Regressiva até o fim
+            tempoFinal = intervaloTotalSegundos - decorrido;
+            
+            if (tempoFinal <= 5 && tempoFinal > 0) {
+                const blink = Math.floor(decorrido * 5) % 2 === 0;
+                display.style.color = blink ? "#ff4444" : "white";
+                if (Math.floor(tempoFinal * 10) % 10 === 0) tocarBeep(440, 0.05);
             }
-            if (decorrido >= limiteSegundos) return finalizarTudo();
+
+            if (tempoFinal <= 0) {
+                tocarBeep(220, 1);
+                return finalizarTudo();
+            }
+        } else {
+            // Lógica EMOM: Progressiva e Infinita (Cíclica)
+            tempoFinal = decorrido;
+            
+            // Dispara alerta a cada vez que o 'decorrido' atinge o múltiplo do intervalo
+            if (decorrido > 0 && Math.floor(decorrido % intervaloTotalSegundos) === 0 && (decorrido % 1) < 0.1) {
+                tocarBeep(880, 0.6); // Beep mais longo conforme pedido
+                
+                // Alerta Visual Chamativo
+                display.style.color = "#00d4ff";
+                const statusOriginal = status.innerText;
+                status.innerText = "NOVO ROUND!";
+                status.style.color = "#00d4ff";
+                
+                setTimeout(() => {
+                    if(!cfIsPaused) {
+                        display.style.color = "#22c55e";
+                        status.innerText = "WORK!";
+                        status.style.color = "var(--accent-blue)";
+                    }
+                }, 1500);
+            }
         }
 
-        const m = Math.floor(tempoFinal / 60);
-        const s = Math.floor(tempoFinal % 60);
-        const ms = Math.floor((tempoFinal % 1) * 1000);
-        display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:${ms.toString().padStart(3, '0')}`;
+        const m = Math.floor(Math.abs(tempoFinal) / 60);
+        const s = Math.floor(Math.abs(tempoFinal) % 60);
+        const ms = Math.floor((Math.abs(tempoFinal) % 1) * 100);
+        
+        display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
     }, 10);
 }
 
 function finalizarTudo() {
     pararTimerCF();
     const display = document.getElementById('timer-display');
-    display.innerText = "00:00:000";
+    const btnStart = document.getElementById('btn-start-wod');
+    display.innerText = "00:00:00";
     display.style.color = "#ff4444";
     document.getElementById('status-timer').innerText = "FIM DO TREINO!";
+    if (btnStart) btnStart.innerText = "INICIAR";
+}
+
+function resetarTimerCF() {
+    pararTimerCF();
+    cfTempoDecorridoAcumulado = 0;
+    cfIsPaused = false;
+    const display = document.getElementById('timer-display');
+    const btnStart = document.getElementById('btn-start-wod');
+    if (display) {
+        display.innerText = "00:00:00";
+        display.style.color = "white";
+    }
+    document.getElementById('status-timer').innerText = "PRONTO";
+    if (btnStart) btnStart.innerText = "INICIAR";
 }
 
 function pararTimerCF() {
     clearInterval(cfTimerInterval);
     cfTimerInterval = null;
-}
-
-function resetarTimerCF() {
-    pararTimerCF();
-    const display = document.getElementById('timer-display');
-    if (display) {
-        display.innerText = "00:00:000";
-        display.style.color = "white";
-    }
-    document.getElementById('status-timer').innerText = "PRONTO";
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício</option>';
-        return;
-    }
 }
