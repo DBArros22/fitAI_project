@@ -31,7 +31,7 @@
             </div>
 
             <button onclick="handleLogin()" class="btn-primary">Acessar Painel</button>
-            <button onclick="handleRecuperar()" class="btn-link">Esqueceu a senha?</button>
+             <button onclick="handleRecuperar()" class="btn-recuperar-senha">Esqueceu a senha?</button>        
         </div>
 
         <div id="form-cadastro" class="form-group hidden">
@@ -58,9 +58,13 @@
         </h1>
     </div>
     
-    <button onclick="logout()" class="btn-link" style="color: #ef4444; font-weight: 800; letter-spacing: 1px; font-size: 0.75rem;">SAIR</button>
+<button onclick="logout()" class="btn-logout-nav">SAIR</button>
+
+
 </nav>
 
+
+<!-- Lobby tela inicial -->
   <main id="view-lobby" class="content-grid">
     <div onclick="showView('planilhas')" class="menu-card">
         <div class="card-icon">
@@ -93,6 +97,32 @@
         <h3 class="italic-bold uppercase">Consultar</h3>
         <p>Visualize seus treinos.</p>
     </div>
+
+    <div onclick="showView('aparelho-ocupado')" class="menu-card" style="border-left: 4px solid #00d4ff;">
+    <div class="card-icon" style="color: #00d4ff;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+        </svg>
+    </div>
+    <h3 class="italic-bold uppercase">Aparelho Cheio?</h3>
+    <p>Encontre um substituto agora.</p>
+</div>
+
+<div onclick="showView('crossfit-lobby')" class="menu-card" style="border-left: 4px solid #ff9d00;">
+    <div class="card-icon" style="color: #ff9d00;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 12h12"></path>
+            <path d="M12 6v12"></path>
+            <path d="M8 8l8 8"></path>
+            <path d="M16 8l-8 8"></path>
+        </svg>
+    </div>
+    <h3 class="italic-bold uppercase">Zona Crossfit</h3>
+    <p>WOD Timers e Tabela de Carga.</p>
+</div>
+
+<!-- Fim da area lobby -->
+
 </main>
 
     </main>
@@ -117,21 +147,38 @@
             <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;"> Adicionar exercícios </button>
         </div>
     </main>
-
+<!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
     <main id="view-consulta-geral" class="hidden" style="padding: 20px 5%;">
-        <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 id="cabecalho-consulta" class="italic-bold uppercase" style="color: var(--accent-blue);">Consultar Treinos</h2>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-link hidden">← Voltar</button>
-                    <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-link">Sair</button>
-                </div>
-            </div>
-            <div id="lista-nomes-treinos" class="grid-2" style="gap: 15px;"></div>
-            <div id="detalhes-treino-consulta" class="hidden"></div>
-        </div>
-    </main>
+    <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 25px;">
+        
+        <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: flex-start;">
+                <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-voltar-premium">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    VOLTAR
+                </button>
 
+                <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-voltar-premium hidden" style="border-color: var(--accent-green); color: var(--accent-green);">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    VER TODOS OS TREINOS
+                </button>
+            </div>
+
+            <h2 id="cabecalho-consulta" class="italic-bold uppercase blue-text" style="font-size: 1.5rem;">Consultar Treinos</h2>
+        </div>
+
+        <div id="lista-nomes-treinos" class="grid-2" style="gap: 15px;"></div>
+        <div id="detalhes-treino-consulta" class="hidden"></div>
+    </div>
+</main>
+
+<!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
     <main id="view-registro" class="hidden registro-container">
         <aside class="form-group">
             <section class="glass-panel">
@@ -224,6 +271,197 @@
 
     <main id="view-calendario" class="hidden"></main>
 
-    <script src="script.js"></script>
+<div id="view-aparelho-ocupado" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 30px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Plano B</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 40px;">Aparelho ocupado? Escolha uma alternativa.</p>
+        
+        <div class="glass-card-action">
+            <div class="input-group" style="margin-bottom: 25px; text-align: left;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">1. Grupo Muscular</label>
+                <select id="select-grupo-sub" onchange="carregarExerciciosSub()">
+                    <option value="">Selecione o Grupo...</option>
+                    <option value="Peitoral">Peitoral</option>
+                    <option value="Dorsais">Dorsais</option>
+                    <option value="Quadríceps">Quadríceps</option>
+                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                    <option value="Tríceps Braquial">Tríceps Braquial</option>
+                    <option value="Core/Abdominal">Core/Abdominal</option>
+                    <option value="Panturrilhas">Panturrilhas</option>
+                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 30px; text-align: left;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">2. Qual aparelho está ocupado?</label>
+                <select id="select-ex-ocupado">
+                    <option value="">Aguardando grupo...</option>
+                </select>
+            </div>
+
+            <button class="btn-sugerir-glow" onclick="gerarSugestao()">
+                <span>SUGERIR ALTERNATIVA</span>
+            </button>
+
+            <div id="resultado-sugestao" class="hidden" style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <p class="label-res" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 800; text-transform: uppercase;">Troca Sugerida:</p>
+                <div class="sugestao-destaque">
+                    <span id="nome-sugestao">---</span>
+                </div>
+            </div>
+        </div>
+    </div> <div id="modal-aviso" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 350px;">
+            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
+            <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
+                Selecione o grupo e o aparelho ocupado!
+            </p>
+            <button onclick="fecharModalAviso()" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
+        </div>
+    </div>
+
+</div>
+
+<div id="view-crossfit-lobby" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 35px;">
+            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Zona Crossfit</h2>
+            <p style="color: var(--text-secondary);">Selecione sua ferramenta de treino.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px; margin: 0 auto;">
+            <div onclick="showView('crossfit-timers')" class="menu-card" style="border-left: 4px solid #00d4ff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #00d4ff; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.9rem; margin-bottom: 5px;">WOD Timers</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">AMRAP, EMOM e Tabata.</p>
+            </div>
+
+            <div onclick="showView('crossfit-strength-calc')" class="menu-card" style="border-left: 4px solid #22c55e; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #22c55e; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 12h12"></path>
+                        <path d="M12 6v12"></path>
+                        <path d="M8 8l8 8"></path>
+                        <path d="M16 8l-8 8"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.9rem; margin-bottom: 5px;">Cargas %</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Tabela de intensidades.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="view-crossfit-strength-calc" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 25px;">
+            <h2 class="italic-bold uppercase blue-text">Cargas %</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Calcule sua força por porcentagem</p>
+        </div>
+
+        <div class="glass-card-action" style="width: 100%; max-width: 450px; margin: 0 auto;">
+            <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase;">Sua Carga Máxima (1RM)</label>
+                <input type="number" id="input-1rm" placeholder="Ex: 100 (KG)" oninput="calcularCargasCF()" 
+                    style="width: 100%; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05); color: white; border: 1px solid var(--accent-blue); text-align: center; font-size: 1.4rem; font-weight: bold;">
+            </div>
+            <div id="lista-cargas-cf" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="view-crossfit-timers" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button onclick="pararTimerCF(); showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 class="italic-bold uppercase blue-text">WOD Timers</h2>
+            <div id="status-timer" style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">PRONTO</div>
+        </div>
+
+        <div class="glass-card-action" style="width: 100%; max-width: 400px; margin: 0 auto; padding: 25px; text-align: center;">
+            
+            <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00:000</div>
+            
+            <div style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                <label style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração do Treino (Minutos)</label>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
+                    <button onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                    <input type="number" id="wod-minutes" value="10" min="1" max="60" readonly
+                        style="width: 70px; background: none; border: none; color: white; text-align: center; font-size: 1.8rem; font-weight: 900;">
+                    <button onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                <button onclick="setTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800;">AMRAP</button>
+                <button onclick="setTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                <button id="btn-start-timer" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;">
+                    <span>INICIAR WOD</span>
+                </button>
+                <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1);">
+                    RESET
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
