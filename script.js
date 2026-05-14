@@ -37,6 +37,206 @@ let milissegundosTotais = 0;
 let isTimerRunning = false;
 let isCountdownMode = false;
 
+
+// Funções do perfil 
+
+function carregarDadosPerfil() {
+    const emailAtivo = localStorage.getItem('user_email');
+    const usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const user = usuarios.find(u => u.email === emailAtivo);
+
+    if (user) {
+        if (document.getElementById('perfil-nome')) document.getElementById('perfil-nome').value = user.nome || "";
+        if (document.getElementById('perfil-tel')) document.getElementById('perfil-tel').value = user.tel || "";
+        if (document.getElementById('perfil-email')) document.getElementById('perfil-email').value = user.email || "";
+    }
+
+    // Foto do Perfil
+    const foto = localStorage.getItem('user_foto');
+    if (foto) {
+        const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        const preview = document.getElementById('perfil-foto-preview');
+        const navIcon = document.getElementById('nav-perfil-icon');
+        if (preview) preview.innerHTML = imgHtml;
+        if (navIcon) navIcon.innerHTML = imgHtml;
+    }
+}
+
+function atualizarFotoPerfil(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fotoUrl = e.target.result;
+            localStorage.setItem('user_foto', fotoUrl);
+
+            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            
+            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
+            
+            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+/**
+ * 2. Salva Dados com Feedback Visual Melhorado
+ */
+function salvarDadosPerfil(event) {
+    const nome = document.getElementById('perfil-nome').value;
+    const tel = document.getElementById('perfil-tel').value;
+    const novoEmail = document.getElementById('perfil-email').value;
+    const emailAntigo = localStorage.getItem('user_email');
+    
+    const btn = event.currentTarget;
+
+    // Se mudar E-mail ou Tel, pede confirmação
+    if (novoEmail !== emailAntigo || tel !== localStorage.getItem('user_tel')) {
+        if (!confirm("Alterar dados de contato? Um código será enviado para " + novoEmail)) return;
+    }
+
+    // Atualiza Storage e Banco
+    localStorage.setItem('user_nome', nome);
+    localStorage.setItem('user_tel', tel);
+    localStorage.setItem('user_email', novoEmail);
+
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === emailAntigo);
+    if (index !== -1) {
+        usuarios[index].nome = nome;
+        usuarios[index].tel = tel;
+        usuarios[index].email = novoEmail;
+        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    }
+
+    // Feedback Visual Ultra-Rápido e limpo
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
+    btn.style.background = "#22c55e"; // Verde vibrante
+    btn.style.transform = "scale(0.98)";
+
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.style.background = "";
+        btn.style.transform = "";
+    }, 2000);
+
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+}
+
+/**
+ * 3. Altera Senha (Inicia ao clicar no campo ou botão)
+ */
+function alterarSenhaPerfil() {
+    const nova = document.getElementById('pass-nova').value;
+    // Se você tiver o campo de repetir senha, pegue-o aqui também
+    // const repetir = document.getElementById('pass-repetir').value;
+
+    if (nova.length < 4) {
+        // Feedback visual no botão em vez de alert
+        const btn = document.getElementById('btn-senha-perfil');
+        btn.innerText = "SENHA MUITO CURTA!";
+        btn.style.color = "#ef4444";
+        setTimeout(() => { btn.innerText = "ALTERAR SENHA"; btn.style.color = ""; }, 2000);
+        return;
+    }
+
+    // Abre o modal de confirmação
+    document.getElementById('modal-confirmar-senha').classList.remove('hidden');
+    document.getElementById('modal-confirmar-senha').style.display = 'flex';
+    document.getElementById('confirm-pass-atual').focus();
+}
+
+/**
+ * 2. Fecha o modal
+ */
+function fecharModalSenha() {
+    document.getElementById('modal-confirmar-senha').classList.add('hidden');
+    document.getElementById('modal-confirmar-senha').style.display = 'none';
+    document.getElementById('confirm-pass-atual').value = "";
+}
+
+/**
+ * 3. Processa a troca validando a senha atual dentro do modal
+ */
+function processarTrocaSenha() {
+    const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
+    const novaSenha = document.getElementById('pass-nova').value;
+    const emailAtivo = localStorage.getItem('user_email');
+    
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === emailAtivo);
+
+    if (index === -1) return;
+
+    // Validação Real
+    if (usuarios[index].pass !== senhaAtualDigitada) {
+        const inputModal = document.getElementById('confirm-pass-atual');
+        inputModal.style.border = "1px solid #ef4444";
+        inputModal.value = "";
+        inputModal.placeholder = "SENHA INCORRETA!";
+        setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
+        return;
+    }
+
+    // Se a senha estiver correta, salva
+    usuarios[index].pass = novaSenha;
+    localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    
+    // Sincroniza com o seu banco global
+    if (typeof salvarDados === 'function') salvarDados();
+
+    // Sucesso
+    fecharModalSenha();
+    const btnPrincipal = document.getElementById('btn-senha-perfil');
+    btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
+    btnPrincipal.style.background = "#22c55e";
+    
+    document.getElementById('pass-nova').value = "";
+    // Se tiver o campo de repetir: document.getElementById('pass-repetir').value = "";
+
+    setTimeout(() => {
+        btnPrincipal.innerHTML = "ALTERAR SENHA";
+        btnPrincipal.style.background = "";
+    }, 3000);
+}
+// Chame carregarDadosPerfil() dentro da sua função de inicialização do app (ex: quando o Firebase confirma login)
+
+// função divergencia de senha ou email
+function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
+    const existente = document.getElementById('toast-notificacao');
+    if (existente) existente.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-notificacao';
+    toast.className = tipo; // Adiciona a classe 'sucesso' ou 'erro'
+
+    // Ícone moderno em SVG
+    const icone = tipo === 'sucesso' 
+        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+    toast.innerHTML = `
+        ${icone}
+        <span>${mensagem}</span>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Animação de entrada
+    setTimeout(() => {
+        toast.style.opacity = '1';
+    }, 10);
+
+    // Saída automática
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => toast.remove(), 500);
+    }, 3500);
+}
+
 // --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
     "Peitoral": [
@@ -122,36 +322,36 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewName) {
-  // visualização das paginas no lobby
     const views = [
-'view-login', 'view-lobby', 'view-registro', 'view-calendario',
-'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
-'view-aparelho-ocupado',
-'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc'
-];
+        'view-login', 'view-lobby', 'view-registro', 'view-calendario',
+        'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
+        'view-aparelho-ocupado', 'view-perfil', // Adicionado perfil aqui
+        'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc'
+    ];
 
-views.forEach(v => {
-const el = document.getElementById(v);
-if (el) el.classList.add('hidden');});
-// O target busca pelo ID concatenado (view- + nome)
+    views.forEach(v => {
+        const el = document.getElementById(v);
+        if (el) el.classList.add('hidden');
+    });
 
-const target = document.getElementById('view-' + viewName);
-if (target) target.classList.remove('hidden');
+    const target = document.getElementById('view-' + viewName);
+    if (target) target.classList.remove('hidden');
 
-const shell = document.getElementById('app-shell');
-if (viewName === 'login') {
-if (shell) shell.classList.add('hidden');}
-else {
-if (shell) shell.classList.remove('hidden');
+    const shell = document.getElementById('app-shell');
+    if (viewName === 'login') {
+        if (shell) shell.classList.add('hidden');
+    } else {
+        if (shell) shell.classList.remove('hidden');
+    }
+
+    // Gatilhos de renderização
+    if (viewName === 'perfil') carregarDadosPerfil(); // Gatilho para carregar dados do cadastro
+    if (viewName === 'planilhas') renderizarFichas();
+    if (viewName === 'registro') renderizarLogTreino();
+    if (viewName === 'consulta-geral') renderizarFichasConsulta();
+    if (viewName === 'calendario') renderizarPaginaCronograma();
+    if (viewName === 'blog') renderizarBlog();
 }
-
-// Gatilhos de renderização
-if (viewName === 'planilhas') renderizarFichas();
-if (viewName === 'registro') renderizarLogTreino();
-if (viewName === 'consulta-geral') renderizarFichasConsulta();
-if (viewName === 'calendario') renderizarPaginaCronograma();
-if (viewName === 'blog') renderizarBlog();
-} 
 
 
 
@@ -199,72 +399,172 @@ function handleCadastro() {
     if (senha !== confirmaSenha) return mostrarAviso("As senhas não coincidem!");
 
     const novoUsuario = { nome, email, tel, pass: senha, fichas: {} };
+    
+    // Salva no banco geral
     usuariosCadastrados.push(novoUsuario);
     localStorage.setItem('fitai_users', JSON.stringify(usuariosCadastrados));
-    mostrarAviso("Conta criada com sucesso! Faça seu login.");
+
+    // ESTA LINHA É A PONTE: Salva quem é o usuário ativo no momento
+    localStorage.setItem('user_email', email); 
+    localStorage.setItem('user_nome', nome);
+    localStorage.setItem('user_tel', tel);
+
+    mostrarAviso("Conta criada com sucesso!");
     toggleAuthTab('login');
 }
 
 function handleLogin() {
     const email = document.getElementById('login-email').value;
     const pass = document.getElementById('login-pass').value;
-    const rememberMe = document.getElementById('remember-me').checked; // Captura o checkbox
+    const rememberMe = document.getElementById('remember-me').checked;
     
+    // Busca no array de usuários cadastrados
     const user = usuariosCadastrados.find(u => u.email === email && u.pass === pass);
     
     if (user) {
-        // Lógica de Sessão
+        // 1. Salva a sessão completa
         localStorage.setItem('fitai_session', JSON.stringify(user));
         
-        // Lógica de "Lembrar de Mim"
+        // 2. SALVA O E-MAIL ATIVO (Essencial para o Perfil e Blog funcionarem)
+        localStorage.setItem('user_email', email);
+        
+        // 3. Garante que o nome e tel iniciais estejam disponíveis para o perfil
+        localStorage.setItem('user_nome', user.nome);
+        localStorage.setItem('user_tel', user.tel || "");
+
+        // 4. Lógica de "Lembrar de Mim"
         if (rememberMe) {
             localStorage.setItem('fitai_remember_email', email);
         } else {
             localStorage.removeItem('fitai_remember_email');
         }
         
+        // 5. Entra no App e já engatilha o carregamento dos dados
         showView('lobby');
-    } else {
-        mostrarAviso("E-mail ou senha incorretos!");
+        
+        // Opcional: Feedback de sucesso rápido
+    mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSIST FIT", "sucesso");} 
+   else {
+        // Verifica se o erro é o email ou a senha para ser mais específico (Melhor UX)
+        const emailExiste = usuariosCadastrados.some(u => u.email === email);
+        
+        if (!emailExiste) {
+            mostrarAvisoNotificacao("E-mail não cadastrado!");
+        } else {
+            mostrarAvisoNotificacao("Senha incorreta!");
+        }
     }
 }
 
+function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
+    const existente = document.getElementById('toast-notificacao');
+    if (existente) existente.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'toast-notificacao';
+    
+    // Cores do padrão Assist Fit
+    const corDestaque = tipo === 'sucesso' ? '#22c55e' : '#ef4444';
+    
+    // Estilo Ultra-Moderno via JS (Garante que o visual mude agora!)
+    toast.style.cssText = `
+        position: fixed;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 4px solid ${corDestaque};
+        padding: 16px 25px;
+        border-radius: 20px;
+        z-index: 1000000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        pointer-events: none;
+        white-space: nowrap;
+    `;
+
+    const icone = tipo === 'sucesso' 
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+    toast.innerHTML = `
+        ${icone}
+        <span style="margin-top: 2px;">${mensagem}</span>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Animação de entrada (Desliza e aparece)
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    }, 50);
+
+    // Saída automática
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => toast.remove(), 500);
+    }, 3500);
+}
+
 function logout() {
-    // Cria o modal de confirmação com o estilo platinado
+    // Cria o modal de confirmação
     const modalSair = document.createElement('div');
+    // Ajuste UX: position fixed + 100vh/100vw garante que cubra a tela visível no mobile
     modalSair.style = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+        position: fixed; 
+        top: 0; left: 0; 
+        width: 100%; height: 100%;
+        background: rgba(2, 6, 23, 0.85); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px); /* Suporte para iOS */
         display: flex; align-items: center; justify-content: center;
-        z-index: 100000; padding: 20px;
+        z-index: 100000; 
+        padding: 20px;
     `;
 
     modalSair.innerHTML = `
-        <div class="glass-panel fade-in" style="max-width: 320px; width: 100%; padding: 35px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: var(--bg-card); border-radius: 28px;">
-            <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.05); border: 2px solid var(--text-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: var(--text-secondary);">
+        <div class="glass-panel fade-in" style="max-width: 320px; width: 100%; padding: 35px; text-align: center; border: 1px solid rgba(255,255,255,0.1); background: #0f172a; border-radius: 28px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+            <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </div>
             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">ENCERRAR SESSÃO?</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Você voltará para a tela de login.</p>
+            <p style="color: #94a3b8; margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Você voltará para a tela de login e seus dados locais serão preservados.</p>
             
             <div style="display: flex; gap: 10px;">
-                <button id="btn-cancelar-sair" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
-                <button id="btn-confirmar-sair" style="flex: 1; background: var(--text-primary); color: #020617; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.1);">SAIR</button>
+                <button id="btn-cancelar-sair" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
+                <button id="btn-confirmar-sair" style="flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">SAIR</button>
             </div>
         </div>
     `;
 
     document.body.appendChild(modalSair);
 
-    // Lógica dos botões
     document.getElementById('btn-cancelar-sair').onclick = () => modalSair.remove();
 
     document.getElementById('btn-confirmar-sair').onclick = () => {
-        // Agora sim, executa a sua lógica original
+        // Limpa a sessão específica
+        localStorage.removeItem('user_email'); // Importante para a circulação de dados que fizemos
         localStorage.removeItem('fitai_session');
         location.reload();
     };
 }
+
+
 
 // --- 3. GESTÃO TREINOS ---
 function renderizarFichas() {
@@ -1266,35 +1566,25 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
+    // Puxa os dados reais salvos no perfil/cadastro
+    const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
+    const fotoAtleta = localStorage.getItem('user_foto');
+
     container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden;">
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; margin-bottom:15px;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 35px; height: 35px; border-radius: 10px; background: linear-gradient(45deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 14px;">F</div>
+                    <div style="width: 35px; height: 35px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+                    </div>
                     <div>
-                        <p style="color: white; font-size: 12px; font-weight: 800; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">Atleta FitAI</p>
+                        <p style="color: white; font-size: 12px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
                         <p style="color: #64748b; font-size: 9px; margin: 0;">${post.data}</p>
                     </div>
                 </div>
-                <button onclick="excluirPost(${post.id})" style="background: rgba(239, 68, 68, 0.1); border: none; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
+                </div>
             </div>
-            
-            <p style="color: #e2e8f0; margin: 0 0 15px 0; font-size: 14px; line-height: 1.6; font-weight: 400;">${post.texto}</p>
-            
-            ${post.midia ? (post.midia.tipo === 'foto' ? 
-                `<div style="border-radius: 15px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
-                    <img src="${post.midia.data}" style="width: 100%; display: block;">
-                </div>` : 
-                `<div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 15px; margin-top: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(59,130,246,0.2);">
-                    <div style="background: #3b82f6; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                    </div>
-                    <audio controls src="${post.midia.data}" style="flex: 1; height: 30px; filter: invert(1);"></audio>
-                </div>`) : ''}
-        </div>
-    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 12px; letter-spacing: 1px;">AINDA NÃO HÁ ATIVIDADES NO FEED</p>`;
+    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px;">SEM ATIVIDADES</p>`;
 }
 
 function excluirPost(id) {
