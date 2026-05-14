@@ -58,8 +58,28 @@
         </h1>
     </div>
     
-<button onclick="logout()" class="btn-logout-nav">SAIR</button>
-
+    <!-- Perfil do usuário -->
+<div class="perfil-nav-wrapper" style="display: flex; align-items: center; margin-left: auto;">
+    <div onclick="showView('perfil')" id="nav-perfil-icon" class="fade-in" style="
+        width: 42px; 
+        height: 42px; 
+        border-radius: 14px; 
+        border: 1px solid var(--border-color); 
+        background: var(--bg-card); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        cursor: pointer; 
+        overflow: hidden;
+        transition: 0.3s;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+        
+        <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--icon-platinum)" stroke-width="2" fill="none" style="filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+    </div>
+</div>
 
 </nav>
 
@@ -138,15 +158,27 @@
     </main>
 
     <main id="view-consulta" class="hidden" style="padding: 20px 5%;">
-        <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 id="titulo-consulta" class="italic-bold" style="color: var(--accent-blue);">NOME DA FICHA</h2>
-                <button onclick="showView('planilhas')" class="btn-link">Voltar</button>
-            </div>
-            <div id="lista-exercicios-estaticos" class="form-group"></div>
-            <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 20px;"> Adicionar exercícios </button>
+    <div class="glass-panel" style="max-width: 600px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <h2 id="titulo-consulta" class="italic-bold uppercase" style="color: var(--accent-blue); font-size: 1.1rem; letter-spacing: 1px;">NOME DA FICHA</h2>          
+            <button onclick="showView('planilhas')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
         </div>
-    </main>
+        <div id="lista-exercicios-estaticos" class="form-group fade-in">
+            </div>
+
+        <button onclick="prepararRegistro()" class="btn-primary" style="margin-top: 25px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            ADICIONAR EXERCÍCIOS
+        </button>
+    </div>
+</main>
 <!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
     <main id="view-consulta-geral" class="hidden" style="padding: 20px 5%;">
     <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 25px;">
@@ -179,64 +211,68 @@
 </main>
 
 <!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
-    <main id="view-registro" class="hidden registro-container">
-        <aside class="form-group">
-            <section class="glass-panel">
-                <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 15px; color: var(--accent-blue); text-transform: uppercase;">NOVO SET</h3>
-                <div class="form-group">
-                    <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
-                        <option value="">Selecione o Grupo...</option>
-                        <option value="Peitoral">Peitoral</option>
-                        <option value="Dorsais">Dorsais</option>
-                        <option value="Quadríceps">Quadríceps</option>
-                        <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
-                        <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-                        <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-                        <option value="Tríceps Braquial">Tríceps Braquial</option>
-                        <option value="Core/Abdominal">Core/Abdominal</option>
-                        <option value="Panturrilhas">Panturrilhas</option>
-                        <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-                    </select>
-                     
-                    <select id="select-exercicio" class="input-field"></select>
+<main id="view-registro" class="hidden registro-container">
+    <aside class="form-group">
+        <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+            <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVO SET</h3>
+            
+            <div class="form-group">
+                <select id="select-grupo" onchange="atualizarListaExercicios()" class="input-field">
+                    <option value="">Selecione o Grupo...</option>
+                    <option value="Peitoral">Peitoral</option>
+                    <option value="Dorsais">Dorsais</option>
+                    <option value="Quadríceps">Quadríceps</option>
+                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                    <option value="Tríceps Braquial">Tríceps Braquial</option>
+                    <option value="Core/Abdominal">Core/Abdominal</option>
+                    <option value="Panturrilhas">Panturrilhas</option>
+                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                </select>
+                 
+                <select id="select-exercicio" class="input-field"></select>
 
-<div id="campos-forca" class="grid-3">
-    <div class="input-wrapper">
-        <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field-custom">
-        <span class="input-suffix">x</span>
-    </div>
-    
-    <div class="input-wrapper">
-        <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field-custom">
-    </div>
-    
-    <div class="input-wrapper">
-        <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field-custom">
-        <span class="input-suffix">kg</span>
-    </div>
-</div>
-
-                    <div id="campos-cardio" class="hidden">                 
-                        <div style="position: relative; width: 100%;">
-                            <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="width: 100%; letter-spacing: 2px; font-weight: bold; text-align: center;">
-                            <small style="color: gray; font-size: 9px; display: block; text-align: center; margin-top: 5px;">FORMATO: HH:MM:SS</small>
-                        </div>
+                <div id="campos-forca" class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 5px;">
+                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                        <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 20px;">
+                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 900; font-style: italic;">x</span>
                     </div>
-
-                    <button onclick="adicionarExercicio()" class="btn-primary" style="margin-top:10px;">Salvar</button>
-                    <button onclick="showView('planilhas')" class="btn-link">← Voltar</button>
+                    
+                    <div class="input-wrapper">
+                        <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field" style="text-align: center;">
+                    </div>
+                    
+                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                        <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 25px;">
+                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 800; font-size: 0.7rem;">KG</span>
+                    </div>
                 </div>
-            </section>
-        </aside>
 
-        <section class="glass-panel">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 class="italic-bold">LOG DE PERFORMANCE</h2>
-                <button onclick="limparTreino()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-size: 0.7rem; font-weight: bold;">LIMPAR</button>
+                <div id="campos-cardio" class="hidden">                 
+                    <div style="position: relative; width: 100%;">
+                        <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="text-align: center; letter-spacing: 2px; font-weight: 800;">
+                        <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 8px; text-transform: uppercase;">Formato: HH:MM:SS</small>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                    <button onclick="adicionarExercicio()" class="btn-primary" style="width: 100%;">SALVAR SET</button>
+                    <button onclick="showView('planilhas')" class="btn-recuperar-senha" style="margin: 0 auto;">← Voltar para Planilhas</button>
+                </div>
             </div>
-            <div id="lista-treino"></div>
         </section>
-    </main>
+    </aside>
+
+    <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+            <h2 class="italic-bold" style="font-size: 1rem; letter-spacing: 1px;">LOG DE PERFORMANCE</h2>
+            <button onclick="limparTreino()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: 0.3s;">LIMPAR</button>
+        </div>
+        <div id="lista-treino" class="fade-in" style="max-height: 500px; overflow-y: auto;">
+            </div>
+    </section>
+</main>
 
 <main id="view-blog" class="hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
@@ -468,6 +504,69 @@
 </div>
     </div>
 </div>
+
+<main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
+    <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                VOLTAR
+            </button>
+            <h2 class="italic-bold" style="color: var(--accent-blue); font-size: 0.9rem; letter-spacing: 1px;">MEU PERFIL</h2>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+                <div id="perfil-foto-preview" style="width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--accent-blue); background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <label for="input-foto" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="#020617" stroke-width="3" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFotoPerfil(this)">
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group" style="gap: 12px; display: flex; flex-direction: column;">
+            <label style="font-size: 0.7rem; color: var(--accent-blue); font-weight: 800;">DADOS PESSOAIS</label>
+            <input type="text" id="perfil-nome" placeholder="Nome" class="input-field">
+            <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field">
+            <input type="email" id="perfil-email" placeholder="E-mail" class="input-field">
+            <button onclick="salvarDadosPerfil(event)" id="btn-salvar-perfil" class="btn-primary">SALVAR ALTERAÇÕES</button>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="font-size: 0.7rem; color: #ef4444; font-weight: 800; display: block; margin-bottom: 12px;">SEGURANÇA</label>
+            <div class="form-group" style="gap: 10px; display: flex; flex-direction: column;">
+                <input type="password" id="pass-atual" placeholder="Digite a nova senha" class="input-field">
+                <input type="password" id="pass-nova" placeholder="Confirmar senha" class="input-field">
+                <button onclick="alterarSenhaPerfil()" id="btn-senha-perfil" class="btn-action" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">ALTERAR SENHA</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+            <button onclick="logout()" class="btn-logout-nav" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; font-weight: bold;">
+                ENCERRAR SESSÃO
+            </button>
+        </div>
+    </div>
+
+      <div id="modal-confirmar-senha" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+     <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue);">
+        <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
+        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual</b> para prosseguir:</p>
+        
+        <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1);">CANCELAR</button>
+            <button onclick="processarTrocaSenha()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
+</main>
 
 <script src="script.js"></script>
 </body>
