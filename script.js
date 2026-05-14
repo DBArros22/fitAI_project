@@ -8,16 +8,23 @@ let cronometrosAtivos = {}; // Armazena os intervalos de cada exercício
 let tempoMestreAtivo = null;
 let milisegundosAcumulados = 0;
 let timestampInicio = null;
+let assisData = JSON.parse(localStorage.getItem('fitai_assis_data')) || null;
 
-const salvarDados = salvarBanco;
-const series = parseInt(document.getElementById('series-ex').value) || 0;
-const reps = parseInt(document.getElementById('reps-ex').value) || 0;
-const carga = parseFloat(document.getElementById('carga-ex').value) || 0;
+// Variáveis wod timers crossfit
+let cfTimerInterval = null;
+let cfStartTime = 0; // Para precisão absoluta
+let cfLimitSeconds = 600; // 10 min padrão
+let cfModo = 'AMRAP';
+
+const salvarDados = () => { if (typeof salvarBanco === 'function') salvarBanco(); };
+const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
+const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
+const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
 
 // Váriaveis gravador audio
 let mediaRecorder;
 let audioChunks = [];
-let gravando = false;
+let gravando = false
 
 // Váriaveis Registro de treinos
 let fichaAtivaNoMomento = "";
@@ -32,58 +39,59 @@ let isCountdownMode = false;
 // --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
     "Peitoral": [
-        "Supino Reto (Barra Olímpica)", "Supino Inclinado (Halteres)", 
-        "Crossover Polia Alta", "Peck Deck (Voador)", 
-        "Supino Articulado Vertical", "Crucifixo Reto (Halteres)", 
-        "Dips (Paralelas - Foco Peito)", "Flexão de Braços (Push-up)"
+        "Supino Reto (Barra)", "Supino Reto (Halteres)", "Supino Reto (Máquina)",
+        "Supino Inclinado (Barra)", "Supino Inclinado (Halteres)", "Supino Inclinado (Máquina)",
+        "Supino Declinado", "Chest Press Vertical", "Peck Deck (Voador)", 
+        "Crucifixo Reto (Halteres)", "Crucifixo Inclinado (Halteres)", "Crucifixo (Cabo)",
+        "Crossover Polia Alta", "Crossover Polia Baixa", "Dips (Paralelas)", 
+        "Flexão de Braços", "Pull-over (Halter)"
     ],
     "Dorsais": [
-        "Lat Pulldown (Puxada Aberta)", "Remada Curvada (Barra)", 
-        "Remada Baixa (Triângulo)", "Pull-Down Corda (Polia Alta)", 
-        "Remada Unilateral (Serrote)", "Barra Fixa (Pull-up)", 
-        "Remada Cavalinho (T-Bar)", "Levantamento Terra (Deadlift)"
+        "Puxada Aberta (Polia)", "Puxada Triângulo", "Puxada Supinada",
+        "Remada Curvada (Barra)", "Remada Curvada (Halteres)", "Remada Unilateral (Serrote)",
+        "Remada Baixa (Triângulo)", "Remada Baixa (Barra Reta)", "Remada Cavalinho",
+        "Remada Articulada (Máquina)", "Pull-Down (Corda)", "Barra Fixa (Pull-up)", 
+        "Levantamento Terra", "Crucifixo Inverso", "Face Pull (Corda)"
     ],
     "Quadríceps": [
-        "Agachamento Livre (Back Squat)", "Leg Press 45°", 
-        "Cadeira Extensora", "Agachamento Hack", 
-        "Afundo / Passada", "Agachamento Búlgaro", 
-        "Sissy Squat"
+        "Agachamento Livre (Barra)", "Agachamento Smith", "Agachamento Hack",
+        "Leg Press 45°", "Leg Press Horizontal", "Cadeira Extensora",
+        "Afundo (Halter/Barra)", "Passada (Walking Lunges)", "Agachamento Búlgaro",
+        "Goblet Squat", "Sissy Squat"
     ],
     "Posteriores/Glúteos": [
-        "Stiff (Romanian Deadlift)", "Mesa Flexora", 
-        "Cadeira Flexora", "Elevação Pélvica (Hip Thrust)", 
-        "Glúteo Cabo (Coice)", "Bom dia (Good Morning)", 
-        "Abdução de Quadril"
+        "Mesa Flexora", "Cadeira Flexora", "Flexora Unilateral",
+        "Stiff (Barra ou Halteres)", "Elevação Pélvica",
+        "Glúteo Coice (Cabo)", "Glúteo Máquina", "Abdução de Quadril (Máquina)", 
+        "Abdução (Cabo)", "Good Morning", "Extensão de Quadril (Banco Romano)"
     ],
     "Deltoides (Ombros)": [
-        "Desenvolvimento Militar (OHP)", "Elevação Lateral (Halter/Cabo)", 
-        "Elevação Frontal", "Crucifixo Inverso (Posterior)", 
-        "Desenvolvimento Arnold", "Remada Alta (Pegada Aberta)", 
-        "Encolhimento (Trapézio)"
+        "Desenvolvimento (Halteres)", "Desenvolvimento (Barra)", "Desenvolvimento (Máquina)",
+        "Elevação Lateral (Halteres)", "Elevação Lateral (Cabo)", "Elevação Lateral (Máquina)",
+        "Elevação Frontal", "Desenvolvimento Arnold", "Remada Alta (Barra/Cabo)",
+        "Encolhimento (Halteres/Barra)", "Crucifixo Inverso (Peck Deck)"
     ],
     "Bíceps/Braquial": [
-        "Rosca Direta (Barra EZ)", "Rosca Martelo", 
-        "Rosca Scott", "Rosca Alternada (Halteres)", 
-        "Rosca Inversa (Braquiorradial)", "Rosca Concentrada"
+        "Rosca Direta (Barra EZ)", "Rosca Direta (Cabo)", "Rosca Alternada (Halteres)",
+        "Rosca Martelo (Halteres)", "Rosca Martelo (Corda)", "Rosca Scott",
+        "Rosca Concentrada", "Rosca Inclinada (45°)", "Rosca Inversa", "Rosca 21"
     ],
     "Tríceps Braquial": [
-        "Tríceps Pulley (Corda)", "Tríceps Testa (Barra W)", 
-        "Tríceps Francês", "Supino Fechado", 
-        "Tríceps Coice (Polia/Halter)", "Mergulho (Dips no Banco)"
+        "Tríceps Pulley (Barra)", "Tríceps Pulley (Corda)", "Tríceps Testa (Barra W)",
+        "Tríceps Testa (Halteres)", "Tríceps Francês", "Supino Fechado",
+        "Dips no Banco", "Tríceps Coice", "Tríceps Unilateral (Cabo)"
     ],
     "Core/Abdominal": [
-        "Abdominal Supra (Crunch)", "Elevação de Pernas (Infra)", 
-        "Prancha Isométrica (Plank)", "Ab Wheel (Roda Abdominal)", 
-        "Russian Twist", "Vaccum Abdominal"
+        "Abdominal Supra (Crunch)", "Abdominal Máquina", "Abdominal Infra",
+        "Elevação de Pernas", "Prancha Isométrica", "Ab Wheel (Roda)",
+        "Russian Twist", "Vaccum Abdominal", "Abdominal Oblíquo"
     ],
     "Panturrilhas": [
-        "Gêmeos em Pé (Máquina)", "Gêmeos Sentado (Burrinho)", 
-        "Panturrilha no Leg Press", "Flexão Tibial"
+        "Gêmeos em Pé (Máquina)", "Gêmeos Sentado (Burrinho)", "Panturrilha no Leg Press",
+        "Gêmeos Unilateral (Degrau)", "Panturrilha no Smith"
     ],
     "Cardio & Aeróbico": [
-        "Esteira (Corrida/Caminhada)", "Bike Ergométrica", 
-        "Elíptico / Transport", "Corda (Pular)", 
-        "Remo Indoor", "Subida de Escada (Stairmaster)"
+        "Esteira", "Bike Ergométrica", "Elíptico", "Corda", "Escada", "Remo Indoor"
     ]
 };
 
@@ -113,31 +121,38 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewName) {
-    const views = ['view-login', 'view-lobby', 'view-registro', 'view-calendario', 'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral'];
-    
-    views.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('hidden');
-    });
+  // visualização das paginas no lobby
+    const views = [
+'view-login', 'view-lobby', 'view-registro', 'view-calendario',
+'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
+'view-aparelho-ocupado',
+'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc'
+];
 
-    const target = document.getElementById('view-' + viewName);
-    if (target) target.classList.remove('hidden');
-    
-    const shell = document.getElementById('app-shell');
-    if (viewName === 'login') {
-        if (shell) shell.classList.add('hidden');
-    } else {
-        if (shell) shell.classList.remove('hidden');
-    }
+views.forEach(v => {
+const el = document.getElementById(v);
+if (el) el.classList.add('hidden');});
+// O target busca pelo ID concatenado (view- + nome)
 
-    if (viewName === 'planilhas') renderizarFichas();
-    if (viewName === 'registro') renderizarLogTreino();
-    if (viewName === 'consulta-geral') renderizarFichasConsulta();
-    if (viewName === 'calendario') renderizarPaginaCronograma();
-    
-    // LINHA ADICIONADA PARA O BLOG:
-    if (viewName === 'blog') renderizarBlog(); 
+const target = document.getElementById('view-' + viewName);
+if (target) target.classList.remove('hidden');
+
+const shell = document.getElementById('app-shell');
+if (viewName === 'login') {
+if (shell) shell.classList.add('hidden');}
+else {
+if (shell) shell.classList.remove('hidden');
 }
+
+// Gatilhos de renderização
+if (viewName === 'planilhas') renderizarFichas();
+if (viewName === 'registro') renderizarLogTreino();
+if (viewName === 'consulta-geral') renderizarFichasConsulta();
+if (viewName === 'calendario') renderizarPaginaCronograma();
+if (viewName === 'blog') renderizarBlog();
+} 
+
+
 
 // --- 2. SISTEMA DE AUTENTICAÇÃO ---
 function toggleAuthTab(tab) {
@@ -590,7 +605,8 @@ function recuperarCronometrosAtivos() {
     });
 }
 
-// Função auxiliar que cuida apenas da atualização do texto na tela
+// função auxiliar para exibição do texto na tela xx NAO MEXER ! xx
+
 function executarRelogio(id, startTime) {
     const display = document.getElementById(`timer-set-${id}`);
     
@@ -613,7 +629,37 @@ function executarRelogio(id, startTime) {
     }, 40);
 }
 
+// xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx
+
+function verDetalhesTreino(nomeTreino) {
+    // Esconde o botão de voltar ao Lobby e mostra o de voltar à lista
+    document.getElementById('btn-sair-consulta').classList.add('hidden');
+    document.getElementById('btn-voltar-consulta').classList.remove('hidden');
+
+    // Troca o título para o nome do treino selecionado
+    document.getElementById('cabecalho-consulta').innerText = nomeTreino;
+
+    // Lógica para esconder a lista e mostrar os detalhes (Ajuste os IDs se necessário)
+    document.getElementById('lista-nomes-treinos').classList.add('hidden');
+    document.getElementById('detalhes-treino-consulta').classList.remove('hidden');
+
+    // Aqui entraria sua lógica existente de preencher os detalhes...
+}
+
+// 2. SUBSTITUA a sua função atual por esta
 function voltarListaConsulta() {
+    // Mostra o botão de voltar ao Lobby e esconde o de voltar à lista
+    document.getElementById('btn-sair-consulta').classList.remove('hidden');
+    document.getElementById('btn-voltar-consulta').classList.add('hidden');
+
+    // Reseta o título da página
+    document.getElementById('cabecalho-consulta').innerText = "Consultar Treinos";
+
+    // Mostra a lista e esconde os detalhes
+    document.getElementById('lista-nomes-treinos').classList.remove('hidden');
+    document.getElementById('detalhes-treino-consulta').classList.add('hidden');
+
+    // Chama a renderização das fichas que você já tinha
     renderizarFichasConsulta();
 }
 
@@ -627,20 +673,22 @@ function atualizarListaExercicios() {
     if (!selectEx) return;
     
     if (!grupo) {
-        selectEx.innerHTML = "";
+        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
         return;
     }
 
-    // Lógica para alternar campos entre Peso e Tempo
+    // Alternar campos entre Peso (Força) e Tempo (Cardio)
     if (grupo === "Cardio & Aeróbico") {
-        camposForca.classList.add('hidden');
-        camposCardio.classList.remove('hidden');
+        if (camposForca) camposForca.classList.add('hidden');
+        if (camposCardio) camposCardio.classList.remove('hidden');
     } else {
-        camposForca.classList.remove('hidden');
-        camposCardio.classList.add('hidden');
+        if (camposForca) camposForca.classList.remove('hidden');
+        if (camposCardio) camposCardio.classList.add('hidden');
     }
 
-    selectEx.innerHTML = dicionarioExercicios[grupo].map(ex => `<option value="${ex}">${ex}</option>`).join('');
+    const lista = dicionarioExercicios[grupo] || [];
+    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' + 
+        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
 function adicionarExercicio() {
@@ -802,7 +850,8 @@ function salvarBanco() {
 }
 
 
-// --- 6. CRONOGRAMA, RELÓGIO MULTIFUNÇÃO E LEMBRETES ---
+// xxxxxxxxxxxxxxxxxxxxxxx Pagina cronograma xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 function renderizarPaginaCronograma() {
     const container = document.getElementById('view-calendario');
     if (!container) return;
@@ -1099,7 +1148,7 @@ window.addEventListener('DOMContentLoaded', () => {
     gerarCalendario();
 });
 
-// --- 7 - FUNÇÕES PAGINA BLOG EVOLUÇÕES
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
@@ -1447,3 +1496,257 @@ window.addEventListener('load', () => {
         if (checkbox) checkbox.checked = true;
     }
 });
+
+// xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+const equivalencias = {
+    "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
+    "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
+    "Puxada": ["Lat Pulldown (Puxada Aberta)", "Puxada Triângulo", "Barra Fixa (Pull-up)"],
+    "Remada": ["Remada Curvada (Barra)", "Remada Baixa (Triângulo)", "Remada Unilateral (Serrote)", "Remada Articulada (Máquina)"],
+    "Agachamento": ["Agachamento Livre (Back Squat)", "Agachamento no Smith", "Leg Press 45°", "Agachamento Hack", "Goblet Squat (Halter)"],
+    "Extensora": ["Cadeira Extensora", "Sissy Squat"],
+    "Posterior": ["Mesa Flexora", "Cadeira Flexora", "Stiff (Romanian Deadlift)"],
+    "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
+};
+
+function gerarSugestao() {
+    const exOcupado = document.getElementById('select-ex-ocupado').value;
+    const resultadoDiv = document.getElementById('resultado-sugestao');
+    const nomeSugestao = document.getElementById('nome-sugestao');
+
+    if (!exOcupado) return alert("Selecione o aparelho ocupado!");
+
+    let sugestaoEncontrada = "";
+
+    // Procura em qual grupo de equivalência o exercício está
+    for (let categoria in equivalencias) {
+        if (equivalencias[categoria].includes(exOcupado)) {
+            // Filtra a lista para remover o que já está ocupado
+            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
+            // Pega um aleatório das opções restantes
+            sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
+            break;
+        }
+    }
+
+    // Se não houver equivalência específica, pega um aleatório do mesmo grupo muscular
+    if (!sugestaoEncontrada) {
+        const grupo = document.getElementById('select-grupo-sub').value;
+        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
+        sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
+    }
+
+    // Exibe o resultado com animação
+    nomeSugestao.innerText = sugestaoEncontrada;
+    resultadoDiv.classList.remove('hidden');
+    resultadoDiv.classList.add('animate-fade-in');
+}
+
+function carregarExerciciosSub() {
+    const grupo = document.getElementById('select-grupo-sub').value;
+    const selectEx = document.getElementById('select-ex-ocupado');
+    
+    if (!selectEx) return;
+
+    // Limpa e reseta o select do Plano B
+    selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
+    
+    if (!grupo) return;
+
+    const exercicios = dicionarioExercicios[grupo] || [];
+    
+    if (exercicios.length === 0) {
+        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
+        return;
+    }
+
+    // Preenche o select do Plano B
+    exercicios.forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex;
+        opt.textContent = ex;
+        selectEx.appendChild(opt);
+    });
+}
+
+const listaDeExercicios = dicionarioExercicios;
+
+function mostrarAviso(mensagem) {
+    document.getElementById('texto-modal-aviso').innerText = mensagem;
+    document.getElementById('modal-aviso').classList.remove('hidden');
+}
+
+function fecharModalAviso() {
+    document.getElementById('modal-aviso').classList.add('hidden');
+}
+
+function gerarSugestao() {
+    const grupo = document.getElementById('select-grupo-sub').value;
+    const exOcupado = document.getElementById('select-ex-ocupado').value;
+    const resultadoDiv = document.getElementById('resultado-sugestao');
+    const nomeSugestao = document.getElementById('nome-sugestao');
+
+    // Troca do alert pelo Modal Moderno
+    if (!grupo || !exOcupado) {
+        mostrarAviso("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
+        return;
+    }
+
+    let sugestaoEncontrada = "";
+
+    // Lógica 1: Equivalência biomecânica
+    for (let categoria in equivalencias) {
+        if (equivalencias[categoria].includes(exOcupado)) {
+            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
+            if (opcoes.length > 0) {
+                sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
+                break;
+            }
+        }
+    }
+
+    // Lógica 2: Fallback para o mesmo grupo
+    if (!sugestaoEncontrada) {
+        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
+        if (listaGrupo.length > 0) {
+            sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
+        }
+    }
+
+    if (sugestaoEncontrada) {
+        nomeSugestao.innerText = sugestaoEncontrada;
+        resultadoDiv.classList.remove('hidden');
+        resultadoDiv.classList.add('fade-in'); 
+    } else {
+        mostrarAviso("Não encontramos uma alternativa para este exercício no momento.");
+    }
+}
+
+function calcularCargasCF() {
+    const input = document.getElementById('input-1rm');
+    const container = document.getElementById('lista-cargas-cf');
+    const valorMax = parseFloat(input.value);
+
+    if (!valorMax || valorMax <= 0) {
+        container.innerHTML = '<p style="grid-column: span 2; color: var(--text-secondary);">Digite um valor...</p>';
+        return;
+    }
+
+    const porcentagens = [95, 90, 85, 80, 75, 70, 60, 50];
+    
+    container.innerHTML = porcentagens.map(p => `
+        <div class="glass-card" style="padding: 15px; border: 1px solid rgba(255,255,255,0.05); text-align: center; background: rgba(255,255,255,0.02); border-radius: 8px;">
+            <div style="color: #22c55e; font-size: 0.7rem; font-weight: bold;">${p}%</div>
+            <div style="font-size: 1.2rem; font-weight: 900; color: #fff;">${(valorMax * (p/100)).toFixed(1)}<small style="font-size: 0.6rem;">KG</small></div>
+        </div>
+    `).join('');
+}
+
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+function setTimerMode(modo) {
+    cfModo = modo;
+    const btnAmrap = document.getElementById('btn-amrap');
+    const btnEmom = document.getElementById('btn-emom');
+    const status = document.getElementById('status-timer');
+
+    if (modo === 'AMRAP') {
+        btnAmrap.style.opacity = "1";
+        btnAmrap.style.border = "2px solid var(--accent-blue)";
+        btnEmom.style.opacity = "0.4";
+        btnEmom.style.border = "none";
+        status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
+    } else {
+        btnEmom.style.opacity = "1";
+        btnEmom.style.border = "2px solid var(--accent-blue)";
+        btnAmrap.style.opacity = "0.4";
+        btnAmrap.style.border = "none";
+        status.innerText = "EMOM (ALERTA POR MINUTO)";
+    }
+    resetarTimerCF();
+}
+
+function iniciarTimerCF() {
+    if (cfTimerInterval) return;
+
+    const display = document.getElementById('timer-display');
+    const status = document.getElementById('status-timer');
+    const minSet = parseInt(document.getElementById('wod-minutes').value);
+    
+    let prep = 10;
+    status.innerText = "PREPARAR...";
+    display.style.color = "#ffae00"; // Laranja Preparação
+
+    cfTimerInterval = setInterval(() => {
+        if (prep > 0) {
+            display.innerText = `00:${prep.toString().padStart(2, '0')}:000`;
+            prep--;
+        } else {
+            clearInterval(cfTimerInterval);
+            executarWodReal(minSet);
+        }
+    }, 1000);
+}
+
+function executarWodReal(minutos) {
+    const display = document.getElementById('timer-display');
+    const status = document.getElementById('status-timer');
+    const limiteSegundos = minutos * 60;
+    
+    cfStartTime = Date.now();
+    status.innerText = "WORK!";
+    display.style.color = "#22c55e"; // Verde Treino
+
+    cfTimerInterval = setInterval(() => {
+        const agora = Date.now();
+        const decorrido = (agora - cfStartTime) / 1000;
+        let tempoFinal = 0;
+
+        if (cfModo === 'AMRAP') {
+            // Lógica Regressiva
+            tempoFinal = limiteSegundos - decorrido;
+            if (tempoFinal <= 0) return finalizarTudo();
+        } else {
+            // Lógica Progressiva EMOM
+            tempoFinal = decorrido;
+            // Alerta a cada minuto (pisca azul)
+            if (Math.floor(decorrido) > 0 && Math.floor(decorrido) % 60 === 0 && (decorrido % 1) < 0.1) {
+                display.style.color = "#00d4ff";
+                setTimeout(() => display.style.color = "#22c55e", 500);
+            }
+            if (decorrido >= limiteSegundos) return finalizarTudo();
+        }
+
+        const m = Math.floor(tempoFinal / 60);
+        const s = Math.floor(tempoFinal % 60);
+        const ms = Math.floor((tempoFinal % 1) * 1000);
+        display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:${ms.toString().padStart(3, '0')}`;
+    }, 10);
+}
+
+function finalizarTudo() {
+    pararTimerCF();
+    const display = document.getElementById('timer-display');
+    display.innerText = "00:00:000";
+    display.style.color = "#ff4444";
+    document.getElementById('status-timer').innerText = "FIM DO TREINO!";
+}
+
+function pararTimerCF() {
+    clearInterval(cfTimerInterval);
+    cfTimerInterval = null;
+}
+
+function resetarTimerCF() {
+    pararTimerCF();
+    const display = document.getElementById('timer-display');
+    if (display) {
+        display.innerText = "00:00:000";
+        display.style.color = "white";
+    }
+    document.getElementById('status-timer').innerText = "PRONTO";
+    if (!grupo) {
+        selectEx.innerHTML = '<option value="">Selecione o Exercício</option>';
+        return;
+    }
+}
