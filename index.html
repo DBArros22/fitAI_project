@@ -432,33 +432,40 @@
         </div>
 
         <div class="glass-card-action" style="width: 100%; max-width: 400px; margin: 0 auto; padding: 25px; text-align: center;">
-            
-            <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00:000</div>
-            
-            <div style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
-                <label style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração do Treino (Minutos)</label>
-                <div style="display: flex; align-items: center; justify-content: center; gap: 15px;">
-                    <button onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
-                    <input type="number" id="wod-minutes" value="10" min="1" max="60" readonly
-                        style="width: 70px; background: none; border: none; color: white; text-align: center; font-size: 1.8rem; font-weight: 900;">
-                    <button onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
-                </div>
+    
+    <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00:00</div>
+    
+    <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
+        <label id="label-tempo-wod" style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração Total (Minutos)</label>
+        
+        <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+                <button onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                <input type="number" id="wod-minutes" value="10" min="0" max="60" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
+                <button onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <button onclick="setTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800;">AMRAP</button>
-                <button onclick="setTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                <button id="btn-start-timer" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;">
-                    <span>INICIAR WOD</span>
-                </button>
-                <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem; border: 1px solid rgba(255,255,255,0.1);">
-                    RESET
-                </button>
+            <div id="group-seconds" style="display: none; align-items: center; gap: 5px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
+                <button onclick="document.getElementById('wod-seconds').stepDown()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                <input type="number" id="wod-seconds" value="0" min="0" max="59" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
+                <button onclick="document.getElementById('wod-seconds').stepUp()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
             </div>
         </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <button onclick="setTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800;">AMRAP</button>
+        <button onclick="setTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;"><span>INICIAR WOD</span></button>
+            <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem;">RESET</button>
+        </div>
+        <button id="btn-pause-wod" onclick="pausarTimerCF()" class="btn-primary" style="padding: 10px; background: #ef4444; color: white; font-weight: 800; display: none;">PAUSAR</button>
+    </div>
+</div>
     </div>
 </div>
 
