@@ -466,3 +466,45 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
     transform: scale(1.05);
 }
+
+#toast-notificacao {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    /* Efeito Glassmorphism */
+    background: rgba(15, 23, 42, 0.8); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    
+    /* Bordas e Sombras Premium */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    
+    padding: 16px 28px;
+    border-radius: 20px;
+    z-index: 200000;
+    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    
+    /* Tipografia */
+    color: white;
+    font-family: 'Inter', sans-serif; /* Ou a fonte que você usa */
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Detalhe lateral colorido para indicar o tipo (Sucesso/Erro) */
+#toast-notificacao.sucesso {
+    border-left: 4px solid #22c55e; /* Verde neon discreto */
+}
+
+#toast-notificacao.erro {
+    border-left: 4px solid #ef4444; /* Vermelho sistema */
+}
