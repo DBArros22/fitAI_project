@@ -764,14 +764,21 @@ function renderizarFichasConsulta() {
     if(btnSair) btnSair.classList.remove('hidden');
     if(titulo) titulo.innerText = "Consultar Treinos";
     
-    containerLista.innerHTML = "";
+    // Criamos uma variável para acumular o HTML e evitar múltiplos reflows
+    let htmlGerado = "";
+
     Object.keys(bancoDeDados.fichas).forEach(nome => {
-        containerLista.innerHTML += `
-            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card" style="margin:0; background:rgba(255,255,255,0.05);">
-                <h3 class="italic-bold uppercase" style="color:white;">${nome}</h3>
-                <p style="color:#3b82f6;">Ver exercícios</p>
+        // AJUSTE: Removido margin:0 e adicionado margin-bottom: 15px
+        // Também adicionei um padding para melhorar o toque no mobile
+        htmlGerado += `
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card" 
+                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer;">
+                <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
+                <p style="color: #3b82f6; margin: 5px 0 0 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
             </div>`;
     });
+
+    containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
 
 function verExerciciosConsulta(nome) {
@@ -1091,24 +1098,57 @@ function ativarEdicaoInline(id, tipo) {
         <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" style="background: #ef4444; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: white; font-size: 0.9rem;">✕</button>`;
 }
 
-function salvarEdicaoInline(id, tipo) {
+function ativarEdicaoInline(id, tipo) {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    const index = bancoDeDados.fichas[ativa].findIndex(t => t.id === id);
+    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
+    
+    const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
+    const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
 
-    const nS = document.getElementById(`edit-series-${id}`).value;
-    const nR = document.getElementById(`edit-reps-${id}`).value;
-    const nC = document.getElementById(`edit-carga-${id}`).value;
+    // Estilo CSS injetado para sumir com as setas dos inputs do tipo number
+    const estiloEsconderSetas = `
+        <style>
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+            input[type=number] {
+                -moz-appearance: textfield;
+            }
+        </style>
+    `;
 
-    if (!nS || !nR) return mostrarAviso("Preencha todos os campos!");
+    document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
+        <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
+            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${ex.series}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+            <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
+            
+            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${ex.reps}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+            <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
+            
+            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${ex.carga}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+            <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
+        </div>`;
 
-    bancoDeDados.fichas[ativa][index].series = nS;
-    bancoDeDados.fichas[ativa][index].reps = nR;
-    bancoDeDados.fichas[ativa][index].carga = nC;
-
-    salvarBanco();
-    if(tipo === 'resumo') renderizarResumoFicha(ativa);
-    else renderizarLogTreino();
-    mostrarAviso("Registro atualizado com sucesso!");
+    document.getElementById(acoesId).innerHTML = `
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <!-- Botão Confirmar (Verde Moderno / Minimalista) -->
+            <button onclick="salvarEdicaoInline(${id}, '${tipo}')" 
+                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
+                onmouseover="this.style.background='#10b981'; this.style.color='white'" 
+                onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
+                ✓
+            </button>
+            
+            <!-- Botão Cancelar (Vermelho Sutil) -->
+            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" 
+                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
+                onmouseover="this.style.background='#ef4444'; this.style.color='white'" 
+                onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
+                ✕
+            </button>
+        </div>`;
 }
 
 function prepararRegistro() {
@@ -1924,6 +1964,8 @@ function gerarSugestao() {
     }
 }
 
+// Função pagina de cargas corssfit
+
 function calcularCargasCF() {
     const input = document.getElementById('input-1rm');
     const container = document.getElementById('lista-cargas-cf');
@@ -2023,7 +2065,8 @@ function iniciarTimerCF() {
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
             tocarBeep(600, 0.1); // Beep de contagem
-            display.innerText = `00:${prep.toString().padStart(2, '0')}:00`;
+            // Injetado innerHTML com a tag span para os milissegundos ficarem menores na preparação
+            display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
             prep--;
         } else {
             clearInterval(cfTimerInterval);
@@ -2112,7 +2155,8 @@ function executarWodReal() {
         const s = Math.floor(Math.abs(tempoFinal) % 60);
         const ms = Math.floor((Math.abs(tempoFinal) % 1) * 100);
         
-        display.innerText = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}:${ms.toString().padStart(2, '0')}`;
+        // Ajustado para innerHTML injetando os milissegundos menores dinamicamente durante a execução
+        display.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
     }, 10);
 }
 
@@ -2120,7 +2164,8 @@ function finalizarTudo() {
     pararTimerCF();
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
-    display.innerText = "00:00:00";
+    // Aplicado tratamento de tamanho no encerramento do treino
+    display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
     display.style.color = "#ff4444";
     document.getElementById('status-timer').innerText = "FIM DO TREINO!";
     if (btnStart) btnStart.innerText = "INICIAR";
@@ -2133,7 +2178,8 @@ function resetarTimerCF() {
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
     if (display) {
-        display.innerText = "00:00:00";
+        // Aplicado tratamento de tamanho no reset do cronômetro
+        display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
         display.style.color = "white";
     }
     document.getElementById('status-timer').innerText = "PRONTO";
