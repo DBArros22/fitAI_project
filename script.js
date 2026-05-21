@@ -38,6 +38,20 @@ let isTimerRunning = false;
 let isCountdownMode = false;
 
 
+// Váriaveis const da página de sugestão (PLANO B)
+
+const equivalencias = {
+    "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
+    "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
+    "Puxada": ["Lat Pulldown (Puxada Aberta)", "Puxada Triângulo", "Barra Fixa (Pull-up)"],
+    "Remada": ["Remada Curvada (Barra)", "Remada Baixa (Triângulo)", "Remada Unilateral (Serrote)", "Remada Articulada (Máquina)"],
+    "Agachamento": ["Agachamento Livre (Back Squat)", "Agachamento no Smith", "Leg Press 45°", "Agachamento Hack", "Goblet Squat (Halter)"],
+    "Extensora": ["Cadeira Extensora", "Sissy Squat"],
+    "Posterior": ["Mesa Flexora", "Cadeira Flexora", "Stiff (Romanian Deadlift)"],
+    "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
+};
+
+
 // Funções do perfil 
 
 function carregarDadosPerfil() {
@@ -570,22 +584,19 @@ function logout() {
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
     if (!container) return;
-    
     container.innerHTML = `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
             <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-                ← VOLTAR
-            </button>           
+
+              ← VOLTAR
+            </button>          
         </div>
     `;
-
     const keys = Object.keys(bancoDeDados.fichas);
-    
     if (keys.length === 0) {
         container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
         return;
     }
-
     keys.forEach(nome => {
         container.innerHTML += `
             <div class="ficha-item" onclick="abrirFicha('${nome}')">
@@ -594,162 +605,314 @@ function renderizarFichas() {
                     <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
                 </div>
                 <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
+
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+
                 </button>
             </div>`;
     });
 }
 
 function criarNovaFicha() {
+
     // Chamamos o modal moderno em vez do prompt
+
     solicitarNomeFichaCustom((nome) => {
+
         // Esta parte só executa quando o usuário clica em "CRIAR" no modal
+
         if (nome && !bancoDeDados.fichas[nome]) {
+
             bancoDeDados.fichas[nome] = [];
+
             salvarBanco();
+
             renderizarFichas();
+
             mostrarAviso(`Treino ${nome} criado com sucesso!`);
+
         } else if (bancoDeDados.fichas[nome]) {
+
             mostrarAviso("Este nome de treino já existe.");
+
         }
+
     });
+
 }
+
+
 
 function solicitarNomeFichaCustom(callback) {
+
     const modalInput = document.createElement('div');
+
     modalInput.style = `
+
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+
         background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+
         display: flex; align-items: center; justify-content: center;
+
         z-index: 100000; padding: 20px;
+
     `;
+
+
 
     modalInput.innerHTML = `
+
         <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
+
             <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+
             </div>
+
             <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
+
             <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
-            
+
+           
+
             <div class="form-group" style="margin-bottom: 25px;">
+
                 <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
+
             </div>
+
+
 
             <div style="display: flex; gap: 12px;">
+
                 <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
+
                 <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
+
             </div>
+
         </div>
+
     `;
 
+
+
     document.body.appendChild(modalInput);
-    
+
+   
+
     const inputField = document.getElementById('input-nome-ficha');
+
     inputField.focus();
 
+
+
     // Fecha ao cancelar
+
     document.getElementById('btn-cancelar-nome').onclick = () => modalInput.remove();
 
+
+
     // Lógica de confirmação
+
     document.getElementById('btn-confirmar-nome').onclick = () => {
+
         const nome = inputField.value.trim().toUpperCase();
+
         if (nome) {
+
             callback(nome);
+
             modalInput.remove();
+
         } else {
+
             inputField.style.borderColor = "#ef4444";
+
         }
+
     };
+
+
 
     // Confirmar com a tecla Enter
+
     inputField.onkeydown = (e) => {
+
         if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
+
     };
+
 }
+
+
 
 function abrirFicha(nome) {
+
     fichaAtivaNoMomento = nome;
+
     fichaAtiva = nome;
+
     showView('consulta');
+
     const titulo = document.getElementById('titulo-consulta');
+
     if(titulo) titulo.innerText = nome.toUpperCase();
+
     renderizarResumoFicha(nome);
+
 }
+
+
 
 function mascaraTempo(input) {
+
     let v = input.value.replace(/\D/g, ''); // Remove tudo que não é número
+
     if (v.length > 6) v = v.slice(0, 6); // Limita a 6 dígitos
 
+
+
     if (v.length >= 5) {
+
         v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
+
     } else if (v.length >= 3) {
+
         v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
+
     }
+
     input.value = v;
+
 }
+
+
 
 // Função para formatar a exibição final com siglas (Ex: 01h 20m 30s)
+
 function formatarTempoParaExibicao(valor) {
+
     if (!valor) return "";
+
     const partes = valor.split(':');
-    
+
+   
+
     if (partes.length === 3) {
+
         return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
+
     } else if (partes.length === 2) {
+
         return `${partes[0]}m ${partes[1]}s`;
+
     }
+
     return valor + "s";
+
 }
+
+
 
 function renderizarResumoFicha(nome) {
+
     const container = document.getElementById('lista-exercicios-estaticos');
+
     if(!container) return;
+
     container.innerHTML = "";
+
     const exercicios = bancoDeDados.fichas[nome] || [];
 
+
+
     exercicios.forEach(ex => {
-        const infoExibicao = ex.tipo === 'tempo' 
+
+        const infoExibicao = ex.tipo === 'tempo'
+
             ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
+
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
 
+
+
         container.innerHTML += `
+
             <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+
                 <div style="flex: 1;">
+
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
+
                     <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
+
                 </div>
+
                 <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
+
                     <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')">
+
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+
                     </button>
+
                     <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))">
+
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+
                     </button>
+
                 </div>
+
             </div>`;
+
     });
+
 }
+
+
 
 function excluirFicha(nome) {
+
     // 1. Remove a ficha do objeto local
+
     if (bancoDeDados.fichas[nome]) {
+
         delete bancoDeDados.fichas[nome];
-        
+
+       
+
         // 2. CHAMA O NOME CORRETO: salvarBanco (que você já usa em outras partes)
-        salvarBanco(); 
-        
+
+        salvarBanco();
+
+       
+
         // 3. Atualiza a tela para a ficha sumir da lista
+
         renderizarFichas();
-        
+
+       
+
         // 4. Feedback visual para o usuário
+
         mostrarAviso("Ficha excluída com sucesso!");
+
     } else {
+
         console.error("Ficha não encontrada para exclusão:", nome);
+
     }
+
 }
 
+
+
 // --- 4. SISTEMA DE CONSULTA GERAL ---
+
 function renderizarFichasConsulta() {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
@@ -760,24 +923,33 @@ function renderizarFichasConsulta() {
     if (!containerLista) return;
     containerLista.classList.remove('hidden');
     containerDetalhes.classList.add('hidden');
+
     if(btnVoltar) btnVoltar.classList.add('hidden');
+
     if(btnSair) btnSair.classList.remove('hidden');
+
     if(titulo) titulo.innerText = "Consultar Treinos";
-    
+
     // Criamos uma variável para acumular o HTML e evitar múltiplos reflows
     let htmlGerado = "";
 
     Object.keys(bancoDeDados.fichas).forEach(nome => {
-        // AJUSTE: Removido margin:0 e adicionado margin-bottom: 15px
-        // Também adicionei um padding para melhorar o toque no mobile
+        // Puxa a quantidade exata de exercícios registrados nessa ficha
+        const qtdExercicios = bancoDeDados.fichas[nome].length;
+
         htmlGerado += `
-            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card" 
-                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer;">
-                <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
-                <p style="color: #3b82f6; margin: 5px 0 0 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
+                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                
+                <div>
+                    <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
+                    <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
+                </div>
+
+                <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
+
             </div>`;
     });
-
     containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
 
@@ -795,103 +967,151 @@ function verExerciciosConsulta(nome) {
     if(titulo) titulo.innerText = nome.toUpperCase();
 
     const exercicios = bancoDeDados.fichas[nome] || [];
-    
+    // Recupera o histórico de tempos salvos permanentemente
+    const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
     containerDetalhes.innerHTML = exercicios.map(ex => {
-        const infoEsquerda = ex.tipo === 'tempo' 
+
+        const infoEsquerda = ex.tipo === 'tempo'
+
             ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
+
             : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps} <span style="color:gray; font-size:10px;">${ex.carga}KG</span></p>`;
 
+        // Busca o histórico permanentemente para o ID do exercício
+
+        const registroSalvo = historicoTempos[ex.id];
+        const textoUltimoTempo = registroSalvo
+
+            ? `Último tempo: ${registroSalvo.tempo} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${registroSalvo.data} às ${registroSalvo.hora})</span>`
+
+            : `Último tempo: --`;
+
         return `
-        <div class="glass-panel" style="margin-bottom: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 15px;">
-            <div style="flex: 1;">
-                <h4 style="color:white; margin:0; text-transform: uppercase; font-size: 13px;">${ex.nome}</h4>
+
+        <div class="glass-panel" style="margin-bottom: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
+
+            <div style="flex: 1; padding-right: 10px;">
+
+                <h4 style="color:white; margin:0; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">${ex.nome}</h4>
+
                 ${infoEsquerda}
-                <small id="last-time-${ex.id}" style="color: #3b82f6; font-size: 10px; font-weight: bold;">Último: --</small>
+
+                <small id="last-time-${ex.id}" style="color: #3b82f6; font-size: 10px; font-weight: bold; display: block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
+
+                    ${textoUltimoTempo}
+                </small>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 12px;">
-                <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 40px; text-align: center;">0s</span>
-                <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})" 
-                    style="background: #3b82f6; border: none; border-radius: 8px; width: 35px; height: 35px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-                    ▶️
+
+
+            <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
+
+                <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 45px; text-align: center; letter-spacing: 0.5px;">0s</span>
+
+               
+
+                <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})"
+
+                    style="background: transparent; border: none; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;">
+
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6)); transition: transform 0.2s;"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+
                 </button>
+
             </div>
+
         </div>`;
+
     }).join('') || "<p style='color:gray; text-align:center;'>Vazio.</p>";
+
+
+
     setTimeout(recuperarCronometrosAtivos, 100);
+
 }
 
-// Cronometro página de consulta 
+// Cronometro página de consulta
 function controlarCronometroSet(id) {
     const display = document.getElementById(`timer-set-${id}`);
     const btn = document.getElementById(`btn-timer-set-${id}`);
     const lastDisplay = document.getElementById(`last-time-${id}`);
 
-    // Se NÃO está rodando, vamos INICIAR
     if (!cronometrosAtivos[id]) {
         const startTime = Date.now();
         localStorage.setItem(`timer_start_${id}`, startTime);
-        
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
+        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
         btn.style.background = "#ef4444";
 
         cronometrosAtivos[id] = setInterval(() => {
+
             const passados = Date.now() - startTime;
-            
             const h = Math.floor(passados / 3600000);
             const m = Math.floor((passados % 3600000) / 60000);
             const s = Math.floor((passados % 60000) / 1000);
             const ms = Math.floor((passados % 1000) / 10);
 
             let texto = "";
+
             if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
             texto += (m < 10 ? "0"+m : m) + ":";
             texto += (s < 10 ? "0"+s : s) + ".";
             texto += (ms < 10 ? "0"+ms : ms);
-            
+
             if (display) display.innerText = texto;
         }, 40);
 
     } else {
-        // --- A ORDEM AQUI É CRUCIAL PARA NÃO ZERAR ---
-        
-        // 1. Primeiro, capturamos o tempo que está no visor AGORA
-        const tempoCapturado = display.innerText; 
-
+        const tempoCapturado = display.innerText;
         // 2. Paramos o relógio
         clearInterval(cronometrosAtivos[id]);
-        
-        // 3. Deletamos o registro de atividade
+
         delete cronometrosAtivos[id];
         localStorage.removeItem(`timer_start_${id}`);
+        // 4. Retorna para o formato moderno ampliado com brilho platinado
+        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6));"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>`;
 
-        // 4. Atualizamos o ícone
-        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`;
-        btn.style.background = "var(--accent-blue)";
-        
-        // 5. Só agora jogamos o valor capturado para o "Último"
-        if(lastDisplay && tempoCapturado !== "00:00.00") {
-            lastDisplay.innerText = "Último: " + tempoCapturado;
-        }
+        btn.style.background = "transparent";
+        if (tempoCapturado && tempoCapturado !== "00:00.00" && tempoCapturado !== "0s") {
 
-        // 6. Por fim, limpamos o visor principal para o próximo set
-        display.innerText = "00:00.00";
+            const agora = new Date();
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            const ano = agora.getFullYear();
+            const dataFormatada = `${dia}/${mes}/${ano}`;
+            const hora = String(agora.getHours()).padStart(2, '0');
+            const minuto = String(agora.getMinutes()).padStart(2, '0');
+            const horaFormatada = `${hora}:${minuto}`;
+
+            // Salva no banco de histórico do LocalStorage
+            const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
+
+            historicoTempos[id] = {
+                tempo: tempoCapturado,
+                data: dataFormatada,
+                hora: horaFormatada
+            };
+
+            localStorage.setItem('assistfit_historico_cronometros', JSON.stringify(historicoTempos));
+            if (lastDisplay) {
+                lastDisplay.innerHTML = `Último tempo: ${tempoCapturado} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${dataFormatada} às ${horaFormatada})</span>`;
+
+            }
+        } display.innerText = "00:00.00";
     }
 }
+
 
 function recuperarCronometrosAtivos() {
     Object.keys(localStorage).forEach(key => {
         if (key.startsWith('timer_start_')) {
             const id = key.replace('timer_start_', '');
-            // Se o elemento existe na tela, clica nele para retomar a contagem automaticamente
-            // Ou simplesmente chamamos a função novamente passando o ID
             const startTimeOriginal = parseInt(localStorage.getItem(key));
             const display = document.getElementById(`timer-set-${id}`);
             const btn = document.getElementById(`btn-timer-set-${id}`);
 
             if (display && btn) {
-                // Reinicia a interface sem criar um novo tempo de início
-                btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
+                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
+
                 btn.style.background = "#ef4444";
 
                 cronometrosAtivos[id] = setInterval(() => {
@@ -900,7 +1120,7 @@ function recuperarCronometrosAtivos() {
                     const m = Math.floor((passados % 3600000) / 60000);
                     const s = Math.floor((passados % 60000) / 1000);
                     const ms = Math.floor((passados % 1000) / 10);
-                    
+
                     let texto = "";
                     if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
                     texto += (m < 10 ? "0"+m : m) + ":";
@@ -917,25 +1137,25 @@ function recuperarCronometrosAtivos() {
 
 function executarRelogio(id, startTime) {
     const display = document.getElementById(`timer-set-${id}`);
-    
     cronometrosAtivos[id] = setInterval(() => {
         const agora = Date.now();
         const passados = agora - startTime;
-        
         const h = Math.floor(passados / 3600000);
         const m = Math.floor((passados % 3600000) / 60000);
         const s = Math.floor((passados % 60000) / 1000);
         const ms = Math.floor((passados % 1000) / 10);
+
 
         let texto = "";
         if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
         texto += (m < 10 ? "0"+m : m) + ":";
         texto += (s < 10 ? "0"+s : s) + ".";
         texto += (ms < 10 ? "0"+ms : ms);
-        
+       
         if (display) display.innerText = texto;
     }, 40);
 }
+
 
 // xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx
 
@@ -945,16 +1165,21 @@ function verDetalhesTreino(nomeTreino) {
     document.getElementById('btn-voltar-consulta').classList.remove('hidden');
 
     // Troca o título para o nome do treino selecionado
+
     document.getElementById('cabecalho-consulta').innerText = nomeTreino;
 
     // Lógica para esconder a lista e mostrar os detalhes (Ajuste os IDs se necessário)
-    document.getElementById('lista-nomes-treinos').classList.add('hidden');
-    document.getElementById('detalhes-treino-consulta').classList.remove('hidden');
 
+    document.getElementById('lista-nomes-treinos').classList.add('hidden');
+
+    document.getElementById('detalhes-treino-consulta').classList.remove('hidden');
     // Aqui entraria sua lógica existente de preencher os detalhes...
+
 }
 
+
 // 2. SUBSTITUA a sua função atual por esta
+
 function voltarListaConsulta() {
     // Mostra o botão de voltar ao Lobby e esconde o de voltar à lista
     document.getElementById('btn-sair-consulta').classList.remove('hidden');
@@ -962,7 +1187,6 @@ function voltarListaConsulta() {
 
     // Reseta o título da página
     document.getElementById('cabecalho-consulta').innerText = "Consultar Treinos";
-
     // Mostra a lista e esconde os detalhes
     document.getElementById('lista-nomes-treinos').classList.remove('hidden');
     document.getElementById('detalhes-treino-consulta').classList.add('hidden');
@@ -977,9 +1201,8 @@ function atualizarListaExercicios() {
     const selectEx = document.getElementById('select-exercicio');
     const camposForca = document.getElementById('campos-forca');
     const camposCardio = document.getElementById('campos-cardio');
-    
+
     if (!selectEx) return;
-    
     if (!grupo) {
         selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
         return;
@@ -995,17 +1218,18 @@ function atualizarListaExercicios() {
     }
 
     const lista = dicionarioExercicios[grupo] || [];
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' + 
+
+    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
+
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
+
 
 function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     if (!ativa) return mostrarAviso("Selecione uma ficha!");
-
     const grupo = document.getElementById('select-grupo').value;
     const isCardio = (grupo === "Cardio & Aeróbico");
-
     const novo = {
         id: Date.now(),
         grupo: grupo,
@@ -1016,18 +1240,14 @@ function adicionarExercicio() {
         tempo: document.getElementById('tempo-ex').value, // Novo campo
         tipo: isCardio ? 'tempo' : 'forca' // Marcador para renderização
     };
-
     if (isCardio) {
         if (!novo.tempo) return mostrarAviso("Informe o tempo do cardio!");
     } else {
         if (!novo.series || !novo.reps) return mostrarAviso("Preencha séries e repetições!");
     }
-
     bancoDeDados.fichas[ativa].unshift(novo);
     salvarBanco();
     renderizarLogTreino();
-    
-    // Limpa campos após salvar
     document.getElementById('series-ex').value = "";
     document.getElementById('reps-ex').value = "";
     document.getElementById('carga-ex').value = "";
@@ -1042,61 +1262,185 @@ function formatarTempoParaExibicao(valor) {
     } else if (partes.length === 2) {
         return `${partes[0]}m ${partes[1]}s`;
     }
-    return valor + "s";
+   return valor + "s";
 }
 
 function renderizarLogTreino() {
     const container = document.getElementById('lista-treino');
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     if(!container || !ativa) return;
-    
     container.innerHTML = "";
     const exercicios = bancoDeDados.fichas[ativa] || [];
-
     exercicios.forEach(ex => {
-        let infoBadge = ex.tipo === 'tempo' 
+        let infoBadge = ex.tipo === 'tempo'
             ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
 
         container.innerHTML += `
+
             <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+
                 <div style="flex: 1;">
+
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
+
                     <div id="dados-log-${ex.id}" style="margin-top: 5px;">${infoBadge}</div>
+
                 </div>
+
                 <div id="acoes-log-${ex.id}" style="display: flex; gap: 10px;">
+
                     <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')">
+
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+
                     </button>
+
                     <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome} do treino atual?', () => removerExercicio(${ex.id}, 'log'))">
+
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+
                     </button>
+
                 </div>
+
             </div>`;
+
     });
+
 }
 
+
+
 function ativarEdicaoInline(id, tipo) {
+
     const ativa = fichaAtivaNoMomento || fichaAtiva;
+
     const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-    
+
+   
+
     const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
+
     const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
 
-    document.getElementById(dadosId).innerHTML = `
-        <div style="display: flex; gap: 5px; align-items: center; margin-top:5px;">
-            <input type="number" id="edit-series-${id}" value="${ex.series}" style="width: 45px; background: #1e293b; border: 1px solid #3b82f6; color: white; border-radius: 6px; text-align: center; padding: 4px; font-size: 12px;">
-            <span style="color: gray; font-size: 10px;">X</span>
-            <input type="number" id="edit-reps-${id}" value="${ex.reps}" style="width: 45px; background: #1e293b; border: 1px solid #3b82f6; color: white; border-radius: 6px; text-align: center; padding: 4px; font-size: 12px;">
-            <span style="color: gray; font-size: 10px;">—</span>
-            <input type="number" id="edit-carga-${id}" value="${ex.carga}" style="width: 55px; background: #1e293b; border: 1px solid #3b82f6; color: white; border-radius: 6px; text-align: center; padding: 4px; font-size: 12px;">
-            <span style="color: gray; font-size: 10px;">KG</span>
-        </div>`;
+
+
+    const estiloEsconderSetas = `
+
+        <style>
+
+            input::-webkit-outer-spin-button,
+
+            input::-webkit-inner-spin-button {
+
+                -webkit-appearance: none;
+
+                margin: 0;
+
+            }
+
+            input[type=number] {
+
+                -moz-appearance: textfield;
+
+            }
+
+        </style>
+
+    `;
+
+
+
+    // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
+
+    if (ex.tempo && ex.tempo.toString().trim() !== "") {
+
+        const valorTempo = ex.tempo || "00:00:00";
+
+
+
+        // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
+
+        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
+
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
+
+                <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric"
+
+                    oninput="automatizarMascaraTempo(this)"
+
+                    style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
+
+                <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">
+
+            </div>`;
+
+    } else {
+
+        // Formato para Musculação Pura (Séries x Reps — KG)
+
+        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
+
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
+
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
+
+               
+
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
+
+               
+
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
+
+            </div>`;
+
+    }
+
+
+
+    // Botões de Confirmação e Cancelamento Inline
 
     document.getElementById(acoesId).innerHTML = `
-        <button onclick="salvarEdicaoInline(${id}, '${tipo}')" style="background: #10b981; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: white; font-size: 0.9rem;">✅</button>
-        <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" style="background: #ef4444; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; color: white; font-size: 0.9rem;">✕</button>`;
+
+        <div style="display: flex; gap: 8px; align-items: center;">
+
+            <button onclick="salvarEdicaoInline(${id}, '${tipo}')"
+
+                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
+
+                onmouseover="this.style.background='#10b981'; this.style.color='white'"
+
+                onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
+
+                ✓
+
+            </button>
+
+            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}"
+
+                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
+
+                onmouseover="this.style.background='#ef4444'; this.style.color='white'"
+
+                onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
+
+                ✕
+
+            </button>
+
+        </div>`;
+
 }
+
+
 
 function ativarEdicaoInline(id, tipo) {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
@@ -1105,7 +1449,6 @@ function ativarEdicaoInline(id, tipo) {
     const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
     const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
 
-    // Estilo CSS injetado para sumir com as setas dos inputs do tipo number
     const estiloEsconderSetas = `
         <style>
             input::-webkit-outer-spin-button,
@@ -1119,29 +1462,42 @@ function ativarEdicaoInline(id, tipo) {
         </style>
     `;
 
-    document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-        <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
-            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${ex.series}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-            <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-            
-            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${ex.reps}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-            <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-            
-            <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${ex.carga}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-            <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
-        </div>`;
+    // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
+    if (ex.tempo && ex.tempo.toString().trim() !== "") {
+        const valorTempo = ex.tempo || "00:00:00";
 
+        // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
+        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
+            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
+                <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric" 
+                    oninput="automatizarMascaraTempo(this)"
+                    style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
+                <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">Formato: HH:MM:SS</small>
+            </div>`;
+    } else {
+        // Formato para Musculação Pura (Séries x Reps — KG)
+        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
+                
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
+                
+                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
+                <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
+            </div>`;
+    }
+
+    // Botões de Confirmação e Cancelamento Inline
     document.getElementById(acoesId).innerHTML = `
         <div style="display: flex; gap: 8px; align-items: center;">
-            <!-- Botão Confirmar (Verde Moderno / Minimalista) -->
             <button onclick="salvarEdicaoInline(${id}, '${tipo}')" 
                 style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
                 onmouseover="this.style.background='#10b981'; this.style.color='white'" 
                 onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
                 ✓
             </button>
-            
-            <!-- Botão Cancelar (Vermelho Sutil) -->
             <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" 
                 style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
                 onmouseover="this.style.background='#ef4444'; this.style.color='white'" 
@@ -1151,11 +1507,59 @@ function ativarEdicaoInline(id, tipo) {
         </div>`;
 }
 
-function prepararRegistro() {
-    showView('registro');
-    const titulo = document.getElementById('nome-ficha-ativa');
-    if(titulo) titulo.innerText = (fichaAtivaNoMomento || "TREINO").toUpperCase();
-    renderizarLogTreino();
+function salvarEdicaoInline(id, tipo) {
+    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
+    
+    if (ex) {
+        const inputTempo = document.getElementById(`edit-tempo-${id}`);
+        
+        if (inputTempo) {
+            // Atualiza o tempo digitado no formato correto
+            ex.tempo = inputTempo.value || "00:00:00";
+            ex.series = "";
+            ex.reps = "";
+            ex.carga = "";
+        } else {
+            // Atualiza os valores convencionais de musculação
+            ex.series = parseInt(document.getElementById(`edit-series-${id}`).value) || 0;
+            ex.reps = parseInt(document.getElementById(`edit-reps-${id}`).value) || 0;
+            ex.carga = parseFloat(document.getElementById(`edit-carga-${id}`).value) || 0;
+            ex.tempo = "";
+        }
+
+        if (typeof salvarBancoDeDadosLocal === 'function') {
+            salvarBancoDeDadosLocal();
+        } else {
+            localStorage.setItem('assistfit_banco', JSON.stringify(bancoDeDados));
+        }
+
+        if (tipo === 'resumo') {
+            renderizarResumoFicha(ativa);
+        } else {
+            renderizarLogTreino();
+        }
+    }
+}
+
+// FUNÇÃO AUXILIAR: Executa a máscara de tempo inteligente HH:MM:SS diretamente no input de edição
+function automatizarMascaraTempo(input) {
+    // Remove tudo o que não for número puro
+    let v = input.value.replace(/\D/g, "");
+    
+    // Limita a digitação a no máximo 6 números (HHMMSS)
+    if (v.length > 6) {
+        v = v.substring(0, 6);
+    }
+    
+    // Aplica formatação de trás para frente inserindo os dois pontos dinamicamente
+    if (v.length >= 5) {
+        v = v.replace(/^(\d{2})(\d{2})(\d{1,2})$/, "$1:$2:$3");
+    } else if (v.length >= 3) {
+        v = v.replace(/^(\d{2})(\d{1,2})$/, "$1:$2");
+    }
+    
+    input.value = v;
 }
 
 function removerExercicio(id, contexto) {
@@ -1178,20 +1582,65 @@ function removerExercicio(id, contexto) {
 
 function limparTreino() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if (ativa && confirm(`Limpar todos os registros de ${ativa}?`)) {
+    if (!ativa) return;
+
+    // 1. Criamos o container do modal com o fundo escuro e desfoque
+    const modalConfirmacao = document.createElement('div');
+    modalConfirmacao.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
+
+    // 2. Inserimos o HTML com a mesma estrutura premium e classes do seu app
+    modalConfirmacao.innerHTML = `
+        <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid #ef4444; background: var(--bg-card); border-radius: 28px;">
+            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(239, 68, 68, 0.1); border-color: #ef4444; display: flex; align-items: center; justify-content: center; width: 60px; height: 60px; border-radius: 50%; border: 2px solid #ef4444;">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5">
+                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+            </div>
+            <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem; text-transform: uppercase;">LIMPAR TREINO?</h3>
+            <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px; line-height: 1.4;">
+                Deseja remover todos os registros e exercícios do treino <span style="color: #ef4444; font-weight: bold;">${ativa}</span>? Esta ação não pode ser desfeita.
+            </p>
+
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-cancelar-limpeza" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                    CANCELAR
+                </button>
+                <button id="btn-confirmar-limpeza" style="flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); transition: transform 0.2s;">
+                    LIMPAR
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalConfirmacao);
+
+    // Fechar o modal caso clique em Cancelar
+    document.getElementById('btn-cancelar-limpeza').onclick = () => modalConfirmacao.remove();
+
+    // Executar a limpeza original caso clique em Limpar
+    document.getElementById('btn-confirmar-limpeza').onclick = () => {
         bancoDeDados.fichas[ativa] = [];
         salvarBanco();
         renderizarLogTreino();
+        
+        // Se a tela de consulta estática também precisar atualizar o resumo:
+        if (typeof renderizarResumoFicha === "function") {
+            renderizarResumoFicha(ativa);
+        }
+
         mostrarAviso("Log de treino limpo.");
-    }
+        modalConfirmacao.remove();
+    };
 }
 
 function salvarBanco() {
     localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
 }
-
-
-// xxxxxxxxxxxxxxxxxxxxxxx Pagina cronograma xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarPaginaCronograma() {
     const container = document.getElementById('view-calendario');
@@ -1200,6 +1649,13 @@ function renderizarPaginaCronograma() {
     const agora = new Date();
     const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
     const dataFormatada = `${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
+
+    const modoTimerAtivo = (typeof isCountdownMode !== 'undefined' && isCountdownMode);
+    const estiloLivreBg = !modoTimerAtivo ? '#3b82f6' : 'transparent';
+    const estiloLivreTexto = !modoTimerAtivo ? 'white' : '#3b82f6';
+    const estiloTimerBg = modoTimerAtivo ? '#3b82f6' : 'transparent';
+    const estiloTimerTexto = modoTimerAtivo ? 'white' : '#3b82f6';
+    const classeContainerInput = modoTimerAtivo ? '' : 'hidden';
 
     container.innerHTML = `
         <div class="glass-panel" style="padding: 20px; margin-bottom: 20px; min-height: 80vh;">
@@ -1215,12 +1671,12 @@ function renderizarPaginaCronograma() {
                 <div id="display-timer" style="font-size: 2.8rem; color: white; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 0 0 15px rgba(59,130,246,0.5);">00:00:00<span style="font-size: 1.5rem; color: #3b82f6;">.00</span></div>
                 
                 <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
-                    <button onclick="setTimerMode(false)" id="btn-modo-livre" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: #3b82f6; color: white; cursor: pointer;">LIVRE</button>
-                    <button onclick="setTimerMode(true)" id="btn-modo-timer" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: transparent; color: #3b82f6; cursor: pointer;">TIMER</button>
+                    <button onclick="setTimerMode(false)" id="btn-modo-livre" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloLivreBg}; color: ${estiloLivreTexto}; cursor: pointer;">LIVRE</button>
+                    <button onclick="setTimerMode(true)" id="btn-modo-timer" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloTimerBg}; color: ${estiloTimerTexto}; cursor: pointer;">TIMER</button>
                 </div>
 
-                <div id="timer-input-container" class="hidden" style="margin-bottom: 15px;">
-                    <p style="color: gray; font-size: 10px; margin-bottom: 5px;">DEFINIR TEMPO (MIN:SEG)</p>
+                <div id="timer-input-container" class="${classeContainerInput}" style="margin-bottom: 15px;">
+                    <p style="color: gray; font-size: 10px; margin-bottom: 5px;">DEFINIR TEMPO (HORAS:MIN:SEG)</p>
                     <input type="time" id="input-timer-native" step="1" value="00:00:00" 
                         style="background: #0f172a; border: 1px solid #3b82f6; color: white; padding: 10px; border-radius: 10px; text-align: center; outline: none; font-family: monospace; font-size: 1.2rem; width: 100%; max-width: 200px;">
                 </div>
@@ -1232,12 +1688,12 @@ function renderizarPaginaCronograma() {
             </div>
             
             <div style="margin-bottom: 25px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência da Semana                         (Aperte para modificar a letra)</h3>
-        <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
-    </div>
-    <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
-</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência da Semana                         (Aperte para modificar a letra)</h3>
+                    <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
+                </div>
+                <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
+            </div>
 
             <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);">
                 <h3 style="color: white; font-size: 12px; margin-bottom: 12px;" class="italic-bold uppercase">Bloco de anotações</h3>
@@ -1262,7 +1718,6 @@ function renderizarPaginaCronograma() {
     atualizarDisplayTimer();
 }
 
-// --- LÓGICA DO CALENDÁRIO COM DATAS REAIS ---
 function gerarCalendario() {
     const calContainer = document.getElementById('calendario-semanal');
     if (!calContainer) return;
@@ -1270,18 +1725,23 @@ function gerarCalendario() {
     const diasSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
     calContainer.innerHTML = "";
 
-    // Criamos os 7 dias da semana
     for (let i = 0; i < 7; i++) {
-        // Busca se já existe uma marcação para esse dia no array diasTreinados
-        // diasTreinados agora salvará objetos: { dia: 0, treino: 'A' }
         const registro = diasTreinados.find(d => d.dia === i);
         const letraTreino = registro ? registro.treino : ""; 
-        const ativo = registro ? "border: 2px solid #3b82f6; background: rgba(59,130,246,0.2);" : "border: 1px solid rgba(255,255,255,0.1);";
+        
+        let estiloAtivo = "border: 1px solid rgba(255,255,255,0.1);";
+        if (registro) {
+            if (registro.treino === "★") {
+                estiloAtivo = "border: 2px solid #eab308; background: rgba(234,179,8,0.15); color: #facc15;";
+            } else {
+                estiloAtivo = "border: 2px solid #3b82f6; background: rgba(59,130,246,0.2); color: white;";
+            }
+        }
 
         calContainer.innerHTML += `
             <div onclick="alternarTreinoDia(${i})" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
                 <span style="font-size: 10px; color: gray; font-weight: bold;">${diasSemana[i]}</span>
-                <div id="dia-${i}" style="width: 40px; height: 40px; ${ativo} border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 1.2rem; transition: all 0.2s;">
+                <div id="dia-${i}" style="width: 40px; height: 40px; ${estiloAtivo} border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; transition: all 0.2s;">
                     ${letraTreino}
                 </div>
             </div>
@@ -1290,41 +1750,73 @@ function gerarCalendario() {
 }
 
 function alternarTreinoDia(index) {
-    // Ordem do ciclo: "" -> "A" -> "B" -> "C" -> ""
-    const ciclos = ["", "A", "B", "C"];
+    const ciclos = ["", "A", "B", "C", "D", "E", "F", "G", "★"];
     
-    // Encontra o registro atual
     let registroIdx = diasTreinados.findIndex(d => d.dia === index);
     let novaLetra = "";
 
     if (registroIdx === -1) {
-        // Se não existia, começa com A
         novaLetra = "A";
         diasTreinados.push({ dia: index, treino: novaLetra });
     } else {
-        // Se existia, pega a próxima letra do ciclo
         let atualLetra = diasTreinados[registroIdx].treino;
         let proximoIdx = (ciclos.indexOf(atualLetra) + 1) % ciclos.length;
         novaLetra = ciclos[proximoIdx];
 
         if (novaLetra === "") {
-            diasTreinados.splice(registroIdx, 1); // Remove se voltar ao vazio
+            diasTreinados.splice(registroIdx, 1);
         } else {
             diasTreinados[registroIdx].treino = novaLetra;
         }
     }
 
-    // Salva e atualiza a interface
     localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
     gerarCalendario();
 }
 
 function limparFrequencia() {
-    if (confirm("Deseja zerar todas as marcações da semana?")) {
+    const modalExistente = document.getElementById('modal-confirmacao-cronograma');
+    if (modalExistente) modalExistente.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-confirmacao-cronograma';
+    modal.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; animation: fadeInModal 0.2s ease-out;
+    `;
+
+    modal.innerHTML = `
+        <div class="glass-panel" style="background: var(--bg-card, #1e293b); border: 1px solid var(--border-color, rgba(59,130,246,0.3)); border-radius: 24px; padding: 25px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+            <h4 class="italic-bold" style="color: white; margin: 0 0 10px 0; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">ZERAR SEMANA?</h4>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 20px 0; line-height: 1.5;">Tem certeza que deseja apagar todas as marcações de treino da frequência semanal?</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-modal-cancelar" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CANCELAR</button>
+                <button id="btn-modal-confirmar" style="flex: 1; background: #ef4444; border: none; color: white; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CONFIRMAR</button>
+            </div>
+        </div>
+        <style>
+            @keyframes fadeInModal {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        </style>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-modal-cancelar').onclick = function() {
+        modal.remove();
+    };
+
+    document.getElementById('btn-modal-confirmar').onclick = function() {
         diasTreinados = [];
         localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
         gerarCalendario();
-    }
+        modal.remove();
+    };
 }
 
 function toggleDia(dataId) {
@@ -1337,7 +1829,6 @@ function toggleDia(dataId) {
     gerarCalendario();
 }
 
-// --- LOG DE REGISTROS COM DATA E HORA ---
 function adicionarLembrete() {
     const input = document.getElementById('input-lembrete');
     if (!input || !input.value.trim()) return;
@@ -1352,7 +1843,7 @@ function adicionarLembrete() {
         feito: false
     };
 
-    lembretes.unshift(novo); // Adiciona no topo da lista
+    lembretes.unshift(novo);
     input.value = "";
     localStorage.setItem('fitai_lembretes', JSON.stringify(lembretes));
     renderizarLembretes();
@@ -1384,16 +1875,17 @@ function toggleTimer() {
     const btn = document.getElementById('btn-timer-toggle');
     if (!isTimerRunning) {
         if (isCountdownMode && milissegundosTotais === 0) {
-            const timeVal = document.getElementById('input-timer-native').value; // Formato "HH:MM:SS" ou "HH:MM"
+            const timeVal = document.getElementById('input-timer-native').value;
             
             if (!timeVal) return mostrarAviso("Defina o tempo!");
 
             const partes = timeVal.split(':');
             let segundosIniciais = 0;
 
-            if (partes.length === 3) { // HH:MM:SS
+            // Tratamento inteligente caso o input retorne 2 ou 3 partes (HH:MM:SS ou MM:SS)
+            if (partes.length === 3) {
                 segundosIniciais = (+partes[0]) * 3600 + (+partes[1]) * 60 + (+partes[2]);
-            } else { // MM:SS ou HH:MM dependendo do browser
+            } else if (partes.length === 2) {
                 segundosIniciais = (+partes[0]) * 60 + (+partes[1]);
             }
 
@@ -1450,21 +1942,45 @@ function atualizarDisplayTimer() {
     const display = document.getElementById('display-timer');
     if (!display) return;
     let tempo = Math.max(0, milissegundosTotais);
+    
+    // Extração matemática correta de Horas, Minutos, Segundos e Milissegundos
+    const horas = Math.floor(tempo / 3600000);
     const min = Math.floor((tempo % 3600000) / 60000);
     const seg = Math.floor((tempo % 60000) / 1000);
     const ms = Math.floor((tempo % 1000) / 10);
-    display.innerHTML = `${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}<span style="font-size: 1.5rem; color: #3b82f6;">.${ms.toString().padStart(2, '0')}</span>`;
+    
+    // Injeta o formato HH:MM:SS mantendo os milissegundos isolados no span menor
+    display.innerHTML = `${horas.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}<span style="font-size: 1.5rem; color: #3b82f6;">.${ms.toString().padStart(2, '0')}</span>`;
 }
 
-function setTimerMode(isTimer) {
-    isCountdownMode = isTimer;
+// Vinculação inteligente corrigida: Redireciona de forma direta sem causar loop
+window.setTimerMode = function(modo) {
+    if (typeof modo === 'string') {
+        if (typeof window.setWodTimerMode === 'function') {
+            window.setWodTimerMode(modo);
+        }
+        return;
+    }
+
+    isCountdownMode = modo;
     resetTimer();
-    document.getElementById('btn-modo-timer').style.background = isTimer ? "#3b82f6" : "transparent";
-    document.getElementById('btn-modo-timer').style.color = isTimer ? "white" : "#3b82f6";
-    document.getElementById('btn-modo-livre').style.background = !isTimer ? "#3b82f6" : "transparent";
-    document.getElementById('btn-modo-livre').style.color = !isTimer ? "white" : "#3b82f6";
-    document.getElementById('timer-input-container').className = isTimer ? "" : "hidden";
-}
+    
+    const btnTimer = document.getElementById('btn-modo-timer');
+    const btnLivre = document.getElementById('btn-modo-livre');
+    const inputContainer = document.getElementById('timer-input-container');
+
+    if (btnTimer) {
+        btnTimer.style.background = modo ? "#3b82f6" : "transparent";
+        btnTimer.style.color = modo ? "white" : "#3b82f6";
+    }
+    if (btnLivre) {
+        btnLivre.style.background = !modo ? "#3b82f6" : "transparent";
+        btnLivre.style.color = !modo ? "white" : "#3b82f6";
+    }
+    if (inputContainer) {
+        inputContainer.className = modo ? "" : "hidden";
+    }
+};
 
 function toggleLembrete(id) {
     const l = lembretes.find(item => item.id === id);
@@ -1479,16 +1995,13 @@ function removerLembrete(id) {
     renderizarLembretes();
 }
 
-// --- 7. INICIALIZAÇÃO ---
 window.addEventListener('DOMContentLoaded', () => {
     const session = localStorage.getItem('fitai_session');
     if (session) showView('lobby'); else showView('login');
     
-    // Essas funções abaixo serão declaradas no final da página
     atualizarListaExercicios(); 
     gerarCalendario();
 });
-
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarBlog() {
@@ -1638,13 +2151,6 @@ function atualizarFeedUI() {
     `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px;">SEM ATIVIDADES</p>`;
 }
 
-function excluirPost(id) {
-    if (confirm("Deseja remover esta postagem?")) {
-        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
-        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-        atualizarFeedUI();
-    }
-}
 // --- FUNÇÕES DE ÁUDIO (PARA O BOTÃO DE MICROFONE NO HTML) ---
 
 async function toggleGravacao() {
@@ -1653,7 +2159,6 @@ async function toggleGravacao() {
 
     if (!gravando) {
         try {
-            // Limpa chunks anteriores antes de começar
             audioChunks = []; 
             
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -1667,20 +2172,17 @@ async function toggleGravacao() {
                 const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    // Vincula o áudio gravado à variável de mídia do post
                     midiaAnexada = { tipo: 'audio', data: reader.result };
-                    atualizarPreviewMidia(); // Mostra para o usuário que o áudio está pronto
+                    atualizarPreviewMidia(); 
                 };
                 reader.readAsDataURL(audioBlob);
 
-                // Desliga o microfone (libera o hardware)
                 stream.getTracks().forEach(track => track.stop());
             };
 
             mediaRecorder.start();
             gravando = true;
             
-            // Estilo visual de gravando
             btn.style.background = "#ef4444"; 
             btn.classList.add('mic-gravando');
             if(timer) timer.classList.remove('hidden');
@@ -1695,13 +2197,11 @@ async function toggleGravacao() {
             }
         }
     } else {
-        // Para a gravação
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
             mediaRecorder.stop();
         }
         gravando = false;
         
-        // Restaura o visual original
         btn.style.background = "rgba(255,255,255,0.05)"; 
         btn.classList.remove('mic-gravando');
         if(timer) timer.classList.add('hidden');
@@ -1709,7 +2209,6 @@ async function toggleGravacao() {
     }
 }
 
-// Inicialização automática ao carregar
 window.onload = () => {
     const session = localStorage.getItem('fitai_session');
     if (session) showView('lobby');
@@ -1748,7 +2247,6 @@ function limparMedia() {
 }
 
 function excluirPost(id) {
-    // Cria um modal de confirmação customizado e platinado
     const modalConfirm = document.createElement('div');
     modalConfirm.id = 'modal-confirmacao-exclusao';
     modalConfirm.style = `
@@ -1773,30 +2271,26 @@ function excluirPost(id) {
         </div>
     `;
 
-    document.body.appendChild(modalConfirm);
+    // Força a injeção diretamente dentro do painel da view do blog ativa
+    const viewBlog = document.getElementById('view-blog');
+    if (viewBlog) {
+        viewBlog.appendChild(modalConfirm);
+    } else {
+        document.body.appendChild(modalConfirm);
+    }
 
-    // Lógica dos botões do modal
     document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
 
     document.getElementById('btn-confirmar-exclusao').onclick = () => {
-        // 1. Filtra o array
         feedEvolucao = feedEvolucao.filter(p => p.id !== id);
-        
-        // 2. Salva no LocalStorage
         localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-        
-        // 3. Remove o modal
         modalConfirm.remove();
-        
-        // 4. Atualiza a tela INSTANTANEAMENTE (usando o nome correto da função)
         atualizarFeedUI(); 
-        
-        // 5. Aviso de sucesso
         mostrarAviso("Post removido com sucesso.");
     };
 }
 
-function confirmarAcaoOriginal(titulo, mensagem, callback) {
+function confirmarAcaoOriginal(titulo, messaging, callback) {
     const modalConfirm = document.createElement('div');
     modalConfirm.style = `
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -1811,7 +2305,7 @@ function confirmarAcaoOriginal(titulo, mensagem, callback) {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </div>
             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem;">${titulo}</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px;">${mensagem}</p>
+            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px;">${messaging}</p>
             <div style="display: flex; gap: 10px;">
                 <button id="confirm-cancel" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
                 <button id="confirm-ok" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px;">EXCLUIR</button>
@@ -1833,23 +2327,13 @@ window.addEventListener('load', () => {
     const campoEmail = document.getElementById('login-email');
     const checkbox = document.getElementById('remember-me');
 
-    if (emailSalvo && campoEmail) {
-        campoEmail.value = emailSalvo;
-        if (checkbox) checkbox.checked = true;
+    // Correção contra quebra de escopo: Só executa se os elementos existirem na tela atual
+    if (campoEmail) {
+        if (emailSalvo) campoEmail.value = emailSalvo;
+        if (checkbox && emailSalvo) checkbox.checked = true;
     }
 });
-
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-const equivalencias = {
-    "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
-    "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
-    "Puxada": ["Lat Pulldown (Puxada Aberta)", "Puxada Triângulo", "Barra Fixa (Pull-up)"],
-    "Remada": ["Remada Curvada (Barra)", "Remada Baixa (Triângulo)", "Remada Unilateral (Serrote)", "Remada Articulada (Máquina)"],
-    "Agachamento": ["Agachamento Livre (Back Squat)", "Agachamento no Smith", "Leg Press 45°", "Agachamento Hack", "Goblet Squat (Halter)"],
-    "Extensora": ["Cadeira Extensora", "Sissy Squat"],
-    "Posterior": ["Mesa Flexora", "Cadeira Flexora", "Stiff (Romanian Deadlift)"],
-    "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
-};
 
 function gerarSugestao() {
     const exOcupado = document.getElementById('select-ex-ocupado').value;
@@ -1999,7 +2483,15 @@ function tocarBeep(freq, dur) {
     osc.stop(audioCtx.currentTime + dur);
 }
 
-function setTimerMode(modo) {
+// Alterado o nome para isolamento absoluto e fim do loop infinito
+function setWodTimerMode(modo) {
+    if (typeof modo !== 'string') return;
+
+    // NOVA TRAVA: Se o timer estiver rodando e não estiver pausado, bloqueia a mudança de modo
+    if (cfTimerInterval && !cfIsPaused) {
+        return; 
+    }
+
     cfModo = modo;
     const btnAmrap = document.getElementById('btn-amrap');
     const btnEmom = document.getElementById('btn-emom');
@@ -2008,25 +2500,33 @@ function setTimerMode(modo) {
     const labelTempo = document.getElementById('label-tempo-wod'); // Label instrutiva
 
     if (modo === 'AMRAP') {
-        btnAmrap.style.opacity = "1";
-        btnAmrap.style.border = "2px solid var(--accent-blue)";
-        btnAmrap.style.filter = "brightness(1.2)";
-        btnEmom.style.opacity = "0.3";
-        btnEmom.style.border = "none";
-        btnEmom.style.filter = "none";
-        status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
+        if (btnAmrap) {
+            btnAmrap.style.opacity = "1";
+            btnAmrap.style.border = "2px solid var(--accent-blue)";
+            btnAmrap.style.filter = "brightness(1.2)";
+        }
+        if (btnEmom) {
+            btnEmom.style.opacity = "0.3";
+            btnEmom.style.border = "none";
+            btnEmom.style.filter = "none";
+        }
+        if (status) status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
         
-        // UX: No AMRAP só precisamos da duração total em minutos
+        // UX: No AMRAP só precisamos da duração total in minutos
         if (groupSec) groupSec.style.display = "none";
         if (labelTempo) labelTempo.innerText = "Duração Total (Minutos)";
     } else {
-        btnEmom.style.opacity = "1";
-        btnEmom.style.border = "2px solid var(--accent-blue)";
-        btnEmom.style.filter = "brightness(1.2)";
-        btnAmrap.style.opacity = "0.3";
-        btnAmrap.style.border = "none";
-        btnAmrap.style.filter = "none";
-        status.innerText = "EMOM (ALERTA POR INTERVALO)";
+        if (btnEmom) {
+            btnEmom.style.opacity = "1";
+            btnEmom.style.border = "2px solid var(--accent-blue)";
+            btnEmom.style.filter = "brightness(1.2)";
+        }
+        if (btnAmrap) {
+            btnAmrap.style.opacity = "0.3";
+            btnAmrap.style.border = "none";
+            btnAmrap.style.filter = "none";
+        }
+        if (status) status.innerText = "EMOM (ALERTA POR INTERVALO)";
         
         // UX: No EMOM habilitamos segundos para intervalos personalizados (ex: 30s)
         if (groupSec) groupSec.style.display = "flex";
@@ -2038,7 +2538,6 @@ function setTimerMode(modo) {
 function iniciarTimerCF() {
     const btnStart = document.getElementById('btn-start-wod');
 
-    // Lógica de Pausa/Retomada
     if (cfTimerInterval && !cfIsPaused) {
         pausarTimerCF();
         return;
@@ -2064,13 +2563,12 @@ function iniciarTimerCF() {
 
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
-            tocarBeep(600, 0.1); // Beep de contagem
-            // Injetado innerHTML com a tag span para os milissegundos ficarem menores na preparação
+            tocarBeep(600, 0.1); 
             display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
             prep--;
         } else {
             clearInterval(cfTimerInterval);
-            tocarBeep(880, 0.5); // Beep de início
+            tocarBeep(880, 0.5); 
             cfTempoDecorridoAcumulado = 0;
             cfStartTime = Date.now();
             executarWodReal(minSet);
@@ -2097,14 +2595,12 @@ function pausarTimerCF() {
 function executarWodReal() {
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
-    const btnPause = document.getElementById('btn-pause-wod');
     
     // Captura os valores de tempo definidos no HTML
     const mSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     const sSet = parseInt(document.getElementById('wod-seconds')?.value) || 0;
     const intervaloTotalSegundos = (mSet * 60) + sSet;
 
-    if (btnPause) btnPause.style.display = 'block';
     status.innerText = "WORK!";
     display.style.color = "#22c55e"; 
 
@@ -2164,7 +2660,6 @@ function finalizarTudo() {
     pararTimerCF();
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
-    // Aplicado tratamento de tamanho no encerramento do treino
     display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
     display.style.color = "#ff4444";
     document.getElementById('status-timer').innerText = "FIM DO TREINO!";
@@ -2178,7 +2673,6 @@ function resetarTimerCF() {
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
     if (display) {
-        // Aplicado tratamento de tamanho no reset do cronômetro
         display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
         display.style.color = "white";
     }
@@ -2190,3 +2684,6 @@ function pararTimerCF() {
     clearInterval(cfTimerInterval);
     cfTimerInterval = null;
 }
+
+// Expõe estritamente com o novo nome para o escopo global
+window.setWodTimerMode = setWodTimerMode;
