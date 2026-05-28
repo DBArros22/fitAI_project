@@ -10,6 +10,10 @@ let milisegundosAcumulados = 0;
 let timestampInicio = null;
 let assisData = JSON.parse(localStorage.getItem('fitai_assis_data')) || null;
 
+// Váriavel perfil usuário
+let fluxoTrocaEmailPendente = null;
+
+
 // Variáveis wod timers crossfit
 let cfTimerInterval = null;
 let cfStartTime = 0; // Para precisão absoluta
@@ -95,39 +99,150 @@ function atualizarFotoPerfil(input) {
 }
 
 /**
- * 2. Salva Dados com Feedback Visual Melhorado
+ * 2. Salva Dados (Fluxo inteligente com labels dinâmicas em parênteses)
  */
-function salvarDadosPerfil(event) {
+async function salvarDadosPerfil(event) {
     const nome = document.getElementById('perfil-nome').value;
     const tel = document.getElementById('perfil-tel').value;
-    const novoEmail = document.getElementById('perfil-email').value;
+    const novoEmail = document.getElementById('perfil-email').value.trim();
     const emailAntigo = localStorage.getItem('user_email');
     
     const btn = event.currentTarget;
 
-    // Se mudar E-mail ou Tel, pede confirmação
-    if (novoEmail !== emailAntigo || tel !== localStorage.getItem('user_tel')) {
-        if (!confirm("Alterar dados de contato? Um código será enviado para " + novoEmail)) return;
+    if (novoEmail !== emailAntigo) {
+        let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+        const emailJaExiste = usuarios.some(u => u.email === novoEmail);
+        if (emailJaExiste) {
+            mostrarAvisoNotificacao("Este e-mail já está sendo utilizado por outra conta!", "erro");
+            return;
+        }
+
+        const codAntigo = Math.floor(100000 + Math.random() * 900000).toString();
+        const codNovo = Math.floor(100000 + Math.random() * 900000).toString();
+
+        fluxoTrocaEmailPendente = {
+            nome: nome,
+            tel: tel,
+            emailAntigo: emailAntigo,
+            novoEmail: novoEmail,
+            codigoAntigoGerado: codAntigo,
+            codigoNovoGerado: codNovo,
+            btnAlvo: btn
+        };
+
+        // Atualiza dinamicamente as labels inserindo os e-mails entre parênteses
+        const lblAntigo = document.getElementById('label-email-antigo');
+        const lblNovo = document.getElementById('label-email-novo');
+        if (lblAntigo) lblAntigo.innerText = `Código no E-mail Antigo (${emailAntigo}):`;
+        if (lblNovo) lblNovo.innerText = `Código no Novo E-mail (${novoEmail}):`;
+
+        console.log(`[BACKEND MOCK] Código para o e-mail antigo (${emailAntigo}): ${codAntigo}`);
+        console.log(`[BACKEND MOCK] Código para o novo e-mail (${novoEmail}): ${codNovo}`);
+
+        mostrarAvisoNotificacao("Códigos de segurança enviados!", "sucesso");
+        abrirModalEmail();
+        return; 
     }
 
-    // Atualiza Storage e Banco
     localStorage.setItem('user_nome', nome);
     localStorage.setItem('user_tel', tel);
-    localStorage.setItem('user_email', novoEmail);
 
     let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
     const index = usuarios.findIndex(u => u.email === emailAntigo);
     if (index !== -1) {
         usuarios[index].nome = nome;
         usuarios[index].tel = tel;
-        usuarios[index].email = novoEmail;
         localStorage.setItem('fitai_users', JSON.stringify(usuarios));
     }
 
-    // Feedback Visual Ultra-Rápido e limpo
+    exibirFeedbackSucessoBotao(btn);
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+}
+
+/**
+ * Função para reenviar o código de verificação individualmente por canal
+ */
+function reenviarTokenSeguranca(tipo) {
+    if (!fluxoTrocaEmailPendente) return;
+
+    const novoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (tipo === 'antigo') {
+        fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
+        console.log(`[BACKEND REENVIO] Novo código para e-mail antigo (${fluxoTrocaEmailPendente.emailAntigo}): ${novoCodigo}`);
+        mostrarAvisoNotificacao(`Código reenviado para o e-mail antigo!`, "sucesso");
+    } else {
+        fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
+        console.log(`[BACKEND REENVIO] Novo código para e-mail novo (${fluxoTrocaEmailPendente.novoEmail}): ${novoCodigo}`);
+        mostrarAvisoNotificacao(`Código reenviado para o novo e-mail!`, "sucesso");
+    }
+}
+
+function abrirModalEmail() {
+    const modal = document.getElementById('modal-verificar-email');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+}
+
+function fecharModalEmail() {
+    const modal = document.getElementById('modal-verificar-email');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+    document.getElementById('codigo-email-antigo').value = "";
+    document.getElementById('codigo-email-novo').value = "";
+    fluxoTrocaEmailPendente = null;
+}
+
+async function processarTrocaEmail() {
+    if (!fluxoTrocaEmailPendente) return;
+
+    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
+    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
+
+    if (codAntigoDigitado !== fluxoTrocaEmailPendente.codigoAntigoGerado) {
+        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
+        return;
+    }
+
+    if (codNovoDigitado !== fluxoTrocaEmailPendente.codigoNovoGerado) {
+        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
+        return;
+    }
+
+    const f = fluxoTrocaEmailPendente;
+    
+    localStorage.setItem('user_nome', f.nome);
+    localStorage.setItem('user_tel', f.tel);
+    localStorage.setItem('user_email', f.novoEmail);
+
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
+    
+    if (index !== -1) {
+        usuarios[index].nome = f.nome;
+        usuarios[index].tel = f.tel;
+        usuarios[index].email = f.novoEmail;
+        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    }
+
+    if (typeof salvarDados === 'function') salvarDados();
+
+    exibirFeedbackSucessoBotao(f.btnAlvo);
+    fecharModalEmail();
+    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
+    
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+}
+
+function exibirFeedbackSucessoBotao(btn) {
+    if (!btn) return;
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
-    btn.style.background = "#22c55e"; // Verde vibrante
+    btn.style.background = "#22c55e"; 
     btn.style.transform = "scale(0.98)";
 
     setTimeout(() => {
@@ -135,46 +250,34 @@ function salvarDadosPerfil(event) {
         btn.style.background = "";
         btn.style.transform = "";
     }, 2000);
-
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
-/**
- * 3. Altera Senha (Inicia ao clicar no campo ou botão)
- */
 function alterarSenhaPerfil() {
     const nova = document.getElementById('pass-nova').value;
-    // Se você tiver o campo de repetir senha, pegue-o aqui também
-    // const repetir = document.getElementById('pass-repetir').value;
+    const confirmar = document.getElementById('pass-confirmar') ? document.getElementById('pass-confirmar').value : "";
 
     if (nova.length < 4) {
-        // Feedback visual no botão em vez de alert
-        const btn = document.getElementById('btn-senha-perfil');
-        btn.innerText = "SENHA MUITO CURTA!";
-        btn.style.color = "#ef4444";
-        setTimeout(() => { btn.innerText = "ALTERAR SENHA"; btn.style.color = ""; }, 2000);
+        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 4 caracteres!", "erro");
         return;
     }
 
-    // Abre o modal de confirmação
+    if (nova !== confirmar) {
+        mostrarAvisoNotificacao("As senhas digitadas não coincidem!", "erro");
+        return;
+    }
+
     document.getElementById('modal-confirmar-senha').classList.remove('hidden');
     document.getElementById('modal-confirmar-senha').style.display = 'flex';
     document.getElementById('confirm-pass-atual').focus();
 }
 
-/**
- * 2. Fecha o modal
- */
 function fecharModalSenha() {
     document.getElementById('modal-confirmar-senha').classList.add('hidden');
     document.getElementById('modal-confirmar-senha').style.display = 'none';
     document.getElementById('confirm-pass-atual').value = "";
 }
 
-/**
- * 3. Processa a troca validando a senha atual dentro do modal
- */
-function processarTrocaSenha() {
+async function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
     const emailAtivo = localStorage.getItem('user_email');
@@ -184,7 +287,6 @@ function processarTrocaSenha() {
 
     if (index === -1) return;
 
-    // Validação Real
     if (usuarios[index].pass !== senhaAtualDigitada) {
         const inputModal = document.getElementById('confirm-pass-atual');
         inputModal.style.border = "1px solid #ef4444";
@@ -194,39 +296,35 @@ function processarTrocaSenha() {
         return;
     }
 
-    // Se a senha estiver correta, salva
     usuarios[index].pass = novaSenha;
     localStorage.setItem('fitai_users', JSON.stringify(usuarios));
     
-    // Sincroniza com o seu banco global
     if (typeof salvarDados === 'function') salvarDados();
 
-    // Sucesso
     fecharModalSenha();
     const btnPrincipal = document.getElementById('btn-senha-perfil');
-    btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
-    btnPrincipal.style.background = "#22c55e";
+    if (btnPrincipal) {
+        btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
+        btnPrincipal.style.background = "#22c55e";
+        setTimeout(() => {
+            btnPrincipal.innerHTML = "ALTERAR SENHA";
+            btnPrincipal.style.background = "";
+        }, 3000);
+    }
     
     document.getElementById('pass-nova').value = "";
-    // Se tiver o campo de repetir: document.getElementById('pass-repetir').value = "";
-
-    setTimeout(() => {
-        btnPrincipal.innerHTML = "ALTERAR SENHA";
-        btnPrincipal.style.background = "";
-    }, 3000);
+    if (document.getElementById('pass-confirmar')) document.getElementById('pass-confirmar').value = "";
+    mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
 }
-// Chame carregarDadosPerfil() dentro da sua função de inicialização do app (ex: quando o Firebase confirma login)
 
-// função divergencia de senha ou email
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
     if (existente) existente.remove();
 
     const toast = document.createElement('div');
     toast.id = 'toast-notificacao';
-    toast.className = tipo; // Adiciona a classe 'sucesso' ou 'erro'
+    toast.className = tipo; 
 
-    // Ícone moderno em SVG
     const icone = tipo === 'sucesso' 
         ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
         : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
@@ -237,19 +335,16 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     `;
 
     document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = '1'; }, 10);
 
-    // Animação de entrada
-    setTimeout(() => {
-        toast.style.opacity = '1';
-    }, 10);
-
-    // Saída automática
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(-50%) translateY(-20px)';
         setTimeout(() => toast.remove(), 500);
     }, 3500);
 }
+
+window.reenviarTokenSeguranca = reenviarTokenSeguranca;
 
 // --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
@@ -336,6 +431,9 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewName) {
+    // Registra a visualização atual globalmente para o controle do widget
+    window.currentView = viewName;
+
     const views = [
         'view-login', 'view-lobby', 'view-registro', 'view-calendario',
         'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
@@ -365,9 +463,12 @@ function showView(viewName) {
     if (viewName === 'consulta-geral') renderizarFichasConsulta();
     if (viewName === 'calendario') renderizarPaginaCronograma();
     if (viewName === 'blog') renderizarBlog();
+
+    // Atualiza imediatamente a visibilidade do mini-timer ao trocar de tela
+    if (typeof atualizarMiniTimerWidget === 'function') {
+        atualizarMiniTimerWidget("");
+    }
 }
-
-
 
 // --- 2. SISTEMA DE AUTENTICAÇÃO ---
 function toggleAuthTab(tab) {
@@ -1689,7 +1790,7 @@ function renderizarPaginaCronograma() {
             
             <div style="margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência da Semana                         (Aperte para modificar a letra)</h3>
+                    <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência semanal (Toque para alternar)</h3>
                     <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
                 </div>
                 <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
@@ -1854,7 +1955,7 @@ function renderizarLembretes() {
     if (!container) return;
 
     if (lembretes.length === 0) {
-        container.innerHTML = `<p style="color: gray; font-size: 11px; text-align: center; margin-top: 10px;">Nenhum registro histórico.</p>`;
+        container.innerHTML = `<p style="color: gray; font-size: 11px; text-align: center; margin-top: 10px;">Vázio. (Ex: A - triceps, B - biceps) é possível "riscar" na lista. </p>`;
         return;
     }
 
@@ -1895,7 +1996,7 @@ function toggleTimer() {
 
         isTimerRunning = true;
         btn.innerText = "PAUSAR";
-        btn.style.background = "#ef4444";
+        btn.style.background = "#ef4444"; // Cor vermelha ao rodar
         
         timerInterval = setInterval(() => {
             if (isCountdownMode) {
@@ -1911,11 +2012,18 @@ function toggleTimer() {
     }
 }
 
+/**
+ * Função auxiliar de pausa ajustada de forma única (Texto vira RETOMAR)
+ */
 function pausarTimer() {
     clearInterval(timerInterval);
     isTimerRunning = false;
+    
     const btn = document.getElementById('btn-timer-toggle');
-    if (btn) { btn.innerText = "RETOMAR"; btn.style.background = "#3b82f6"; }
+    if (btn) {
+        btn.innerText = "RETOMAR";
+        btn.style.background = "#3b82f6"; // Sua cor azul padrão de destaque
+    }
 }
 
 function resetTimer() {
@@ -1927,6 +2035,8 @@ function resetTimer() {
     if (btn) { btn.innerText = "INICIAR"; btn.style.background = "#3b82f6"; }
 }
 
+// funções notificação de tempo esgotado fora da pagina cronograma 
+
 function finalizarTimer() {
     clearInterval(timerInterval);
     isTimerRunning = false;
@@ -1935,7 +2045,7 @@ function finalizarTimer() {
     const btn = document.getElementById('btn-timer-toggle');
     if (btn) { btn.innerText = "INICIAR"; btn.style.background = "#3b82f6"; }
     if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
-    mostrarAviso("TEMPO ESGOTADO! 🔥");
+    mostrarAviso(" Timer Cronograma finalizado ❗");
 }
 
 function atualizarDisplayTimer() {
@@ -2002,45 +2112,42 @@ window.addEventListener('DOMContentLoaded', () => {
     atualizarListaExercicios(); 
     gerarCalendario();
 });
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
-
     container.innerHTML = `
-        <div class="glass-panel" style="padding: 20px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div class="glass-panel" style="padding: 16px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 5px; vertical-align: middle;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
                 </button>
                 <div style="text-align: right;">
-                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">FEED</h2>
+                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">Meu Feed
+                    </h2>
                     <p style="color: #3b82f6; font-size: 9px; margin: 0; font-weight: 900; letter-spacing: 1px;">EVOLUÇÃO PRO</p>
                 </div>
             </div>
-
-            <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 18px; border-radius: 20px; margin-bottom: 30px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." 
-                    style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 15px; font-size: 14px; min-height: 60px;"></textarea>
-                
+            <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 15px; font-size: 14px; min-height: 60px;"></textarea>
                 <div id="preview-midia" style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
-
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
                     <div style="display: flex; gap: 12px;">
-                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
+                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
                             <input type="file" accept="image/*" onchange="anexarMidia(this)" style="display: none;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         </label>
-                        <button id="btn-mic" onclick="toggleGravacaoAudio()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <button id="btn-mic" onclick="toggleGravacaoAudio()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                     </div>
-                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 10px 25px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
+                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 12px 28px; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
                 </div>
             </div>
-
-            <div id="feed-container" style="display: flex; flex-direction: column; gap: 20px;"></div>
+            <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
     `;
     atualizarFeedUI();
@@ -2054,9 +2161,8 @@ function anexarMidia(input) {
             midiaAnexada = { tipo: 'foto', data: e.target.result };
             document.getElementById('preview-midia').innerHTML = `
                 <div style="position: relative; display: inline-block;">
-                    <img src="${e.target.result}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 10px; border: 2px solid #3b82f6;">
-                    <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" 
-                        style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px;">X</button>
+                    <img src="${e.target.result}" style="width: 90px; height: 90px; object-fit: cover; border-radius: 10px; border: 2px solid #3b82f6;">
+                    <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 11px; font-weight: bold;">X</button>
                 </div>`;
         };
         reader.readAsDataURL(file);
@@ -2076,8 +2182,8 @@ async function toggleGravacaoAudio() {
             reader.onload = (e) => {
                 midiaAnexada = { tipo: 'audio', data: e.target.result };
                 document.getElementById('preview-midia').innerHTML = `
-                    <div style="background: #1e293b; padding: 10px; border-radius: 10px; color: #3b82f6; display: flex; align-items: center; gap: 10px;">
-                        🎙️ Áudio Gravado <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="color: red; border: none; background: none; cursor: pointer;">Remover</button>
+                    <div style="background: #1e293b; padding: 10px; border-radius: 10px; color: #3b82f6; display: flex; align-items: center; gap: 10px; font-size: 13px;">
+                        🎙️ Áudio Gravado <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="color: #ef4444; border: none; background: none; cursor: pointer; font-weight: bold; margin-left: 5px;">Remover</button>
                     </div>`;
             };
             reader.readAsDataURL(audioBlob);
@@ -2096,7 +2202,11 @@ async function toggleGravacaoAudio() {
 
 function postarNoFeed() {
     const texto = document.getElementById('post-texto').value;
-    if (!texto && !midiaAnexada) return mostrarAviso("O post não pode estar vazio!");
+    if (!texto && !midiaAnexada) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        mostrarAviso("O post não pode estar vazio!");
+        return;
+    }
 
     const novoPost = {
         id: Date.now(),
@@ -2112,6 +2222,8 @@ function postarNoFeed() {
     document.getElementById('post-texto').value = "";
     document.getElementById('preview-midia').innerHTML = "";
     atualizarFeedUI();
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     mostrarAviso("Postagem realizada!");
 }
 
@@ -2123,35 +2235,30 @@ function atualizarFeedUI() {
     const fotoAtleta = localStorage.getItem('user_foto');
 
     container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 22px; margin-bottom:15px; position: relative;">
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 35px; height: 35px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                         ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
                     </div>
                     <div>
-                        <p style="color: white; font-size: 12px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
-                        <p style="color: #64748b; font-size: 9px; margin: 0;">${post.data}</p>
+                        <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
+                        <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
                     </div>
                 </div>
-
-                <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 18px; font-weight: bold;">
-                    &times;
-                </button>
+                <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
             </div>
 
-            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px;">${post.texto}</p>` : ''}
+            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
 
             ${post.midia && post.midia.data ? `
-                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;">
-                    <img src="${post.midia.data}" style="width: 100%; display: block; object-fit: cover; max-height: 350px;">
+                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
+                    <img src="${post.midia.data}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">
                 </div>
             ` : ''}
         </div>
-    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px;">SEM ATIVIDADES</p>`;
+    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
-
-// --- FUNÇÕES DE ÁUDIO (PARA O BOTÃO DE MICROFONE NO HTML) ---
 
 async function toggleGravacao() {
     const btn = document.getElementById('btn-mic');
@@ -2160,7 +2267,6 @@ async function toggleGravacao() {
     if (!gravando) {
         try {
             audioChunks = []; 
-            
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
             
@@ -2173,10 +2279,9 @@ async function toggleGravacao() {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     midiaAnexada = { tipo: 'audio', data: reader.result };
-                    atualizarPreviewMidia(); 
+                    if (typeof atualizarPreviewMidia === 'function') atualizarPreviewMidia(); 
                 };
                 reader.readAsDataURL(audioBlob);
-
                 stream.getTracks().forEach(track => track.stop());
             };
 
@@ -2186,10 +2291,12 @@ async function toggleGravacao() {
             btn.style.background = "#ef4444"; 
             btn.classList.add('mic-gravando');
             if(timer) timer.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             mostrarAviso("Gravando áudio...");
 
         } catch (err) {
             console.error("Erro ao capturar áudio:", err);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
                 mostrarAviso("Nenhum microfone foi detectado no seu dispositivo.");
             } else {
@@ -2205,73 +2312,40 @@ async function toggleGravacao() {
         btn.style.background = "rgba(255,255,255,0.05)"; 
         btn.classList.remove('mic-gravando');
         if(timer) timer.classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Gravação finalizada e anexada.");
     }
 }
 
-window.onload = () => {
-    const session = localStorage.getItem('fitai_session');
-    if (session) showView('lobby');
-};
-
-function mostrarPreviewAudio() {
-    const preview = document.getElementById('media-preview');
-    preview.classList.remove('hidden');
-    preview.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <audio src="${midiaAnexada.url}" controls style="height: 30px; flex: 1;"></audio>
-            <button onclick="limparMedia()" style="background:none; border:none; color:red; cursor:pointer;">✕</button>
-        </div>
-    `;
-}
-
-function iniciarTimer(display) {
-    let seg = 0;
-    const interval = setInterval(() => {
-        if (!gravando) {
-            clearInterval(interval);
-            display.innerText = "00:00";
-            return;
-        }
-        seg++;
-        const m = Math.floor(seg / 60).toString().padStart(2, '0');
-        const s = (seg % 60).toString().padStart(2, '0');
-        display.innerText = `${m}:${s}`;
-    }, 1000);
-}
-
-function limparMedia() {
-    midiaAnexada = null;
-    document.getElementById('media-preview').classList.add('hidden');
-    document.getElementById('media-preview').innerHTML = "";
-}
-
 function excluirPost(id) {
+    // Força a página a rolar para o topo instantaneamente para receber o modal centralizado
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     const modalConfirm = document.createElement('div');
     modalConfirm.id = 'modal-confirmacao-exclusao';
     modalConfirm.style = `
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(10px);
+        background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         display: flex; align-items: center; justify-content: center;
         z-index: 100000; padding: 20px;
     `;
 
     modalConfirm.innerHTML = `
-        <div class="glass-panel" style="max-width: 340px; width: 100%; padding: 30px; text-align: center; border: 1px solid #ef4444; background: var(--bg-card); border-radius: 28px; box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);">
-            <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <div class="glass-panel" style="max-width: 320px; width: 100%; padding: 25px; text-align: center; border: 1px solid #ef4444; background: #0f172a; border-radius: 24px; box-shadow: 0 0 40px rgba(239, 68, 68, 0.2);">
+            <div style="width: 55px; height: 55px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; color: #ef4444;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
             </div>
-            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">EXCLUIR POST?</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Essa ação não pode ser desfeita e removerá este momento da sua história.</p>
+            <h3 class="italic-bold" style="color: white; margin-bottom: 8px; font-size: 1.05rem; letter-spacing: 1px;">EXCLUIR POST?</h3>
+            <p style="color: #94a3b8; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">Essa ação não pode ser desfeita e removerá este momento da sua história.</p>
             
             <div style="display: flex; gap: 10px;">
-                <button id="btn-cancelar-exclusao" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">CANCELAR</button>
-                <button id="btn-confirmar-exclusao" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">EXCLUIR</button>
+                <button id="btn-cancelar-exclusao" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">CANCELAR</button>
+                <button id="btn-confirmar-exclusao" style="flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">EXCLUIR</button>
             </div>
         </div>
     `;
 
-    // Força a injeção diretamente dentro do painel da view do blog ativa
     const viewBlog = document.getElementById('view-blog');
     if (viewBlog) {
         viewBlog.appendChild(modalConfirm);
@@ -2286,6 +2360,7 @@ function excluirPost(id) {
         localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
         modalConfirm.remove();
         atualizarFeedUI(); 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Post removido com sucesso.");
     };
 }
@@ -2333,94 +2408,26 @@ window.addEventListener('load', () => {
         if (checkbox && emailSalvo) checkbox.checked = true;
     }
 });
+
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function gerarSugestao() {
-    const exOcupado = document.getElementById('select-ex-ocupado').value;
-    const resultadoDiv = document.getElementById('resultado-sugestao');
-    const nomeSugestao = document.getElementById('nome-sugestao');
-
-    if (!exOcupado) return alert("Selecione o aparelho ocupado!");
-
-    let sugestaoEncontrada = "";
-
-    // Procura em qual grupo de equivalência o exercício está
-    for (let categoria in equivalencias) {
-        if (equivalencias[categoria].includes(exOcupado)) {
-            // Filtra a lista para remover o que já está ocupado
-            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
-            // Pega um aleatório das opções restantes
-            sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
-            break;
-        }
-    }
-
-    // Se não houver equivalência específica, pega um aleatório do mesmo grupo muscular
-    if (!sugestaoEncontrada) {
-        const grupo = document.getElementById('select-grupo-sub').value;
-        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
-        sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
-    }
-
-    // Exibe o resultado com animação
-    nomeSugestao.innerText = sugestaoEncontrada;
-    resultadoDiv.classList.remove('hidden');
-    resultadoDiv.classList.add('animate-fade-in');
-}
-
-function carregarExerciciosSub() {
-    const grupo = document.getElementById('select-grupo-sub').value;
-    const selectEx = document.getElementById('select-ex-ocupado');
-    
-    if (!selectEx) return;
-
-    // Limpa e reseta o select do Plano B
-    selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
-    
-    if (!grupo) return;
-
-    const exercicios = dicionarioExercicios[grupo] || [];
-    
-    if (exercicios.length === 0) {
-        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
-        return;
-    }
-
-    // Preenche o select do Plano B
-    exercicios.forEach(ex => {
-        const opt = document.createElement('option');
-        opt.value = ex;
-        opt.textContent = ex;
-        selectEx.appendChild(opt);
-    });
-}
-
-const listaDeExercicios = dicionarioExercicios;
-
-function mostrarAviso(mensagem) {
-    document.getElementById('texto-modal-aviso').innerText = mensagem;
-    document.getElementById('modal-aviso').classList.remove('hidden');
-}
-
-function fecharModalAviso() {
-    document.getElementById('modal-aviso').classList.add('hidden');
-}
-
-function gerarSugestao() {
     const grupo = document.getElementById('select-grupo-sub').value;
     const exOcupado = document.getElementById('select-ex-ocupado').value;
     const resultadoDiv = document.getElementById('resultado-sugestao');
+    const loader = document.getElementById('loader-sugestao');
+    const conteudo = document.getElementById('conteudo-sugestao');
     const nomeSugestao = document.getElementById('nome-sugestao');
 
-    // Troca do alert pelo Modal Moderno
     if (!grupo || !exOcupado) {
-        mostrarAviso("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
+        mostrarAvisoAparelhoOcupado("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
         return;
     }
 
     let sugestaoEncontrada = "";
 
-    // Lógica 1: Equivalência biomecânica
+    // Lógica 1: Equivalências
     for (let categoria in equivalencias) {
         if (equivalencias[categoria].includes(exOcupado)) {
             const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
@@ -2431,7 +2438,97 @@ function gerarSugestao() {
         }
     }
 
-    // Lógica 2: Fallback para o mesmo grupo
+    // Lógica 2: Fallback grupo
+    if (!sugestaoEncontrada) {
+        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
+        if (listaGrupo.length > 0) {
+            sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
+        }
+    }
+
+    if (sugestaoEncontrada) {
+        // Fluxo de Animação Premium
+        resultadoDiv.classList.remove('hidden');
+        conteudo.classList.add('hidden');
+        conteudo.classList.remove('animar-resultado');
+        loader.classList.remove('hidden');
+
+        setTimeout(() => {
+            loader.classList.add('hidden');
+            nomeSugestao.innerText = sugestaoEncontrada;
+            conteudo.classList.remove('hidden');
+            conteudo.classList.add('animar-resultado');
+        }, 750); // Tempo do efeito simulando a busca (750 milissegundos)
+
+    } else {
+        mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
+    }
+}
+
+function carregarExerciciosSub() {
+    const grupo = document.getElementById('select-grupo-sub').value;
+    const selectEx = document.getElementById('select-ex-ocupado');
+    
+    if (!selectEx) return;
+
+    selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
+    if (!grupo) return;
+
+    const exercicios = dicionarioExercicios[grupo] || [];
+    if (exercicios.length === 0) {
+        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
+        return;
+    }
+
+    exercicios.forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex;
+        opt.textContent = ex;
+        selectEx.appendChild(opt);
+    });
+}
+
+const listaDeExercicios = dicionarioExercicios;
+
+function mostrarAvisoAparelhoOcupado(mensagem) {
+    const textoModal = document.getElementById('texto-modal-aviso');
+    const modalAviso = document.getElementById('modal-aviso');
+    if (textoModal && modalAviso) {
+        textoModal.innerText = message || mensagem;
+        modalAviso.classList.remove('hidden');
+    }
+}
+
+function fecharModalAviso() {
+    const modalAviso = document.getElementById('modal-aviso');
+    if (modalAviso) modalAviso.classList.add('hidden');
+}
+
+// Vincula a segunda função para rodar com o mesmo comportamento visual unificado
+
+function gerarSugestaoComModal() {
+    const grupo = document.getElementById('select-grupo-sub').value;
+    const exOcupado = document.getElementById('select-ex-ocupado').value;
+    const resultadoDiv = document.getElementById('resultado-sugestao');
+    const nomeSugestao = document.getElementById('nome-sugestao');
+
+    if (!grupo || !exOcupado) {
+        mostrarAvisoAparelhoOcupado("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
+        return;
+    }
+
+    let sugestaoEncontrada = "";
+
+    for (let categoria in equivalencias) {
+        if (equivalencias[categoria].includes(exOcupado)) {
+            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
+            if (opcoes.length > 0) {
+                sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
+                break;
+            }
+        }
+    }
+
     if (!sugestaoEncontrada) {
         const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
         if (listaGrupo.length > 0) {
@@ -2444,11 +2541,12 @@ function gerarSugestao() {
         resultadoDiv.classList.remove('hidden');
         resultadoDiv.classList.add('fade-in'); 
     } else {
-        mostrarAviso("Não encontramos uma alternativa para este exercício no momento.");
+        mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
     }
 }
 
-// Função pagina de cargas corssfit
+
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function calcularCargasCF() {
     const input = document.getElementById('input-1rm');
@@ -2456,21 +2554,38 @@ function calcularCargasCF() {
     const valorMax = parseFloat(input.value);
 
     if (!valorMax || valorMax <= 0) {
-        container.innerHTML = '<p style="grid-column: span 2; color: var(--text-secondary);">Digite um valor...</p>';
+        container.innerHTML = '<p style="grid-column: span 2; color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 40px 0;">Digite um valor...</p>';
         return;
     }
 
     const porcentagens = [95, 90, 85, 80, 75, 70, 60, 50];
     
-    container.innerHTML = porcentagens.map(p => `
-        <div class="glass-card" style="padding: 15px; border: 1px solid rgba(255,255,255,0.05); text-align: center; background: rgba(255,255,255,0.02); border-radius: 8px;">
-            <div style="color: #22c55e; font-size: 0.7rem; font-weight: bold;">${p}%</div>
-            <div style="font-size: 1.2rem; font-weight: 900; color: #fff;">${(valorMax * (p/100)).toFixed(1)}<small style="font-size: 0.6rem;">KG</small></div>
-        </div>
-    `).join('');
+    container.innerHTML = porcentagens.map(p => {
+        // Define a cor da tag lateral baseado na zona de intensidade do CrossFit
+        let corZona = '#22c55e'; // Verde (50% a 70%)
+        if (p >= 75 && p <= 85) corZona = '#ffae00'; // Amarelo (75% a 85%)
+        if (p >= 90) corZona = '#ef4444'; // Vermelho (90% a 95%)
+
+        return `
+            <div class="glass-card" style="padding: 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; justify-content: space-between; background: rgba(15, 23, 42, 0.5); border-radius: 10px;">
+                <div style="background: ${corZona}15; color: ${corZona}; font-size: 0.75rem; font-weight: 900; padding: 4px 8px; border-radius: 6px; border: 1px solid ${corZona}30;">${p}%</div>
+                <div style="font-size: 1.15rem; font-weight: 900; color: #fff; text-align: right;">${(valorMax * (p/100)).toFixed(1)}<span style="font-size: 0.6rem; color: var(--text-secondary); margin-left: 2px;">KG</span></div>
+            </div>
+        `;
+    }).join('');
 }
 
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 
+
+if (typeof audioCtx === 'undefined' || !audioCtx) {
+    window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+// Elemento oculto de áudio contínuo para manter o navegador acordado em segundo plano
+const bgAudioSilence = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==");
+bgAudioSilence.loop = true;
 
 function tocarBeep(freq, dur) {
     const osc = audioCtx.createOscillator();
@@ -2483,11 +2598,9 @@ function tocarBeep(freq, dur) {
     osc.stop(audioCtx.currentTime + dur);
 }
 
-// Alterado o nome para isolamento absoluto e fim do loop infinito
 function setWodTimerMode(modo) {
     if (typeof modo !== 'string') return;
 
-    // NOVA TRAVA: Se o timer estiver rodando e não estiver pausado, bloqueia a mudança de modo
     if (cfTimerInterval && !cfIsPaused) {
         return; 
     }
@@ -2496,8 +2609,8 @@ function setWodTimerMode(modo) {
     const btnAmrap = document.getElementById('btn-amrap');
     const btnEmom = document.getElementById('btn-emom');
     const status = document.getElementById('status-timer');
-    const groupSec = document.getElementById('group-seconds'); // Container dos segundos
-    const labelTempo = document.getElementById('label-tempo-wod'); // Label instrutiva
+    const groupSec = document.getElementById('group-seconds'); 
+    const labelTempo = document.getElementById('label-tempo-wod'); 
 
     if (modo === 'AMRAP') {
         if (btnAmrap) {
@@ -2512,7 +2625,6 @@ function setWodTimerMode(modo) {
         }
         if (status) status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
         
-        // UX: No AMRAP só precisamos da duração total in minutos
         if (groupSec) groupSec.style.display = "none";
         if (labelTempo) labelTempo.innerText = "Duração Total (Minutos)";
     } else {
@@ -2528,11 +2640,23 @@ function setWodTimerMode(modo) {
         }
         if (status) status.innerText = "EMOM (ALERTA POR INTERVALO)";
         
-        // UX: No EMOM habilitamos segundos para intervalos personalizados (ex: 30s)
         if (groupSec) groupSec.style.display = "flex";
         if (labelTempo) labelTempo.innerText = "Intervalo do Alerta (Min:Seg)";
     }
     resetarTimerCF();
+}
+
+function travarControlesTempo(deveTravar) {
+    const botoes = ['btn-min-down', 'btn-min-up', 'btn-sec-down', 'btn-sec-up', 'btn-amrap', 'btn-emom'];
+    botoes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = deveTravar;
+            el.style.pointerEvents = deveTravar ? "none" : "auto";
+        }
+    });
+    const container = document.getElementById('container-ajuste-tempo');
+    if (container) container.style.opacity = deveTravar ? "0.4" : "1";
 }
 
 function iniciarTimerCF() {
@@ -2543,11 +2667,23 @@ function iniciarTimerCF() {
         return;
     }
 
+    // Solicita permissão de notificação do sistema caso o usuário ainda não tenha liberado
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+
+    bgAudioSilence.play().catch(() => {});
+
     if (cfIsPaused) {
         cfIsPaused = false;
         cfStartTime = Date.now() - (cfTempoDecorridoAcumulado * 1000);
-        if (btnStart) btnStart.innerText = "PAUSAR";
-        executarWodReal(parseInt(document.getElementById('wod-minutes').value) || 0);
+        
+        if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
+        
+        travarControlesTempo(true);
+        executarWodReal();
+        atualizarAlternadorInterface(false);
+        configurarNotificacaoMedia('playing', 'Rodando');
         return;
     }
 
@@ -2555,16 +2691,22 @@ function iniciarTimerCF() {
     const status = document.getElementById('status-timer');
     const minSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     
-    if (btnStart) btnStart.innerText = "PAUSAR";
+    if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
+    travarControlesTempo(true);
 
     let prep = 10;
-    status.innerText = "PREPARAR...";
-    display.style.color = "#ffae00"; 
+    if (status) status.innerText = "PREPARAR...";
+    if (display) display.style.color = "#ffae00"; 
 
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
             tocarBeep(600, 0.1); 
-            display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+            if (display) display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+            
+            const txtPrep = `PREP ${prep}`;
+            atualizarMiniTimerWidget(txtPrep);
+            configurarNotificacaoMedia('playing', txtPrep);
+            
             prep--;
         } else {
             clearInterval(cfTimerInterval);
@@ -2572,6 +2714,9 @@ function iniciarTimerCF() {
             cfTempoDecorridoAcumulado = 0;
             cfStartTime = Date.now();
             executarWodReal(minSet);
+            
+            atualizarAlternadorInterface(false);
+            configurarNotificacaoMedia('playing', '00:00');
         }
     }, 1000);
 }
@@ -2587,22 +2732,33 @@ function pausarTimerCF() {
     const agora = Date.now();
     cfTempoDecorridoAcumulado = (agora - cfStartTime) / 1000;
     
-    document.getElementById('status-timer').innerText = "PAUSADO";
-    document.getElementById('timer-display').style.color = "#94a3b8";
-    if (btnStart) btnStart.innerText = "RETOMAR";
+    const status = document.getElementById('status-timer');
+    const display = document.getElementById('timer-display');
+    
+    if (status) status.innerText = "PAUSADO";
+    if (display) display.style.color = "#94a3b8";
+    
+    if (btnStart) btnStart.innerHTML = "<span>RETOMAR WOD</span>";
+
+    configurarNotificacaoMedia('paused', 'Pausado');
+    atualizarAlternadorInterface(true);
 }
 
 function executarWodReal() {
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
+    const btnStart = document.getElementById('btn-start-wod');
     
-    // Captura os valores de tempo definidos no HTML
     const mSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     const sSet = parseInt(document.getElementById('wod-seconds')?.value) || 0;
     const intervaloTotalSegundos = (mSet * 60) + sSet;
 
-    status.innerText = "WORK!";
-    display.style.color = "#22c55e"; 
+    if (status) status.innerText = "WORK!";
+    if (display) display.style.color = "#22c55e"; 
+    if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
+
+    let ultimoSegundoApitado = -1;
+    atualizarAlternadorInterface(false);
 
     cfTimerInterval = setInterval(() => {
         const agora = Date.now();
@@ -2610,13 +2766,18 @@ function executarWodReal() {
         let tempoFinal = 0;
 
         if (cfModo === 'AMRAP') {
-            // Lógica AMRAP: Regressiva até o fim
             tempoFinal = intervaloTotalSegundos - decorrido;
             
             if (tempoFinal <= 5 && tempoFinal > 0) {
-                const blink = Math.floor(decorrido * 5) % 2 === 0;
-                display.style.color = blink ? "#ff4444" : "white";
-                if (Math.floor(tempoFinal * 10) % 10 === 0) tocarBeep(440, 0.05);
+                if (display) {
+                    const blink = Math.floor(decorrido * 5) % 2 === 0;
+                    display.style.color = blink ? "#ff4444" : "white";
+                }
+                const segAtual = Math.floor(tempoFinal);
+                if (segAtual !== ultimoSegundoApitado) {
+                    tocarBeep(440, 0.05);
+                    ultimoSegundoApitado = segAtual;
+                }
             }
 
             if (tempoFinal <= 0) {
@@ -2624,26 +2785,26 @@ function executarWodReal() {
                 return finalizarTudo();
             }
         } else {
-            // Lógica EMOM: Progressiva e Infinita (Cíclica)
             tempoFinal = decorrido;
             
-            // Dispara alerta a cada vez que o 'decorrido' atinge o múltiplo do intervalo
-            if (decorrido > 0 && Math.floor(decorrido % intervaloTotalSegundos) === 0 && (decorrido % 1) < 0.1) {
-                tocarBeep(880, 0.6); // Beep mais longo conforme pedido
+            const cicloAtual = Math.floor(decorrido / intervaloTotalSegundos);
+            if (decorrido > 0 && cicloAtual !== ultimoSegundoApitado) {
+                tocarBeep(880, 0.6);
+                ultimoSegundoApitado = cicloAtual;
                 
-                // Alerta Visual Chamativo
-                display.style.color = "#00d4ff";
-                const statusOriginal = status.innerText;
-                status.innerText = "NOVO ROUND!";
-                status.style.color = "#00d4ff";
-                
-                setTimeout(() => {
-                    if(!cfIsPaused) {
-                        display.style.color = "#22c55e";
-                        status.innerText = "WORK!";
-                        status.style.color = "var(--accent-blue)";
-                    }
-                }, 1500);
+                if (display && status) {
+                    display.style.color = "#00d4ff";
+                    status.innerText = "NOVO ROUND!";
+                    status.style.color = "#00d4ff";
+                    
+                    setTimeout(() => {
+                        if(!cfIsPaused && cfTimerInterval) {
+                            display.style.color = "#22c55e";
+                            status.innerText = "WORK!";
+                            status.style.color = "var(--accent-blue)";
+                        }
+                    }, 1500);
+                }
             }
         }
 
@@ -2651,33 +2812,59 @@ function executarWodReal() {
         const s = Math.floor(Math.abs(tempoFinal) % 60);
         const ms = Math.floor((Math.abs(tempoFinal) % 1) * 100);
         
-        // Ajustado para innerHTML injetando os milissegundos menores dinamicamente durante a execução
-        display.innerHTML = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
+        const tempoFormatado = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        
+        if (display) {
+            display.innerHTML = `${tempoFormatado}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
+        }
+
+        document.title = `${tempoFormatado} | ${cfModo}`;
+        
+        atualizarMiniTimerWidget(tempoFormatado);
+        configurarNotificacaoMedia('playing', tempoFormatado);
     }, 10);
 }
 
 function finalizarTudo() {
     pararTimerCF();
+    bgAudioSilence.pause();
+    document.title = "AssisFiT PRO";
+    ocultarMiniTimerWidget();
+    limparNotificacaoMedia();
+    travarControlesTempo(false);
+    
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
-    display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
-    display.style.color = "#ff4444";
-    document.getElementById('status-timer').innerText = "FIM DO TREINO!";
-    if (btnStart) btnStart.innerText = "INICIAR";
+    const status = document.getElementById('status-timer');
+
+    if (display) {
+        display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+        display.style.color = "#ff4444";
+    }
+    if (status) status.innerText = "FIM DO TREINO!";
+    if (btnStart) btnStart.innerHTML = "<span>INICIAR WOD</span>";
 }
 
 function resetarTimerCF() {
     pararTimerCF();
+    bgAudioSilence.pause();
+    document.title = "AssisFiT PRO";
+    ocultarMiniTimerWidget();
+    limparNotificacaoMedia();
+    travarControlesTempo(false);
     cfTempoDecorridoAcumulado = 0;
     cfIsPaused = false;
+    
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
+    const status = document.getElementById('status-timer');
+
     if (display) {
         display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
         display.style.color = "white";
     }
-    document.getElementById('status-timer').innerText = "PRONTO";
-    if (btnStart) btnStart.innerText = "INICIAR";
+    if (status) status.innerText = "PRONTO";
+    if (btnStart) btnStart.innerHTML = "<span>INICIAR WOD</span>";
 }
 
 function pararTimerCF() {
@@ -2685,5 +2872,84 @@ function pararTimerCF() {
     cfTimerInterval = null;
 }
 
-// Expõe estritamente com o novo nome para o escopo global
+// --- CONTROLE DA ABA DE NOTIFICAÇÕES DISPOSITIVO MÓVEL (MEDIA SESSION) ---
+function configurarNotificacaoMedia(estado, tempoStr) {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: `${cfModo}: ${tempoStr}`,
+            artist: 'Treino em Andamento',
+            album: 'AssisFiT PRO'
+        });
+
+        navigator.mediaSession.playbackState = estado;
+
+        navigator.mediaSession.setActionHandler('pause', () => {
+            pausarTimerCF();
+        });
+        navigator.mediaSession.setActionHandler('play', () => {
+            iniciarTimerCF();
+        });
+    }
+}
+
+function limparNotificacaoMedia() {
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+    }
+}
+
+// --- CONTROLE LOGICO DO MINI-WIDGET COMPATIVEL ---
+function atualizarMiniTimerWidget(tempoStr) {
+    const widget = document.getElementById('mini-timer-widget');
+    const text = document.getElementById('mini-timer-text');
+    if (!widget || !text) return;
+
+    // Se houver uma contagem ativa ou pausada E o usuário não estiver visualizando a página de timers
+    if ((cfTimerInterval || cfIsPaused) && window.currentView !== 'crossfit-timers') {
+        widget.style.display = "flex";
+        if (tempoStr !== "") {
+            text.innerText = `${cfModo}: ${tempoStr}`;
+        }
+    } else {
+        widget.style.display = "none";
+    }
+}
+
+function alternarPlayPauseWidget() {
+    if (cfTimerInterval && !cfIsPaused) {
+        pausarTimerCF();
+    } else {
+        iniciarTimerCF();
+    }
+}
+
+function atualizarAlternadorInterface(estaPausado) {
+    const iconPause = document.getElementById('mini-icon-pause');
+    const iconPlay = document.getElementById('mini-icon-play');
+    if (!iconPause || !iconPlay) return;
+
+    if (estaPausado) {
+        iconPause.style.display = "none";
+        iconPlay.style.display = "block";
+    } else {
+        iconPause.style.display = "block";
+        iconPlay.style.display = "none";
+    }
+    
+    const btnStart = document.getElementById('btn-start-wod');
+    if (btnStart) {
+        btnStart.innerHTML = estaPausado ? "<span>RETOMAR WOD</span>" : "<span>PAUSAR WOD</span>";
+    }
+}
+
+function ocultarMiniTimerWidget() {
+    const widget = document.getElementById('mini-timer-widget');
+    if (widget) widget.style.display = "none";
+}
+
+window.alternarPlayPauseWidget = alternarPlayPauseWidget;
 window.setWodTimerMode = setWodTimerMode;
+window.iniciarTimerCF = iniciarTimerCF;
+window.pausarTimerCF = pausarTimerCF;
+window.resetarTimerCF = resetarTimerCF;
