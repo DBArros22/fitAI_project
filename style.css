@@ -33,6 +33,7 @@ body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     line-height: 1.5;
+    overflow-x: hidden; /* Evita quebra lateral em dispositivos móveis */
 }
 
 /* --- ESTRUTURA GERAL --- */
@@ -44,7 +45,7 @@ body {
 
 /* CORREÇÃO DO VAZAMENTO: Garante que as páginas ocultas não apareçam embaixo do Lobby */
 .page-container { display: none !important; }
-.page-container:not(.hidden) { display: block !important; }
+.page-container:not(.hidden) { display: flex !important; flex-direction: column; }
 .hidden { display: none !important; }
 
 /* OCULTAR NAVBAR NO LOGIN: Remove ícone de casa e botão sair da tela de login */
@@ -292,11 +293,19 @@ body:has(#view-login:not(.hidden)) .navbar {
     .registro-container { grid-template-columns: 1fr; }
 }
 
-/* --- AJUSTES EXCLUSIVOS PLANO B (CENTRALIZADO) --- */
+/* --- AJUSTES EXCLUSIVOS PLANO B (CENTRALIZADO E COMPACTADO PARA MOBILE) --- */
+#view-aparelho-ocupado {
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    min-height: calc(100vh - 80px); /* Desconta a altura da navbar */
+}
+
 #view-aparelho-ocupado .container-central {
     max-width: 420px;
-    margin: 40px auto;
-    padding: 20px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -306,15 +315,19 @@ body:has(#view-login:not(.hidden)) .navbar {
 #view-aparelho-ocupado .glass-card-action {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 28px;
-    padding: 30px;
+    border-radius: 24px;
+    padding: 24px;
     width: 100%;
     box-shadow: var(--shadow-pro);
 }
 
+/* Evita margens gigantes no mobile para o conteúdo não "vazar" para baixo */
+#view-aparelho-ocupado h2 { margin-bottom: 6px !important; }
+#view-aparelho-ocupado p { margin-bottom: 20px !important; }
+
 .btn-sugerir-glow {
     width: 100%;
-    padding: 16px;
+    padding: 14px;
     border-radius: 14px;
     border: none;
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
@@ -326,11 +339,11 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 .sugestao-destaque {
-    margin-top: 25px;
+    margin-top: 15px;
     background: rgba(56, 189, 248, 0.08);
     border: 1px dashed var(--accent-blue);
-    padding: 20px;
-    border-radius: 18px;
+    padding: 16px;
+    border-radius: 14px;
     color: var(--accent-blue);
     font-weight: 800;
     text-align: center;
@@ -345,6 +358,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center;
     z-index: 1000;
+    padding: 20px;
 }
 
 .modal-confirm {
@@ -353,6 +367,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     padding: 30px;
     border-radius: 24px;
     text-align: center;
+    width: 100%;
 }
 
 .italic-bold { font-weight: 900; font-style: italic; }
@@ -363,14 +378,22 @@ body:has(#view-login:not(.hidden)) .navbar {
 @media (max-width: 600px) {
     .content-grid { padding: 20px 4%; grid-template-columns: 1fr; }
     .navbar { padding: 1rem 4%; }
+    
+    /* Encolhimento dinâmico do formulário em telas de celulares pequenos */
+    #view-aparelho-ocupado .glass-card-action {
+        padding: 20px;
+    }
+    #view-aparelho-ocupado .input-group {
+        margin-bottom: 16px !important;
+    }
 }
 
 .btn-logout-nav {
-    background: rgba(239, 68, 68, 0.1); /* Fundo vermelho translúcido */
-    color: #ef4444; /* Vermelho vibrante */
+    background: rgba(239, 68, 68, 0.1); 
+    color: #ef4444; 
     border: 1px solid rgba(239, 68, 68, 0.3);
     padding: 8px 18px;
-    border-radius: 12px; /* Arredondado moderno */
+    border-radius: 12px; 
     font-weight: 800;
     font-size: 0.7rem;
     letter-spacing: 1.2px;
@@ -381,7 +404,7 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 .btn-logout-nav:hover {
-    background: #ef4444; /* Preenchimento total no hover */
+    background: #ef4444; 
     color: white;
     box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
     transform: translateY(-2px);
@@ -409,7 +432,7 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 .btn-recuperar-senha:hover {
     color: var(--accent-blue);
-    background: rgba(56, 189, 248, 0.1); /* Brilho sutil no fundo */
+    background: rgba(56, 189, 248, 0.1); 
     text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
 }
 
@@ -421,7 +444,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: transparent; /* Aproveita o fundo da página */
+    background: transparent; 
     color: var(--text-secondary);
     border: 1px solid var(--border-color);
     padding: 8px 16px;
@@ -440,7 +463,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     transform: translateX(-3px);
 }
 
-/* Garante que o ícone acompanhe a cor do texto */
 .btn-voltar-premium svg {
     stroke: currentColor; 
 }
@@ -472,39 +494,30 @@ body:has(#view-login:not(.hidden)) .navbar {
     top: 30px;
     left: 50%;
     transform: translateX(-50%);
-    /* Efeito Glassmorphism */
     background: rgba(15, 23, 42, 0.8); 
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    
-    /* Bordas e Sombras Premium */
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    
     padding: 16px 28px;
     border-radius: 20px;
     z-index: 200000;
-    
     display: flex;
     align-items: center;
     gap: 12px;
-    
-    /* Tipografia */
     color: white;
-    font-family: 'Inter', sans-serif; /* Ou a fonte que você usa */
+    font-family: 'Inter', sans-serif; 
     font-size: 11px;
     font-weight: 900;
     letter-spacing: 1.5px;
     text-transform: uppercase;
-    
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Detalhe lateral colorido para indicar o tipo (Sucesso/Erro) */
 #toast-notificacao.sucesso {
-    border-left: 4px solid #22c55e; /* Verde neon discreto */
+    border-left: 4px solid #22c55e; 
 }
 
 #toast-notificacao.erro {
-    border-left: 4px solid #ef4444; /* Vermelho sistema */
+    border-left: 4px solid #ef4444; 
 }
