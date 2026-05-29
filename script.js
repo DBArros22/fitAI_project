@@ -10,6 +10,8 @@ let milisegundosAcumulados = 0;
 let timestampInicio = null;
 let assisData = JSON.parse(localStorage.getItem('fitai_assis_data')) || null;
 
+window.cfIsPaused = false;
+
 // Váriavel perfil usuário
 let fluxoTrocaEmailPendente = null;
 
@@ -2412,6 +2414,10 @@ window.addEventListener('load', () => {
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
+if (typeof cfIsPaused === 'undefined') {
+    window.cfIsPaused = false; 
+}
+
 function gerarSugestao() {
     const grupo = document.getElementById('select-grupo-sub').value;
     const exOcupado = document.getElementById('select-ex-ocupado').value;
@@ -2448,16 +2454,20 @@ function gerarSugestao() {
 
     if (sugestaoEncontrada) {
         // Fluxo de Animação Premium
-        resultadoDiv.classList.remove('hidden');
-        conteudo.classList.add('hidden');
-        conteudo.classList.remove('animar-resultado');
-        loader.classList.remove('hidden');
+        if (resultadoDiv) resultadoDiv.classList.remove('hidden');
+        if (conteudo) {
+            conteudo.classList.add('hidden');
+            conteudo.classList.remove('animar-resultado');
+        }
+        if (loader) loader.classList.remove('hidden');
 
         setTimeout(() => {
-            loader.classList.add('hidden');
-            nomeSugestao.innerText = sugestaoEncontrada;
-            conteudo.classList.remove('hidden');
-            conteudo.classList.add('animar-resultado');
+            if (loader) loader.classList.add('hidden');
+            if (nomeSugestao) nomeSugestao.innerText = sugestaoEncontrada;
+            if (conteudo) {
+                conteudo.classList.remove('hidden');
+                conteudo.classList.add('animar-resultado');
+            }
         }, 750); // Tempo do efeito simulando a busca (750 milissegundos)
 
     } else {
@@ -2490,11 +2500,14 @@ function carregarExerciciosSub() {
 
 const listaDeExercicios = dicionarioExercicios;
 
+/**
+ * Correção do bug crítico da variável 'message' inexistente
+ */
 function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
     if (textoModal && modalAviso) {
-        textoModal.innerText = message || mensagem;
+        textoModal.innerText = mensagem; // Corrigido aqui (removido o 'message ||')
         modalAviso.classList.remove('hidden');
     }
 }
@@ -2503,8 +2516,6 @@ function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) modalAviso.classList.add('hidden');
 }
-
-// Vincula a segunda função para rodar com o mesmo comportamento visual unificado
 
 function gerarSugestaoComModal() {
     const grupo = document.getElementById('select-grupo-sub').value;
@@ -2537,9 +2548,11 @@ function gerarSugestaoComModal() {
     }
 
     if (sugestaoEncontrada) {
-        nomeSugestao.innerText = sugestaoEncontrada;
-        resultadoDiv.classList.remove('hidden');
-        resultadoDiv.classList.add('fade-in'); 
+        if (nomeSugestao) nomeSugestao.innerText = sugestaoEncontrada;
+        if (resultadoDiv) {
+            resultadoDiv.classList.remove('hidden');
+            resultadoDiv.classList.add('fade-in'); 
+        }
     } else {
         mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
     }
