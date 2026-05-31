@@ -351,59 +351,114 @@ window.reenviarTokenSeguranca = reenviarTokenSeguranca;
 // --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
     "Peitoral": [
-        "Supino Reto (Barra)", "Supino Reto (Halteres)", "Supino Reto (Máquina)",
-        "Supino Inclinado (Barra)", "Supino Inclinado (Halteres)", "Supino Inclinado (Máquina)",
-        "Supino Declinado", "Chest Press Vertical", "Peck Deck (Voador)", 
-        "Crucifixo Reto (Halteres)", "Crucifixo Inclinado (Halteres)", "Crucifixo (Cabo)",
-        "Crossover Polia Alta", "Crossover Polia Baixa", "Dips (Paralelas)", 
-        "Flexão de Braços", "Pull-over (Halter)"
+        "Supino Reto (Barra)", "Supino Reto (Halteres)", "Supino Reto (Máquina)", "Supino Reto Articulado Convergente", "Supino Reto Articulado Unilateral", "Supino Reto no Smith",
+        "Supino Inclinado (Barra)", "Supino Inclinado (Halteres)", "Supino Inclinado (Máquina)", "Supino Inclinado Articulado Convergente", "Supino Inclinado Articulado Unilateral", "Supino Inclinado no Smith",
+        "Supino Declinado (Barra)", "Supino Declinado (Halteres)", "Supino Declinado (Máquina)", "Supino Declinado Articulado",
+        "Chest Press Vertical (Máquina)", "Chest Press Vertical Unilateral", "Chest Press Inclinado (Máquina)",
+        "Peck Deck (Voador)", "Peck Deck Inclinado", "Peck Deck com Braços Estendidos",
+        "Crucifixo Reto (Halteres)", "Crucifixo Inclinado (Halteres)", "Crucifixo Declinado (Halteres)",
+        "Crucifixo Reto (Cabo)", "Crucifixo Inclinado (Cabo)", "Crucifixo Declinado (Cabo)", "Crucifixo na Máquina Articulada",
+        "Crossover Polia Alta (Foco Inferior)", "Crossover Polia Baixa (Foco Superior)", "Crossover Polia Média (Foco Medial)", "Crossover Unilateral",
+        "Dips (Paralelas Asas)", "Dips (Paralelas) Assistido no Graviton", "Dips com Carga (Cinturão)",
+        "Flexão de Braços (Push-up Solo)", "Flexão de Braços Inclinada (Mãos no Banco)", "Flexão de Braços Declinada (Pés no Banco)", "Flexão de Braços com Joelhos no Solo", "Flexão Diamante (Foco Trípeps/Peito)", "Flexão Espartana", "Flexão de Braços com Pegada Aberta",
+        "Pull-over (Halter)", "Pull-over (Barra)", "Pull-over na Polia Alta", "Pull-over na Máquina",
+        "Press Around Unilateral (Cabo)", "Floor Press (Supino no Chão com Halteres)", "Squeeze Press (Halteres Juntos)", "Landmine Chest Press (Barra Guiada no Canto)"
     ],
     "Dorsais": [
-        "Puxada Aberta (Polia)", "Puxada Triângulo", "Puxada Supinada",
-        "Remada Curvada (Barra)", "Remada Curvada (Halteres)", "Remada Unilateral (Serrote)",
-        "Remada Baixa (Triângulo)", "Remada Baixa (Barra Reta)", "Remada Cavalinho",
-        "Remada Articulada (Máquina)", "Pull-Down (Corda)", "Barra Fixa (Pull-up)", 
-        "Levantamento Terra", "Crucifixo Inverso", "Face Pull (Corda)"
+        "Puxada Aberta (Polia)", "Puxada Triângulo (Polia Alta)", "Puxada Supinada (Polia)", "Puxada Romana (Pegada Neutra)", "Puxada Unilateral (Cabo)", "Puxada Aberta Máquina Articulada", "Puxada Articulada Supinada", "Puxada Articulada Neutra", "Puxada Atrás da Nuca", "Puxada com Barra Reta (Braços Estendidos)",
+        "Remada Curvada (Barra Pronada)", "Remada Curvada (Barra Supinada)", "Remada Curvada (Halteres)", "Remada Unilateral (Serrote com Halter)", "Remada Unilateral no Banco Inclinado",
+        "Remada Baixa (Triângulo)", "Remada Baixa (Barra Reta Pronada)", "Remada Baixa (Barra Reta Supinada)", "Remada Baixa Romana (Pegada Neutra)", "Remada Baixa Unilateral",
+        "Remada Cavalinho (Barra T Livre)", "Remada Cavalinho (Aparelho Apoiado)",
+        "Remada Articulada Baixa", "Remada Articulada Alta", "Remada Articulada Unilateral", "Remada Máquina Convergente",
+        "Remada Smith (Pronada/Supinada)", "Remada Pendlay (Barra Morta no Solo)", "Remada Meadows (Unilateral com Barra Livre)", "Remada Invertida (Peso Corporal na Barra)",
+        "Pull-Down (Corda)", "Pull-Down (Barra Reta)", "Pull-Down (Barra W)", "Pull-Down Unilateral",
+        "Barra Fixa Aberta (Pull-up)", "Barra Fixa Supinada (Chin-up)", "Barra Fixa Neutra", "Barra Fixa Assistida (Graviton)",
+        "Levantamento Terra Tradicional", "Levantamento Terra Sumo", "Levantamento Terra com Barra Hexagonal", "Meio Terra (Rack Pull)",
+        "Crucifixo Inverso (Halteres no Banco Inclinado)", "Crucifixo Inverso (Halteres em Pé)", "Crucifixo Inverso (Cabo)", "Crucifixo Inverso (Peck Deck/Voador Inverso)",
+        "Face Pull (Corda na Polia Alta)", "Hyperextension (Extensão Lombar Banco 45°)", "Extensão Lombar no Solo (Super-homem)"
     ],
-    "Quadríceps": [
-        "Agachamento Livre (Barra)", "Agachamento Smith", "Agachamento Hack",
-        "Leg Press 45°", "Leg Press Horizontal", "Cadeira Extensora",
-        "Afundo (Halter/Barra)", "Passada (Walking Lunges)", "Agachamento Búlgaro",
-        "Goblet Squat", "Sissy Squat"
-    ],
-    "Posteriores/Glúteos": [
-        "Mesa Flexora", "Cadeira Flexora", "Flexora Unilateral",
-        "Stiff (Barra ou Halteres)", "Elevação Pélvica",
-        "Glúteo Coice (Cabo)", "Glúteo Máquina", "Abdução de Quadril (Máquina)", 
-        "Abdução (Cabo)", "Good Morning", "Extensão de Quadril (Banco Romano)"
+    "Trapézio": [
+        "Encolhimento de Ombros (Halteres)", "Encolhimento de Ombros (Barra Frente)", "Encolhimento de Ombros (Barra Trás)", "Encolhimento de Ombros (Máquina/Smith)",
+        "Encolhimento de Ombros Sentado (Halteres)", "Encolhimento no Cabo (Polia Baixa)", "Remada Alta Aberta (Barra)", "Remada Alta Aberta (Cabo)",
+        "Crucifixo Inverso Y (Halteres)", "Encolhimento Unilateral (Halter)"
     ],
     "Deltoides (Ombros)": [
-        "Desenvolvimento (Halteres)", "Desenvolvimento (Barra)", "Desenvolvimento (Máquina)",
-        "Elevação Lateral (Halteres)", "Elevação Lateral (Cabo)", "Elevação Lateral (Máquina)",
-        "Elevação Frontal", "Desenvolvimento Arnold", "Remada Alta (Barra/Cabo)",
-        "Encolhimento (Halteres/Barra)", "Crucifixo Inverso (Peck Deck)"
+        "Desenvolvimento (Halteres Sentado)", "Desenvolvimento (Halteres em Pé)", "Desenvolvimento Militar (Barra em Pé)", "Desenvolvimento (Barra Sentado)", "Desenvolvimento na Máquina Articulada", "Desenvolvimento Máquina Convergente",
+        "Desenvolvimento Arnold (Halteres)", "Desenvolvimento no Smith (Frente)", "Desenvolvimento no Smith (Trás da Nuca)",
+        "Elevação Lateral (Halteres em Pé)", "Elevação Lateral (Halteres Sentado)", "Elevação Lateral (Cabo/Polia Baixa)", "Elevação Lateral Unilateral (Cabo)", "Elevação Lateral na Máquina", "Elevação Lateral Inclinada (Banco 45° de Lado)", "Elevação Lateral Y (Halteres/Cabo)",
+        "Elevação Frontal (Halteres Alternada)", "Elevação Frontal (Halteres Simultânea)", "Elevação Frontal (Barra Pronada)", "Elevação Frontal (Barra Supinada)", "Elevação Frontal (Cabo com Corda)", "Elevação Frontal (Cabo com Barra)", "Elevação Frontal com Anilha"
+    ],
+    "Quadríceps": [
+        "Agachamento Livre (Barra Costas)", "Agachamento Livre (Barra Frente - Front Squat)", "Agachamento Smith (Barra Guiada)", "Agachamento Smith com Pés Avançados",
+        "Agachamento Hack (Linear)", "Agachamento Hack Invertido", "Agachamento Hack Unilateral",
+        "Leg Press 45° Tradicional", "Leg Press 45° Unilateral", "Leg Press 45° com Pés Baixos", "Leg Press Horizontal", "Leg Press Horizontal Unilateral", "Leg Press Vertical (90°)",
+        "Cadeira Extensora Bilateral", "Cadeira Extensora Unilateral", "Cadeira Extensora com Isometria",
+        "Agachamento Búlgaro (Halteres)", "Agachamento Búlgaro (Barra)", "Agachamento Búlgaro no Smith", "Agachamento Búlgaro com Deficit (Pé da frente elevado)",
+        "Afundo com Halteres", "Afundo com Barra Costas", "Afundo no Smith", "Afundo Reverso (Passada para trás)",
+        "Passada Dinâmica (Walking Lunges com Halteres)", "Passada Dinâmica (Barra)", "Passada no Lugar",
+        "Goblet Squat (Halter)", "Goblet Squat (Kettlebell)", "Sissy Squat Livre", "Sissy Squat na Máquina/Suporte",
+        "Agachamento Belt Squat (Cinto com Carga Inferior)", "Agachamento Sumô (Halter)", "Agachamento Zercher (Barra nas Dobras dos Cotovelos)",
+        "Subida no Banco (Step-up com Halteres)", "Agachamento Pistol (Unilateral Peso Corporal)"
+    ],
+    "Posteriores de Coxa": [
+        "Mesa Flexora Bilateral", "Mesa Flexora Unilateral", "Cadeira Flexora Bilateral", "Cadeira Flexora Unilateral",
+        "Flexora Vertical em Pé (Máquina)", "Flexora em Pé com Caneleira", "Flexora com Bola Suíça",
+        "Stiff (Barra)", "Stiff (Halteres)", "Stiff no Smith", "Stiff Unilateral (Halteres)", "Stiff Unilateral (Cabo)",
+        "Good Morning / Bom Dia (Barra)", "Good Morning / Bom Dia (Cabo)",
+        "Levantamento Terra RDL (Romanian Deadlift Barra)", "Levantamento Terra RDL (Halteres)", "Glute Ham Raise (GHR)"
+    ],
+    "Glúteos": [
+        "Elevação Pélvica (Barra Livre)", "Elevação Pélvica na Máquina Articulada", "Elevação Pélvica no Smith", "Elevação Pélvica Unilateral", "Elevação Pélvica com Elástico (Mini-band)",
+        "Glúteo Coice Cruzado (Cabo)", "Glúteo Coice Reto (Cabo)", "Glúteo Coice na Máquina Articulada", "Glúteo Quatro Apoios (Caneleira Joelho Flexionado)", "Glúteo Quatro Apoios (Caneleira Perna Estendida)",
+        "Abdução de Quadril (Máquina Sentado)", "Abdução de Quadril (Máquina Inclinado para Frente)", "Abdução no Cabo/Polia Baixa", "Abdução de Quadril em Pé (Caneleira)", "Abdução de Quadril (Elástico Mini-band)",
+        "Extensão de Quadril (Banco Romano 45°)", "Frog Pump (Elevação Pélvica com Solas dos Pés Juntas)", "Kettlebell Swing (Balanço com Kettlebell)"
     ],
     "Bíceps/Braquial": [
-        "Rosca Direta (Barra EZ)", "Rosca Direta (Cabo)", "Rosca Alternada (Halteres)",
-        "Rosca Martelo (Halteres)", "Rosca Martelo (Corda)", "Rosca Scott",
-        "Rosca Concentrada", "Rosca Inclinada (45°)", "Rosca Inversa", "Rosca 21"
+        "Rosca Direta (Barra EZ/W)", "Rosca Direta (Barra Reta)", "Rosca Direta (Cabo/Polia Baixa)", "Rosca Direta Unilateral (Cabo)",
+        "Rosca Alternada (Halteres em Pé)", "Rosca Alternada (Halteres Sentado)", "Rosca Simultânea (Halteres)",
+        "Rosca Alternada Inclinada (Banco 45°)", "Rosca Simultânea Inclinada (Banco 45°)",
+        "Rosca Martelo (Halteres em Pé)", "Rosca Martelo (Halteres Sentado)", "Rosca Martelo (Corda na Polia)", "Rosca Martelo Alternada", "Rosca Martelo Cruzada",
+        "Rosca Scott (Barra W)", "Rosca Scott (Barra Reta)", "Rosca Scott (Máquina)", "Rosca Scott Unilateral (Halter)", "Rosca Scott no Cabo",
+        "Rosca Concentrada (Sentado com Apoio na Coxa)", "Rosca Concentrada (Estilo Arnold/Livre)",
+        "Rosca 21 (Barra EZ)", "Rosca Spider / Rosca Aranha (De bruços no Banco Inclinado)", "Rosca Drag (Barra Rastejando pelo Corpo)"
     ],
     "Tríceps Braquial": [
-        "Tríceps Pulley (Barra)", "Tríceps Pulley (Corda)", "Tríceps Testa (Barra W)",
-        "Tríceps Testa (Halteres)", "Tríceps Francês", "Supino Fechado",
-        "Dips no Banco", "Tríceps Coice", "Tríceps Unilateral (Cabo)"
+        "Tríceps Pulley / Barra Reta (Polia Alta)", "Tríceps Pulley / Barra V (Polia Alta)", "Tríceps Pulley / Corda (Polia Alta)", "Tríceps Pulley Unilateral (Pegada Inversa/Supinada)", "Tríceps Pulley Unilateral (Pegada Pronada)",
+        "Tríceps Testa (Barra W)", "Tríceps Testa (Barra Reta)", "Tríceps Testa (Halteres)", "Tríceps Testa (Cabo/Polia)", "Tríceps Testa Inclinado (Banco 45°)", "Tríceps Testa Declinado",
+        "Tríceps Francês (Halter - Duas Mãos Sentado)", "Tríceps Francês Unilateral (Halter Sentado)", "Tríceps Francês Unilateral (Halter em Pé)", "Tríceps Francês (Corda na Polia Baixa)", "Tríceps Francês (Barra W)",
+        "Supino Fechado / Supino Pegada Estreita (Barra)", "Supino Fechado (Smith)",
+        "Dips no Banco (Mergulho entre Bancos)", "Dips no Banco com Carga nas Coxas",
+        "Tríceps Coice / Kickback (Halteres)", "Tríceps Coice / Kickback (Cabo/Polia)", "Tríceps Coice Unilateral",
+        "Flexão de Braço Fechada (Diamante)", "Flexão de Braço Archer (Arqueiro focado)", "Tríceps Extensão Corporal"
+    ],
+    "Antebraço": [
+        "Flexão de Punho (Barra)", "Flexão de Punho (Halteres)", "Extensão de Punho (Barra)", "Extensão de Punho (Halteres)",
+        "Rosca Inversa (Barra EZ)", "Rosca Inversa (Barra Reta)", "Rosca Inversa (Cabo)", "Rosca Zottman (Sobe Supinado, Desce Pronado)",
+        "Rolamento de Punho (Wrist Roller)", "Caminhada do Fazendeiro (Farmer's Walk)", "Sustentação de Discos (Pinch Grip)"
     ],
     "Core/Abdominal": [
-        "Abdominal Supra (Crunch)", "Abdominal Máquina", "Abdominal Infra",
-        "Elevação de Pernas", "Prancha Isométrica", "Ab Wheel (Roda)",
-        "Russian Twist", "Vaccum Abdominal", "Abdominal Oblíquo"
+        "Abdominal Supra Tradicional (Crunch Solo)", "Abdominal Supra com Pés Elevados", "Abdominal Supra na Máquina", "Abdominal Supra com Carga (Anilha/Halter)", "Abdominal Supra na Polia (Ajoelhado com Corda)",
+        "Abdominal Infra Solo (Elevação de Quadril)", "Abdominal Infra Tesoura", "Abdominal Infra no Banco Inclinado",
+        "Elevação de Pernas Suspenso (Barra Fixa)", "Elevação de Joelhos Suspenso (Barra Fixa)", "Elevação de Pernas nas Paralelas (Suporte Abdominal)", "Elevação de Joelhos nas Paralelas",
+        "Prancha Isométrica Frontal (Cotovelos)", "Prancha Isométrica Frontal (Braços Estendidos)", "Prancha Lateral (Cotovelo)", "Prancha Lateral com Elevação de Quadril", "Prancha Dinâmica (Movimentando Braços/Pés)",
+        "Ab Wheel (Roda Abdominal de Joelhos)", "Ab Wheel (Roda Abdominal em Pé Avançado)",
+        "Russian Twist (Giro Russo sem Carga)", "Russian Twist com Carga (Anilha/Halter/Kettlebell)",
+        "Stomach Vacuum (Vácuo Abdominal LPF)", "Abdominal Oblíquo Solo (Cruzando Knee)", "Abdominal Oblíquo Toque nos Calcanhares", "Abdominal Oblíquo na Polia Alta (Woodchopper)",
+        "Abdominal Canivete Bilateral (V-up)", "Abdominal Canivete Unilateral", "Abdominal Bicicleta (Air Bike Crunch)", "Flexão Lateral de Tronco (Halter em Pé)", "Flexão Lateral de Tronco (Banco Romano)"
     ],
     "Panturrilhas": [
-        "Gêmeos em Pé (Máquina)", "Gêmeos Sentado (Burrinho)", "Panturrilha no Leg Press",
-        "Gêmeos Unilateral (Degrau)", "Panturrilha no Smith"
+        "Gêmeos em Pé (Máquina)", "Gêmeos em Pé Unilateral (Máquina)", "Gêmeos Sentado (Burrinho)", "Gêmeos Sentado Unilateral",
+        "Panturrilha no Leg Press 45°", "Panturrilha no Leg Press Horizontal", "Panturrilha Hack Machine",
+        "Gêmeos Unilateral no Degrau (Peso Corporal)", "Gêmeos Unilateral no Degrau (Com Halter)",
+        "Panturrilha no Smith (Com Bloco/Step nos Pés)", "Panturrilha em Pé Livre (Solo)", "Panturrilha Sentado com Barra Livre nas Coxas", "Tíbial Anterior (Elevação dos Dedos do Pé)"
     ],
     "Cardio & Aeróbico": [
-        "Esteira", "Bike Ergométrica", "Elíptico", "Corda", "Escada", "Remo Indoor"
+        "Esteira (Caminhada Plana)", "Esteira (Caminhada com Inclinação)", "Esteira (Corrida/Trote)", "Esteira (Treino de Sprints/HIIT)",
+        "Bike Ergométrica Vertical (Tradicional)", "Bike Ergométrica Horizontal (Com Encosto)", "Spinning (Bike de Ciclismo Indoor)",
+        "Elíptico / Transport (Ritmo Moderado)", "Elíptico / Transport (Alta Intensidade)",
+        "Pular Corda (Salto Simples)", "Pular Corda (Double Under/Salto Duplo)",
+        "Escada Rolante (Simulador de Degraus)", "Remo Indoor (Ergômetro)", "Air Bike / Assault Bike (Resistência a Ar)",
+        "Polichinelos Tradicionais", "Burpees Completos (Com Flexão e Salto)", "Burpees Simples (Sem Flexão)", "Mountain Climber (Corrida na Prancha)", "Jump / Mini Trampolim", "Corrida Estacionária (No lugar)"
     ]
 };
 
