@@ -1355,7 +1355,6 @@ function voltarListaConsulta() {
 
 // --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 function atualizarListaExercicios() {
-    // 1. Busca os elementos no HTML
     const grupoEl = document.getElementById('select-grupo-registro');
     const containerEx = document.getElementById('container-exercicios-registro');
 
