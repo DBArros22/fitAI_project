@@ -1355,31 +1355,39 @@ function voltarListaConsulta() {
 
 // --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 function atualizarListaExercicios() {
-    const grupo = document.getElementById('select-grupo').value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
+    // 1. Busca os elementos no HTML
+    const grupoEl = document.getElementById('select-grupo-registro');
+    const containerEx = document.getElementById('container-exercicios-registro');
 
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
+    // 2. Trava de Segurança Oblíqua para Mobile/GitHub Pages
+    // Se o elemento não existir na página atual, a função para imediatamente sem gerar erro no console
+    if (!grupoEl || !containerEx) {
+        console.warn("Elementos de registro de treino não encontrados nesta tela.");
         return;
     }
 
-    // Alternar campos entre Peso (Força) e Tempo (Cardio)
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
+    // 3. Captura o valor selecionado
+    const grupoSelecionado = grupoEl.value;
+    
+    // Limpa as opções anteriores do select de exercícios
+    containerEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
+
+    if (!grupoSelecionado) return;
+
+    // 4. Busca os exercícios correspondentes no objeto global
+    const exercicios = dicionarioExercicios[grupoSelecionado];
+
+    // 5. Preenche o select de exercícios dinamicamente
+    if (exercicios && exercicios.length > 0) {
+        exercicios.forEach(exercicio => {
+            const option = document.createElement('option');
+            option.value = exercicio;
+            option.textContent = exercicio;
+            containerEx.appendChild(option);
+        });
     } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
+        console.warn("Nenhum exercício encontrado para o grupo: " + grupoSelecionado);
     }
-
-    const lista = dicionarioExercicios[grupo] || [];
-
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
 
