@@ -1355,17 +1355,18 @@ function voltarListaConsulta() {
 
 // --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 function atualizarListaExercicios() {
+    // 1. Busca os elementos no HTML
     const grupoEl = document.getElementById('select-grupo-registro');
     const containerEx = document.getElementById('container-exercicios-registro');
 
-    // 2. Trava de Segurança Oblíqua para Mobile/GitHub Pages
-    // Se o elemento não existir na página atual, a função para imediatamente sem gerar erro no console
+    // 2. Trava de Segurança Oblíqua
+    // Se o select de grupos ou o container de exercícios não existirem na página atual,
+    // a função para imediatamente sem tentar ler o ".value", evitando o erro no console.
     if (!grupoEl || !containerEx) {
-        console.warn("Elementos de registro de treino não encontrados nesta tela.");
         return;
     }
 
-    // 3. Captura o valor selecionado
+    // 3. Captura o valor selecionado (só roda se o elemento existir)
     const grupoSelecionado = grupoEl.value;
     
     // Limpa as opções anteriores do select de exercícios
@@ -1384,8 +1385,6 @@ function atualizarListaExercicios() {
             option.textContent = exercicio;
             containerEx.appendChild(option);
         });
-    } else {
-        console.warn("Nenhum exercício encontrado para o grupo: " + grupoSelecionado);
     }
 }
 
