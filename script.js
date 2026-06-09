@@ -131,7 +131,39 @@ async function salvarDadosPerfil(event) {
             codigoNovoGerado: codNovo,
             btnAlvo: btn
         };
+function atualizarListaExercicios() {
+    // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
+    const campoGrupo = document.getElementById('select-grupo-sub');
+    
+    // TRAVA DE SEGURANÇA: Se o campo não existir na tela atual (como no logout), para aqui e não quebra!
+    if (!campoGrupo) return;
 
+    // 2. Captura o valor selecionado
+    const grupo = campoGrupo.value;
+    const selectEx = document.getElementById('select-exercicio');
+    const camposForca = document.getElementById('campos-forca');
+    const camposCardio = document.getElementById('campos-cardio');
+
+    if (!selectEx) return;
+    if (!grupo) {
+        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
+        return;
+    }
+
+    // Alternar campos entre Peso (Força) e Tempo (Cardio)
+    if (grupo === "Cardio & Aeróbico") {
+        if (camposForca) camposForca.classList.add('hidden');
+        if (camposCardio) camposCardio.classList.remove('hidden');
+    } else {
+        if (camposForca) camposForca.classList.remove('hidden');
+        if (camposCardio) camposCardio.classList.add('hidden');
+    }
+
+    const lista = dicionarioExercicios[grupo] || [];
+
+    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
+        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+}atua
         // Atualiza dinamicamente as labels inserindo os e-mails entre parênteses
         const lblAntigo = document.getElementById('label-email-antigo');
         const lblNovo = document.getElementById('label-email-novo');
@@ -1355,23 +1387,23 @@ function voltarListaConsulta() {
 
 // --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 function atualizarListaExercicios() {
-    // 1. Primeiro buscamos os elementos (sem ler o .value direto)
-    const elementoGrupo = document.getElementById('select-grupo');
+    // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
+    const campoGrupo = document.getElementById('select-grupo-sub');
+    
+    // TRAVA DE SEGURANÇA: Se o campo não existir na tela atual (como no logout), para aqui e não quebra!
+    if (!campoGrupo) return;
+
+    // 2. Captura o valor selecionado
+    const grupo = campoGrupo.value;
     const selectEx = document.getElementById('select-exercicio');
     const camposForca = document.getElementById('campos-forca');
     const camposCardio = document.getElementById('campos-cardio');
 
-    // 2. Trava de segurança: Se o grupo ou o select de exercícios não existirem na tela atual, para aqui!
-    if (!elementoGrupo || !selectEx) return;
-
-    // 3. Agora que temos certeza que o elemento existe, pegamos o valor com segurança
-    const grupo = elementoGrupo.value;
-
+    if (!selectEx) return;
     if (!grupo) {
         selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
         return;
     }
-
     // Alternar campos entre Peso (Força) e Tempo (Cardio)
     if (grupo === "Cardio & Aeróbico") {
         if (camposForca) camposForca.classList.add('hidden');
@@ -1380,9 +1412,7 @@ function atualizarListaExercicios() {
         if (camposForca) camposForca.classList.remove('hidden');
         if (camposCardio) camposCardio.classList.add('hidden');
     }
-
     const lista = dicionarioExercicios[grupo] || [];
-
     selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
