@@ -1421,31 +1421,77 @@ function atualizarListaExercicios() {
 function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     if (!ativa) return mostrarAviso("Selecione uma ficha!");
-    const grupo = document.getElementById('select-grupo').value;
+
+    // 1. Busca os elementos usando o ID correto do HTML
+    const campoGrupo = document.getElementById('select-grupo-sub');
+    const campoExercicio = document.getElementById('select-exercicio');
+    const campoSeries = document.getElementById('series-ex');
+    const campoReps = document.getElementById('reps-ex');
+    const campoCarga = document.getElementById('carga-ex');
+    const campoTempo = document.getElementById('tempo-ex');
+
+    // TRAVA DE SEGURANÇA: Se os elementos principais não estiverem na tela, para imediatamente
+    if (!campoGrupo || !campoExercicio) return;
+
+    // 2. Captura os valores com segurança
+    const grupo = campoGrupo.value;
+    const exercicio = campoExercicio.value;
+
+    // Validação básica para não salvar campos vazios
+    if (!grupo || !exercicio) {
+        mostrarAviso("Por favor, selecione o grupo e o exercício.");
+        return;
+    }
+
     const isCardio = (grupo === "Cardio & Aeróbico");
+    const seriesValue = campoSeries ? campoSeries.value : "";
+    const repsValue = campoReps ? campoReps.value : "";
+    const tempoValue = campoTempo ? campoTempo.value : "";
+
+    // Validações originais de preenchimento obrigatório baseadas no tipo
+    if (isCardio) {
+        if (!tempoValue) return mostrarAviso("Informe o tempo do cardio!");
+    } else {
+        if (!seriesValue || !repsValue) return mostrarAviso("Preencha séries e repetições!");
+    }
+
+    // 3. Cria o objeto do novo set com a estrutura exata exigida pelo seu sistema
     const novo = {
         id: Date.now(),
         grupo: grupo,
-        nome: document.getElementById('select-exercicio').value,
-        series: document.getElementById('series-ex').value,
-        reps: document.getElementById('reps-ex').value,
-        carga: document.getElementById('carga-ex').value || 0,
-        tempo: document.getElementById('tempo-ex').value, // Novo campo
-        tipo: isCardio ? 'tempo' : 'forca' // Marcador para renderização
+        nome: exercicio,
+        series: seriesValue,
+        reps: repsValue,
+        carga: campoCarga ? (campoCarga.value || 0) : 0,
+        tempo: tempoValue,
+        tipo: isCardio ? 'tempo' : 'forca'
     };
-    if (isCardio) {
-        if (!novo.tempo) return mostrarAviso("Informe o tempo do cardio!");
-    } else {
-        if (!novo.series || !novo.reps) return mostrarAviso("Preencha séries e repetições!");
+
+    // 4. LÓGICA RESTAURADA: Salva diretamente dentro da ficha ativa no Banco de Dados Real
+    if (!bancoDeDados.fichas[ativa]) {
+        bancoDeDados.fichas[ativa] = [];
     }
     bancoDeDados.fichas[ativa].unshift(novo);
+    
+    // 5. Grava as alterações permanentemente
     salvarBanco();
+    
+    console.log("Set estruturado e salvo com sucesso no banco:", novo);
+
+    // 6. Atualiza todas as interfaces de forma síncrona e imediata
     renderizarLogTreino();
-    document.getElementById('series-ex').value = "";
-    document.getElementById('reps-ex').value = "";
-    document.getElementById('carga-ex').value = "";
-    document.getElementById('tempo-ex').value = "";
+    renderizarResumoFicha(ativa);
+    if (typeof renderizarFichasConsulta === 'function') {
+        renderizarFichasConsulta();
+    }
+
+    // 7. Limpa os campos de digitação após salvar com sucesso
+    if (campoSeries) campoSeries.value = "";
+    if (campoReps) campoReps.value = "";
+    if (campoCarga) campoCarga.value = "";
+    if (campoTempo) campoTempo.value = "";
 }
+
 
 function formatarTempoParaExibicao(valor) {
     if (!valor) return "00s";
@@ -1455,7 +1501,7 @@ function formatarTempoParaExibicao(valor) {
     } else if (partes.length === 2) {
         return `${partes[0]}m ${partes[1]}s`;
     }
-   return valor + "s";
+    return valor + "s";
 }
 
 function renderizarLogTreino() {
@@ -1470,37 +1516,21 @@ function renderizarLogTreino() {
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
 
         container.innerHTML += `
-
             <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
-
                 <div style="flex: 1;">
-
                     <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
-
                     <div id="dados-log-${ex.id}" style="margin-top: 5px;">${infoBadge}</div>
-
                 </div>
-
                 <div id="acoes-log-${ex.id}" style="display: flex; gap: 10px;">
-
                     <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')">
-
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-
                     </button>
-
                     <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome} do treino atual?', () => removerExercicio(${ex.id}, 'log'))">
-
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-
                     </button>
-
                 </div>
-
             </div>`;
-
     });
-
 }
 
 
