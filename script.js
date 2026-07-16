@@ -1,51 +1,66 @@
-let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} };
-let diasTreinados = JSON.parse(localStorage.getItem('frequenciaTreino')) || [];
-let usuariosCadastrados = JSON.parse(localStorage.getItem('fitai_users')) || [];
-let lembretes = JSON.parse(localStorage.getItem('fitai_lembretes')) || [];
-let feedEvolucao = JSON.parse(localStorage.getItem('fitai_feed')) || []; 
-let midiaAnexada = null; // Controle de anexo do blog
-let cronometrosAtivos = {}; // Armazena os intervalos de cada exercício
+const firebaseConfig = {
+  apiKey: "AIzaSyCQcfeMAGcGFp1MTZTpAevihoSsg57M2U8",
+  authDomain: "assisfit-pro.firebaseapp.com",
+  projectId: "assisfit-pro",
+  storageBucket: "assisfit-pro.firebasestorage.app",
+  messagingSenderId: "859765965750",
+  appId: "1:859765965750:web:e23c5fe1ec54a7d62df717",
+  measurementId: "G-0V4XD960QL"
+};
+
+// Inicializa o Firebase Core
+firebase.initializeApp(firebaseConfig);
+
+// Atalhos globais para os serviços do Firebase
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Ativa a persistência offline básica do Firestore (opcional, para apps fitness em rede instável)
+db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+db.enablePersistence().catch(err => console.warn("Persistência offline desativada:", err.code));
+
+// ============================================================================================================
+// VARIÁVEIS GLOBAIS DE ESTADO (Substituindo o LocalStorage direto)
+// ============================================================================================================
+
+let usuarioAtualId = null;         // ID único (UID) do atleta logado no Firebase Auth
+let bancoDeDados = { fichas: {} }; // Carregado de /usuarios/{UID}/treinos/fichas
+let diasTreinados = [];            // Carregado de /usuarios/{UID}/historico/frequencia
+let lembretes = [];                // Carregado de /usuarios/{UID}/lembretes
+let feedEvolucao = [];             // Carregado da coleção global /feed
+let assisData = null;              // Carregado do documento de perfil /usuarios/{UID}
+
+// --- CONTROLES DE INTERFACE, CRONÔMETROS E MÍDIA (Mantidos Locais) ---
+let midiaAnexada = null; 
+let cronometrosAtivos = {}; 
 let tempoMestreAtivo = null;
 let milisegundosAcumulados = 0;
 let timestampInicio = null;
-let assisData = JSON.parse(localStorage.getItem('fitai_assis_data')) || null;
-
 window.cfIsPaused = false;
-
-// Váriavel perfil usuário
 let fluxoTrocaEmailPendente = null;
 
-
-// Variáveis wod timers crossfit
+// Variáveis de timers WOD e gravação de áudio
 let cfTimerInterval = null;
-let cfStartTime = 0; // Para precisão absoluta
-let cfLimitSeconds = 600; // 10 min padrão
+let cfStartTime = 0; 
+let cfLimitSeconds = 600; 
 let cfModo = 'AMRAP';
-
-const salvarDados = () => { if (typeof salvarBanco === 'function') salvarBanco(); };
-const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
-const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
-const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();   // audio alert EMOM or AMRAP
-
-// Váriaveis gravador audio
 let mediaRecorder;
 let audioChunks = [];
-let gravando = false
-
-// Váriaveis Registro de treinos
+let gravando = false;
 let fichaAtivaNoMomento = "";
 let fichaAtiva = null;
-
-// Variáveis cronômetro
 let timerInterval;
 let milissegundosTotais = 0;
 let isTimerRunning = false;
 let isCountdownMode = false;
 
+// Helpers auxiliares de input
+const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
+const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
+const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-// Váriaveis const da página de sugestão (PLANO B)
-
+// Equivalências do Plano B (Estáticas)
 const equivalencias = {
     "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
     "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
@@ -2214,11 +2229,25 @@ window.setTimerMode = function(modo) {
     }
 };
 
-function toggleLembrete(id) {
+async function toggleLembrete(id) {
+    if (!usuarioAtualId) return;
+
     const l = lembretes.find(item => item.id === id);
-    if (l) l.feito = !l.feito;
-    localStorage.setItem('fitai_lembretes', JSON.stringify(lembretes));
-    renderizarLembretes();
+    if (l) {
+        l.feito = !l.feito;
+        
+        try {
+            // Atualiza diretamente no banco de dados do usuário logado
+            await db.collection("usuarios").doc(usuarioAtualId)
+                    .collection("lembretes").doc(id.toString()).update({
+                        feito: l.feito
+                    });
+            
+            renderizarLembretes();
+        } catch (error) {
+            console.error("Erro ao atualizar lembrete no banco:", error);
+        }
+    }
 }
 
 function removerLembrete(id) {
@@ -2228,11 +2257,23 @@ function removerLembrete(id) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    const session = localStorage.getItem('fitai_session');
-    if (session) showView('lobby'); else showView('login');
-    
-    atualizarListaExercicios(); 
-    gerarCalendario();
+    // Escuta mudanças no estado de login do Firebase
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            usuarioAtualId = user.uid; // Guarda o ID único do atleta no banco
+            
+            // 1. Busca os dados do usuário e do treino salvos no Firestore
+            await carregarDadosDoUsuarioDoBanco();
+            
+            showView('lobby');
+            atualizarListaExercicios(); 
+            gerarCalendario();
+            renderizarLembretes();
+        } else {
+            usuarioAtualId = null;
+            showView('login');
+        }
+    });
 });
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
