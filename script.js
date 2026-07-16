@@ -607,30 +607,6 @@ function toggleAuthTab(tab) {
     });
 }
 
-function handleCadastro() {
-    const nome = document.getElementById('reg-nome').value;
-    const email = document.getElementById('reg-email').value;
-    const tel = document.getElementById('reg-tel').value;
-    const senha = document.getElementById('reg-pass').value;
-    const confirmaSenha = document.getElementById('reg-pass-conf').value;
-
-    if (!nome || !email || !senha) return mostrarAviso("Preencha todos os campos!");
-    if (senha !== confirmaSenha) return mostrarAviso("As senhas não coincidem!");
-
-    const novoUsuario = { nome, email, tel, pass: senha, fichas: {} };
-    
-    // Salva no banco geral
-    usuariosCadastrados.push(novoUsuario);
-    localStorage.setItem('fitai_users', JSON.stringify(usuariosCadastrados));
-
-    // ESTA LINHA É A PONTE: Salva quem é o usuário ativo no momento
-    localStorage.setItem('user_email', email); 
-    localStorage.setItem('user_nome', nome);
-    localStorage.setItem('user_tel', tel);
-
-    mostrarAviso("Conta criada com sucesso!");
-    toggleAuthTab('login');
-}
 async function handleCadastro() {
     const nome = document.getElementById('reg-nome').value.trim();
     const email = document.getElementById('reg-email').value.trim();
