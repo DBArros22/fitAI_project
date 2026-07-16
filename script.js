@@ -1917,9 +1917,34 @@ function limparTreino() {
     };
 }
 
-function salvarBanco() {
-    localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
+async function salvarBanco() {
+    if (!usuarioAtualId) {
+        console.warn("Nenhum usuário logado. Dados não foram salvos no nuvem.");
+        return;
+    }
+
+    try {
+        // 1. Salva as Fichas de Treino no Firestore do Usuário
+        await db.collection("usuarios").doc(usuarioAtualId)
+                .collection("treinos").doc("fichas")
+                .set(bancoDeDados);
+
+        // 2. Salva o Histórico de Dias Treinados (Calendário)
+        await db.collection("usuarios").doc(usuarioAtualId)
+                .collection("historico").doc("frequencia")
+                .set({ dias: diasTreinados });
+
+        console.log("Dados sincronizados com o Firestore com sucesso!");
+    } catch (error) {
+        console.error("Erro ao salvar dados no Firestore:", error);
+        mostrarAvisoNotificacao("Erro ao sincronizar dados com o servidor.", "erro");
+    }
 }
+
+// Mantém o atalho que você já usa no resto do sistema
+const salvarDados = () => { 
+    salvarBanco(); 
+};
 
 function renderizarPaginaCronograma() {
     const container = document.getElementById('view-calendario');
