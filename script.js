@@ -631,25 +631,87 @@ function handleCadastro() {
     mostrarAviso("Conta criada com sucesso!");
     toggleAuthTab('login');
 }
+async function handleCadastro() {
+    const nome = document.getElementById('reg-nome').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const tel = document.getElementById('reg-tel').value.trim();
+    const senha = document.getElementById('reg-pass').value;
+    const confirmaSenha = document.getElementById('reg-pass-conf').value;
 
-function handleLogin() {
-    const email = document.getElementById('login-email').value;
+    if (!nome || !email || !senha) {
+        return mostrarAviso("Preencha todos os campos obrigatórios!");
+    }
+    if (senha !== confirmaSenha) {
+        return mostrarAviso("As senhas não coincidem!");
+    }
+
+    try {
+        // 1. Cria a conta no Firebase Authentication
+        const credenciais = await auth.createUserWithEmailAndPassword(email, senha);
+        const user = credenciais.user;
+
+        // 2. Cria o documento de perfil complementar do usuário no Firestore
+        await db.collection("usuarios").doc(user.uid).set({
+            nome: nome,
+            email: email,
+            tel: tel,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // 3. Mantém compatibilidade temporária de sessão local caso outros módulos usem
+        localStorage.setItem('user_email', email); 
+        localStorage.setItem('user_nome', nome);
+        localStorage.setItem('user_tel', tel);
+
+        mostrarAviso("Conta criada com sucesso!");
+        toggleAuthTab('login');
+    } catch (error) {
+        console.error("Erro ao cadastrar:", error);
+        let mensagemErro = "Erro ao cadastrar usuário.";
+        if (error.code === 'auth/email-already-in-use') {
+            mensagemErro = "Este e-mail já está em uso.";
+        } else if (error.code === 'auth/weak-password') {
+            mensagemErro = "A senha deve ter pelo menos 6 caracteres.";
+        } else if (error.code === 'auth/invalid-email') {
+            mensagemErro = "Formato de e-mail inválido.";
+        }
+        mostrarAviso(mensagemErro);
+    }
+}
+
+// ============================================================================================================
+// LOGIN DE USUÁRIO INTEGRADO AO FIREBASE
+// ============================================================================================================
+async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-pass').value;
     const rememberMe = document.getElementById('remember-me').checked;
-    
-    // Busca no array de usuários cadastrados
-    const user = usuariosCadastrados.find(u => u.email === email && u.pass === pass);
-    
-    if (user) {
-        // 1. Salva a sessão completa
-        localStorage.setItem('fitai_session', JSON.stringify(user));
-        
-        // 2. SALVA O E-MAIL ATIVO (Essencial para o Perfil e Blog funcionarem)
+
+    if (!email || !pass) {
+        return mostrarAvisoNotificacao("Preencha o e-mail e a senha!");
+    }
+
+    try {
+        // 1. Autentica no Firebase Auth
+        const credenciais = await auth.signInWithEmailAndPassword(email, pass);
+        const user = credenciais.user;
+
+        // 2. Busca os dados de perfil salvos no Firestore
+        const docPerfil = await db.collection("usuarios").doc(user.uid).get();
+        let nomeUsuario = "Atleta";
+        let telUsuario = "";
+
+        if (docPerfil.exists) {
+            const dados = docPerfil.data();
+            nomeUsuario = dados.nome || "Atleta";
+            telUsuario = dados.tel || "";
+        }
+
+        // 3. Salva sessão local para compatibilidade com o resto do código
+        localStorage.setItem('fitai_session', JSON.stringify({ email, nome: nomeUsuario, tel: telUsuario }));
         localStorage.setItem('user_email', email);
-        
-        // 3. Garante que o nome e tel iniciais estejam disponíveis para o perfil
-        localStorage.setItem('user_nome', user.nome);
-        localStorage.setItem('user_tel', user.tel || "");
+        localStorage.setItem('user_nome', nomeUsuario);
+        localStorage.setItem('user_tel', telUsuario);
 
         // 4. Lógica de "Lembrar de Mim"
         if (rememberMe) {
@@ -657,20 +719,23 @@ function handleLogin() {
         } else {
             localStorage.removeItem('fitai_remember_email');
         }
-        
-        // 5. Entra no App e já engatilha o carregamento dos dados
+
+        // 5. Entra no App
         showView('lobby');
+        mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
+
+    } catch (error) {
+        console.error("Erro ao fazer login:", error);
         
-        // Opcional: Feedback de sucesso rápido
-    mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSIST FIT", "sucesso");} 
-   else {
-        // Verifica se o erro é o email ou a senha para ser mais específico (Melhor UX)
-        const emailExiste = usuariosCadastrados.some(u => u.email === email);
-        
-        if (!emailExiste) {
+        // Mantém a UX original tratando erros específicos
+        if (error.code === 'auth/user-not-found') {
             mostrarAvisoNotificacao("E-mail não cadastrado!");
-        } else {
+        } else if (error.code === 'auth/wrong-password') {
             mostrarAvisoNotificacao("Senha incorreta!");
+        } else if (error.code === 'auth/invalid-email') {
+            mostrarAvisoNotificacao("Formato de e-mail inválido!");
+        } else {
+            mostrarAvisoNotificacao("Erro ao conectar. Tente novamente!");
         }
     }
 }
