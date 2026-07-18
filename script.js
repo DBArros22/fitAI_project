@@ -554,11 +554,13 @@ function showView(viewName) {
     if (target) target.classList.remove('hidden');
 
     const shell = document.getElementById('app-shell');
-    // CORREÇÃO: Se estiver na tela de login OU na de registro, o app-shell deve permanecer oculto!
-    if (viewName === 'login' || viewName === 'registro') {
-        if (shell) shell.classList.add('hidden');
-    } else {
-        if (shell) shell.classList.remove('hidden');
+    if (shell) {
+        // CORREÇÃO DIRETA NO DOM: Força a ocultação total ou exibição do esqueleto do app
+        if (viewName === 'login' || viewName === 'registro') {
+            shell.style.setProperty('display', 'none', 'important');
+        } else {
+            shell.style.setProperty('display', 'flex', 'important');
+        }
     }
 
     // Gatilhos de renderização originais preservados
