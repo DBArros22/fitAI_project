@@ -2331,13 +2331,17 @@ window.addEventListener('DOMContentLoaded', () => {
         if (user) {
             usuarioAtualId = user.uid; // Guarda o ID único do atleta no banco
             
-            // 1. Busca os dados do usuário e do treino salvos no Firestore
-            await carregarDadosDoUsuarioDoBanco();
-            
-            showView('lobby');
-            atualizarListaExercicios(); 
-            gerarCalendario();
-            renderizarLembretes();
+            try {
+                // CORREÇÃO: Chama a função nova correta passando o UID do usuário
+                await carregarDadosDoAtleta(user.uid);
+                
+                showView('lobby');
+                if (typeof atualizarListaExercicios === 'function') atualizarListaExercicios(); 
+                if (typeof gerarCalendario === 'function') gerarCalendario();
+                if (typeof renderizarLembretes === 'function') renderizarLembretes();
+            } catch (error) {
+                console.error("Erro ao carregar dados do atleta:", error);
+            }
         } else {
             usuarioAtualId = null;
             showView('login');
