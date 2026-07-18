@@ -541,7 +541,7 @@ function showView(viewName) {
     const views = [
         'view-login', 'view-lobby', 'view-registro', 'view-calendario',
         'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
-        'view-aparelho-ocupado', 'view-perfil', // Adicionado perfil aqui
+        'view-aparelho-ocupado', 'view-perfil', 
         'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc'
     ];
 
@@ -554,14 +554,15 @@ function showView(viewName) {
     if (target) target.classList.remove('hidden');
 
     const shell = document.getElementById('app-shell');
-    if (viewName === 'login') {
+    // CORREÇÃO: Se estiver na tela de login OU na de registro, o app-shell deve permanecer oculto!
+    if (viewName === 'login' || viewName === 'registro') {
         if (shell) shell.classList.add('hidden');
     } else {
         if (shell) shell.classList.remove('hidden');
     }
 
-    // Gatilhos de renderização
-    if (viewName === 'perfil') carregarDadosPerfil(); // Gatilho para carregar dados do cadastro
+    // Gatilhos de renderização originais preservados
+    if (viewName === 'perfil') carregarDadosPerfil(); 
     if (viewName === 'planilhas') renderizarFichas();
     if (viewName === 'registro') renderizarLogTreino();
     if (viewName === 'consulta-geral') renderizarFichasConsulta();
