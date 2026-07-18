@@ -146,6 +146,17 @@ async function salvarDadosPerfil(event) {
             codigoNovoGerado: codNovo,
             btnAlvo: btn
         };
+
+        async function carregarDadosDoUsuarioDoBanco() {
+    if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
+        await carregarDadosDoAtleta(usuarioAtualId);
+    } else if (typeof auth !== 'undefined' && auth.currentUser) {
+        await carregarDadosDoAtleta(auth.currentUser.uid);
+    } else {
+        console.warn("Tentativa de carregar dados, mas nenhum ID de usuário foi encontrado.");
+    }
+}
+
 function atualizarListaExercicios() {
     // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
     const campoGrupo = document.getElementById('select-grupo-sub');
