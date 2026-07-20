@@ -75,18 +75,35 @@ const equivalencias = {
 
 async function carregarDadosDoAtleta(uid) {
     try {
+        // Busca o documento do usuário na coleção "usuarios"
         const doc = await db.collection("usuarios").doc(uid).get();
+        
         if (doc.exists) {
             const dados = doc.data();
-            // Atribui os dados carregados para as suas variáveis globais do sistema
-            if (dados.bancoDeDados) bancoDeDados = dados.bancoDeDados;
-            if (dados.treinos) bancoDeDados = dados.treinos; // Adapte para sua variável global
-            console.log("Dados do atleta carregados com sucesso!");
+            console.log("Dados do atleta localizados no Firestore:", dados);
+            
+            // Restaura os dados para as suas variáveis globais (ajuste conforme os nomes do seu código)
+            if (dados.treinos) {
+                bancoDeDados = dados.treinos;
+            } else if (dados.bancoDeDados) {
+                bancoDeDados = dados.bancoDeDados;
+            }
+            
+            if (dados.diasTreinados) {
+                diasTreinados = dados.diasTreinados;
+            }
+            
         } else {
-            console.log("Nenhum dado prévio encontrado para este atleta no Firestore.");
+            console.log("Novo atleta detectado. Criando perfil inicial no Firestore...");
+            // Se o documento não existe (cadastro novo), inicializa a estrutura básica na nuvem
+            await db.collection("usuarios").doc(uid).set({
+                bancoDeDados: typeof bancoDeDados !== 'undefined' ? bancoDeDados : {},
+                diasTreinados: typeof diasTreinados !== 'undefined' ? diasTreinados : []
+            });
         }
     } catch (error) {
-        console.error("Erro interno ao ler Firestore:", error);
+        console.error("Erro interno ao ler ou inicializar dados no Firestore:", error);
+        throw error; // Repassa o erro para o monitor de autenticação tratar
     }
 }
 
