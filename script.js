@@ -73,6 +73,23 @@ const equivalencias = {
 };
 
 
+async function carregarDadosDoAtleta(uid) {
+    try {
+        const doc = await db.collection("usuarios").doc(uid).get();
+        if (doc.exists) {
+            const dados = doc.data();
+            // Atribui os dados carregados para as suas variáveis globais do sistema
+            if (dados.bancoDeDados) bancoDeDados = dados.bancoDeDados;
+            if (dados.treinos) bancoDeDados = dados.treinos; // Adapte para sua variável global
+            console.log("Dados do atleta carregados com sucesso!");
+        } else {
+            console.log("Nenhum dado prévio encontrado para este atleta no Firestore.");
+        }
+    } catch (error) {
+        console.error("Erro interno ao ler Firestore:", error);
+    }
+}
+
 // Funções do perfil 
 
 function carregarDadosPerfil() {
