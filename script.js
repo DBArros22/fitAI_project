@@ -73,16 +73,19 @@ const equivalencias = {
 };
 
 
-async function carregarDadosDoAtleta(uid) {
+window.carregarDadosDoAtleta = async function(uid) {
     try {
-        // Busca o documento do usuário na coleção "usuarios"
-        const doc = await db.collection("usuarios").doc(uid).get();
+        if (!window.db) {
+            console.error("Erro: O objeto 'db' do Firestore não foi inicializado.");
+            return;
+        }
+        
+        const doc = await window.db.collection("usuarios").doc(uid).get();
         
         if (doc.exists) {
             const dados = doc.data();
             console.log("Dados do atleta localizados no Firestore:", dados);
             
-            // Restaura os dados para as suas variáveis globais (ajuste conforme os nomes do seu código)
             if (dados.treinos) {
                 bancoDeDados = dados.treinos;
             } else if (dados.bancoDeDados) {
@@ -95,17 +98,16 @@ async function carregarDadosDoAtleta(uid) {
             
         } else {
             console.log("Novo atleta detectado. Criando perfil inicial no Firestore...");
-            // Se o documento não existe (cadastro novo), inicializa a estrutura básica na nuvem
-            await db.collection("usuarios").doc(uid).set({
+            await window.db.collection("usuarios").doc(uid).set({
                 bancoDeDados: typeof bancoDeDados !== 'undefined' ? bancoDeDados : {},
                 diasTreinados: typeof diasTreinados !== 'undefined' ? diasTreinados : []
             });
         }
     } catch (error) {
         console.error("Erro interno ao ler ou inicializar dados no Firestore:", error);
-        throw error; // Repassa o erro para o monitor de autenticação tratar
+        throw error;
     }
-}
+};
 
 // Funções do perfil 
 
