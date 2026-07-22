@@ -446,7 +446,7 @@ async function processarTrocaSenha() {
     mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
     
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-}
+
 
 function exibirFeedbackSucessoBotao(btn) {
     if (!btn) return;
