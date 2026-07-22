@@ -446,7 +446,7 @@ async function processarTrocaSenha() {
     mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
     
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-
+}
 
 function exibirFeedbackSucessoBotao(btn) {
     if (!btn) return;
@@ -499,10 +499,12 @@ async function processarTrocaSenha() {
 
     if (usuarios[index].pass !== senhaAtualDigitada) {
         const inputModal = document.getElementById('confirm-pass-atual');
-        inputModal.style.border = "1px solid #ef4444";
-        inputModal.value = "";
-        inputModal.placeholder = "SENHA INCORRETA!";
-        setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
+        if (inputModal) {
+            inputModal.style.border = "1px solid #ef4444";
+            inputModal.value = "";
+            inputModal.placeholder = "SENHA INCORRETA!";
+            setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
+        }
         return;
     }
 
@@ -522,9 +524,52 @@ async function processarTrocaSenha() {
         }, 3000);
     }
     
-    document.getElementById('pass-nova').value = "";
-    if (document.getElementById('pass-confirmar')) document.getElementById('pass-confirmar').value = "";
+    const inputNova = document.getElementById('pass-nova');
+    const inputConf = document.getElementById('pass-confirmar');
+    if (inputNova) inputNova.value = "";
+    if (inputConf) inputConf.value = "";
     mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
+}
+
+async function processarTrocaEmail() {
+    if (!fluxoTrocaEmailPendente) return;
+
+    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
+    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
+
+    if (codAntigoDigitado !== fluxoTrocaEmailPendente.codigoAntigoGerado) {
+        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
+        return;
+    }
+
+    if (codNovoDigitado !== fluxoTrocaEmailPendente.codigoNovoGerado) {
+        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
+        return;
+    }
+
+    const f = fluxoTrocaEmailPendente;
+    
+    localStorage.setItem('user_nome', f.nome);
+    localStorage.setItem('user_tel', f.tel);
+    localStorage.setItem('user_email', f.novoEmail);
+
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
+    
+    if (index !== -1) {
+        usuarios[index].nome = f.nome;
+        usuarios[index].tel = f.tel;
+        usuarios[index].email = f.novoEmail;
+        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    }
+
+    if (typeof salvarDados === 'function') salvarDados();
+
+    exibirFeedbackSucessoBotao(f.btnAlvo);
+    fecharModalEmail();
+    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
+    
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
