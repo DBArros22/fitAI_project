@@ -98,7 +98,6 @@ window.carregarDadosDoAtleta = async function(uid) {
             
         } else {
             console.log("Novo atleta detectado. Criando perfil inicial no Firestore...");
-            // CORRIGIDO: Agora grava o documento inicial no Firestore corretamente
             await window.db.collection("usuarios").doc(uid).set({
                 bancoDeDados: typeof bancoDeDados !== 'undefined' ? bancoDeDados : {},
                 diasTreinados: typeof diasTreinados !== 'undefined' ? diasTreinados : []
@@ -109,6 +108,46 @@ window.carregarDadosDoAtleta = async function(uid) {
         throw error;
     }
 };
+
+// Funções auxiliares globais isoladas corretamente
+async function carregarDadosDoUsuarioDoBanco() {
+    if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
+        await window.carregarDadosDoAtleta(usuarioAtualId);
+    } else if (typeof auth !== 'undefined' && auth.currentUser) {
+        await window.carregarDadosDoAtleta(auth.currentUser.uid);
+    } else {
+        console.warn("Tentativa de carregar dados, mas nenhum ID de usuário foi encontrado.");
+    }
+}
+
+function atualizarListaExercicios() {
+    const campoGrupo = document.getElementById('select-grupo-sub');
+    if (!campoGrupo) return;
+
+    const grupo = campoGrupo.value;
+    const selectEx = document.getElementById('select-exercicio');
+    const camposForca = document.getElementById('campos-forca');
+    const camposCardio = document.getElementById('campos-cardio');
+
+    if (!selectEx) return;
+    if (!grupo) {
+        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
+        return;
+    }
+
+    if (grupo === "Cardio & Aeróbico") {
+        if (camposForca) camposForca.classList.add('hidden');
+        if (camposCardio) camposCardio.classList.remove('hidden');
+    } else {
+        if (camposForca) camposForca.classList.remove('hidden');
+        if (camposCardio) camposCardio.classList.add('hidden');
+    }
+
+    const lista = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
+
+    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
+        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+}
 
 // Funções do perfil 
 
@@ -153,7 +192,7 @@ function atualizarFotoPerfil(input) {
 }
 
 /**
- * 2. Salva Dados (Fluxo inteligente com labels dinâmicas em parênteses)
+ * 2. Salva Dados
  */
 async function salvarDadosPerfil(event) {
     const nome = document.getElementById('perfil-nome').value;
@@ -184,50 +223,6 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        async function carregarDadosDoUsuarioDoBanco() {
-    if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
-        await carregarDadosDoAtleta(usuarioAtualId);
-    } else if (typeof auth !== 'undefined' && auth.currentUser) {
-        await carregarDadosDoAtleta(auth.currentUser.uid);
-    } else {
-        console.warn("Tentativa de carregar dados, mas nenhum ID de usuário foi encontrado.");
-    }
-}
-
-function atualizarListaExercicios() {
-    // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
-    const campoGrupo = document.getElementById('select-grupo-sub');
-    
-    // TRAVA DE SEGURANÇA: Se o campo não existir na tela atual (como no logout), para aqui e não quebra!
-    if (!campoGrupo) return;
-
-    // 2. Captura o valor selecionado
-    const grupo = campoGrupo.value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
-
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
-        return;
-    }
-
-    // Alternar campos entre Peso (Força) e Tempo (Cardio)
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
-    } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
-    }
-
-    const lista = dicionarioExercicios[grupo] || [];
-
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-}atua
-        // Atualiza dinamicamente as labels inserindo os e-mails entre parênteses
         const lblAntigo = document.getElementById('label-email-antigo');
         const lblNovo = document.getElementById('label-email-novo');
         if (lblAntigo) lblAntigo.innerText = `Código no E-mail Antigo (${emailAntigo}):`;
@@ -289,8 +284,10 @@ function fecharModalEmail() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
-    document.getElementById('codigo-email-antigo').value = "";
-    document.getElementById('codigo-email-novo').value = "";
+    const elAntigo = document.getElementById('codigo-email-antigo');
+    const elNovo = document.getElementById('codigo-email-novo');
+    if (elAntigo) elAntigo.value = "";
+    if (elNovo) elNovo.value = "";
     fluxoTrocaEmailPendente = null;
 }
 
@@ -309,6 +306,122 @@ async function processarTrocaEmail() {
         mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
         return;
     }
+
+    const f = fluxoTrocaEmailPendente;
+    
+    localStorage.setItem('user_nome', f.nome);
+    localStorage.setItem('user_tel', f.tel);
+    localStorage.setItem('user_email', f.novoEmail);
+
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
+    
+    if (index !== -1) {
+        usuarios[index].nome = f.nome;
+        usuarios[index].tel = f.tel;
+        usuarios[index].email = f.novoEmail;
+        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    }
+
+    if (typeof salvarDados === 'function') salvarDados();
+
+    exibirFeedbackSucessoBotao(f.btnAlvo);
+    fecharModalEmail();
+    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
+    
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+}
+
+function exibirFeedbackSucessoBotao(btn) {
+    if (!btn) return;
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
+    btn.style.background = "#22c55e"; 
+    btn.style.transform = "scale(0.98)";
+
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+        btn.style.background = "";
+        btn.style.transform = "";
+    }, 2000);
+}
+
+function alterarSenhaPerfil() {
+    const nova = document.getElementById('pass-nova').value;
+    const confirmar = document.getElementById('pass-confirmar') ? document.getElementById('pass-confirmar').value : "";
+
+    if (nova.length < 4) {
+        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 4 caracteres!", "erro");
+        return;
+    }
+
+    if (nova !== confirmar) {
+        mostrarAvisoNotificacao("As senhas digitadas não coincidem!", "erro");
+        return;
+    }
+
+    const modal = document.getElementById('modal-confirmar-senha');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+    }
+    const inputPass = document.getElementById('confirm-pass-atual');
+    if (inputPass) inputPass.focus();
+}
+
+function fecharModalSenha() {
+    const modal = document.getElementById('modal-confirmar-senha');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+    }
+    const inputPass = document.getElementById('confirm-pass-atual');
+    if (inputPass) inputPass.value = "";
+}
+
+async function processarTrocaSenha() {
+    const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
+    const novaSenha = document.getElementById('pass-nova').value;
+    const emailAtivo = localStorage.getItem('user_email');
+    
+    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
+    const index = usuarios.findIndex(u => u.email === emailAtivo);
+
+    if (index === -1) return;
+
+    if (usuarios[index].pass !== senhaAtualDigitada) {
+        const inputModal = document.getElementById('confirm-pass-atual');
+        if (inputModal) {
+            inputModal.style.border = "1px solid #ef4444";
+            inputModal.value = "";
+            inputModal.placeholder = "SENHA INCORRETA!";
+            setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
+        }
+        return;
+    }
+
+    usuarios[index].pass = novaSenha;
+    localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+    
+    if (typeof salvarDados === 'function') salvarDados();
+
+    fecharModalSenha();
+    const btnPrincipal = document.getElementById('btn-senha-perfil');
+    if (btnPrincipal) {
+        btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
+        btnPrincipal.style.background = "#22c55e";
+        setTimeout(() => {
+            btnPrincipal.innerHTML = "ALTERAR SENHA";
+            btnPrincipal.style.background = "";
+        }, 3000);
+    }
+    
+    const inputNova = document.getElementById('pass-nova');
+    const inputConf = document.getElementById('pass-confirmar');
+    if (inputNova) inputNova.value = "";
+    if (inputConf) inputConf.value = "";
+    mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
+}
 
     const f = fluxoTrocaEmailPendente;
     
