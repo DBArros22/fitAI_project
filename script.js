@@ -98,6 +98,7 @@ window.carregarDadosDoAtleta = async function(uid) {
             
         } else {
             console.log("Novo atleta detectado. Criando perfil inicial no Firestore...");
+            // CORRIGIDO: Agora grava o documento inicial no Firestore corretamente
             await window.db.collection("usuarios").doc(uid).set({
                 bancoDeDados: typeof bancoDeDados !== 'undefined' ? bancoDeDados : {},
                 diasTreinados: typeof diasTreinados !== 'undefined' ? diasTreinados : []
