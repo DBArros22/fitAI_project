@@ -981,26 +981,20 @@ async function logout() {
 
     document.getElementById('btn-confirmar-sair').onclick = async () => {
         try {
-            // Encerra a sessão no Firebase Auth
-            if (typeof auth !== 'undefined' && auth) {
-                await auth.signOut();
-            } else if (window.auth) {
-                await window.auth.signOut();
-            }
-
-            // Limpa identificadores de sessão local
+            // 1. Limpa identificadores e sessões locais
             localStorage.removeItem('user_email');
             localStorage.removeItem('fitai_session');
-            
             if (typeof usuarioAtualId !== 'undefined') {
                 usuarioAtualId = null;
             }
 
             modalSair.remove();
 
-            // Redireciona para o login
-            if (typeof showView === 'function') {
-                showView('login');
+            // 2. Desconecta do Firebase (O onAuthStateChanged assume daqui e redireciona para o login)
+            if (typeof auth !== 'undefined' && auth) {
+                await auth.signOut();
+            } else if (window.auth) {
+                await window.auth.signOut();
             }
         } catch (error) {
             console.error("Erro ao encerrar sessão no Firebase:", error);
@@ -2510,25 +2504,26 @@ function removerLembrete(id) {
 window.addEventListener('DOMContentLoaded', () => {
     // Escuta mudanças no estado de login do Firebase
     auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            usuarioAtualId = user.uid; // Guarda o ID único do atleta no banco
-            
-            try {
-                // CORREÇÃO: Chama a função nova correta passando o UID do usuário
-                await carregarDadosDoAtleta(user.uid);
-                
-                showView('lobby');
-                if (typeof atualizarListaExercicios === 'function') atualizarListaExercicios(); 
-                if (typeof gerarCalendario === 'function') gerarCalendario();
-                if (typeof renderizarLembretes === 'function') renderizarLembretes();
-            } catch (error) {
-                console.error("Erro ao carregar dados do atleta:", error);
-            }
-        } else {
-            usuarioAtualId = null;
+    if (user) {
+        // Usuário conectado com sucesso
+        usuarioAtualId = user.uid;
+        try {
+            await window.carregarDadosDoAtleta(user.uid);
+        } catch (err) {
+            console.error("Erro ao carregar dados do atleta no login:", err);
+        }
+        
+        // Garante a transição limpa para a tela do aplicativo
+        if (typeof showView === 'function') {
+            showView('lobby');
+        }
+    } else {
+        // Usuário desconectado - Limpa os estados e força a exibição da tela de login
+        usuarioAtualId = null;
+        if (typeof showView === 'function') {
             showView('login');
         }
-    });
+    }
 });
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
