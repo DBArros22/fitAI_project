@@ -945,17 +945,16 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     }, 3500);
 }
 
-function logout() {
+async function logout() {
     // Cria o modal de confirmação
     const modalSair = document.createElement('div');
-    // Ajuste UX: position fixed + 100vh/100vw garante que cubra a tela visível no mobile
     modalSair.style = `
         position: fixed; 
         top: 0; left: 0; 
         width: 100%; height: 100%;
         background: rgba(2, 6, 23, 0.85); 
         backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px); /* Suporte para iOS */
+        -webkit-backdrop-filter: blur(12px);
         display: flex; align-items: center; justify-content: center;
         z-index: 100000; 
         padding: 20px;
@@ -980,11 +979,33 @@ function logout() {
 
     document.getElementById('btn-cancelar-sair').onclick = () => modalSair.remove();
 
-    document.getElementById('btn-confirmar-sair').onclick = () => {
-        // Limpa a sessão específica
-        localStorage.removeItem('user_email'); // Importante para a circulação de dados que fizemos
-        localStorage.removeItem('fitai_session');
-        location.reload();
+    document.getElementById('btn-confirmar-sair').onclick = async () => {
+        try {
+            // Encerra a sessão no Firebase Auth
+            if (typeof auth !== 'undefined' && auth) {
+                await auth.signOut();
+            } else if (window.auth) {
+                await window.auth.signOut();
+            }
+
+            // Limpa identificadores de sessão local
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('fitai_session');
+            
+            if (typeof usuarioAtualId !== 'undefined') {
+                usuarioAtualId = null;
+            }
+
+            modalSair.remove();
+
+            // Redireciona para o login
+            if (typeof showView === 'function') {
+                showView('login');
+            }
+        } catch (error) {
+            console.error("Erro ao encerrar sessão no Firebase:", error);
+            modalSair.remove();
+        }
     };
 }
 
