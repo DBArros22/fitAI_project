@@ -740,44 +740,30 @@ function mostrarAviso(mensagem) {
 
 // --- 1. NAVEGAÇÃO ---
 
-function showView(viewName) {
-    // Registra a visualização atual globalmente para o controle do widget
-    window.currentView = viewName;
+function showView(viewId) {
+    window.currentView = viewId;
 
-    const views = [
-        'view-login', 'view-lobby', 'view-registro', 'view-calendario',
-        'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
-        'view-aparelho-ocupado', 'view-perfil', 
-        'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc'
-    ];
+    // Lista de todas as views registradas no seu sistema
+    const views = ['login', 'lobby', 'blog', 'crossfit-timers', 'sugestao'];
 
-    views.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('hidden');
+    views.forEach(id => {
+        const container = document.getElementById(`view-${id}`);
+        if (container) {
+            if (id === viewId) {
+                container.style.display = 'block';
+                container.classList.remove('hidden');
+            } else {
+                container.style.display = 'none';
+                container.classList.add('hidden');
+            }
+        }
     });
 
-    const target = document.getElementById('view-' + viewName);
-    if (target) target.classList.remove('hidden');
+    // Rola para o topo e limpa qualquer trava de scroll residual
+    window.scrollTo(0, 0);
+    document.body.style.overflow = 'auto';
 
-    const shell = document.getElementById('app-shell');
-    if (shell) {
-        // CORREÇÃO DIRETA NO DOM: Força a ocultação total ou exibição do esqueleto do app
-        if (viewName === 'login' || viewName === 'registro') {
-            shell.style.setProperty('display', 'none', 'important');
-        } else {
-            shell.style.setProperty('display', 'flex', 'important');
-        }
-    }
-
-    // Gatilhos de renderização originais preservados
-    if (viewName === 'perfil') carregarDadosPerfil(); 
-    if (viewName === 'planilhas') renderizarFichas();
-    if (viewName === 'registro') renderizarLogTreino();
-    if (viewName === 'consulta-geral') renderizarFichasConsulta();
-    if (viewName === 'calendario') renderizarPaginaCronograma();
-    if (viewName === 'blog') renderizarBlog();
-
-    // Atualiza imediatamente a visibilidade do mini-timer ao trocar de tela
+    // Atualiza widgets dinâmicos
     if (typeof atualizarMiniTimerWidget === 'function') {
         atualizarMiniTimerWidget("");
     }
@@ -2776,14 +2762,17 @@ async function toggleGravacao() {
 }
 
 function excluirPost(id) {
-    // Força a página a rolar para o topo instantaneamente para receber o modal centralizado
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Remove qualquer modal residual anterior para não acumular no DOM
+    const modalAntigo = document.getElementById('modal-confirmacao-exclusao');
+    if (modalAntigo) modalAntigo.remove();
 
     const modalConfirm = document.createElement('div');
     modalConfirm.id = 'modal-confirmacao-exclusao';
     modalConfirm.style = `
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(10px);
+        background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         display: flex; align-items: center; justify-content: center;
         z-index: 100000; padding: 20px;
@@ -2804,12 +2793,8 @@ function excluirPost(id) {
         </div>
     `;
 
-    const viewBlog = document.getElementById('view-blog');
-    if (viewBlog) {
-        viewBlog.appendChild(modalConfirm);
-    } else {
-        document.body.appendChild(modalConfirm);
-    }
+    // CORREÇÃO AQUI: Sempre anexar direto ao document.body para isolar do layout do blog
+    document.body.appendChild(modalConfirm);
 
     document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
 
@@ -3422,3 +3407,4 @@ window.setWodTimerMode = setWodTimerMode;
 window.iniciarTimerCF = iniciarTimerCF;
 window.pausarTimerCF = pausarTimerCF;
 window.resetarTimerCF = resetarTimerCF;
+
