@@ -911,7 +911,12 @@ async function handleLogin() {
     }
 }
 
-window.handleLogin = handleLogin;
+document.addEventListener('DOMContentLoaded', () => {
+    const btnLogin = document.getElementById('btn-login-submit');
+    if (btnLogin) {
+        btnLogin.addEventListener('click', handleLogin);
+    }
+});
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
