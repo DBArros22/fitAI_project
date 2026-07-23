@@ -911,6 +911,8 @@ async function handleLogin() {
     }
 }
 
+window.handleLogin = handleLogin;
+
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
     if (existente) existente.remove();
