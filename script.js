@@ -53,7 +53,7 @@ async function handleLogin() {
 
     } catch (error) {
         console.error("Erro ao fazer login:", error);
-        
+
         // Mantém a UX original tratando erros específicos
         if (error.code === 'auth/user-not-found') {
             mostrarAvisoNotificacao("E-mail não cadastrado!");
@@ -74,23 +74,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// ============================================================================================================
+// toggleAuthTab (versão única e unificada — compatível com as duas estruturas de HTML já usadas no projeto)
+// ============================================================================================================
 window.toggleAuthTab = function(tab) {
-    const loginForm = document.getElementById('form-login') || document.getElementById('login-form');
-    const registerForm = document.getElementById('form-register') || document.getElementById('register-form');
+    const loginForm = document.getElementById('form-login');
+    const registerForm = document.getElementById('form-register') || document.getElementById('form-cadastro');
     const tabLogin = document.getElementById('tab-login');
     const tabRegister = document.getElementById('tab-register');
+    const selector = document.getElementById('auth-tab-selector');
 
     if (tab === 'login') {
         if (loginForm) loginForm.classList.remove('hidden');
         if (registerForm) registerForm.classList.add('hidden');
         if (tabLogin) tabLogin.classList.add('active');
         if (tabRegister) tabRegister.classList.remove('active');
-    } else if (tab === 'register') {
+        if (selector) selector.classList.remove('cadastro-active');
+    } else if (tab === 'register' || tab === 'cadastro') {
         if (loginForm) loginForm.classList.add('hidden');
         if (registerForm) registerForm.classList.remove('hidden');
         if (tabLogin) tabLogin.classList.remove('active');
         if (tabRegister) tabRegister.classList.add('active');
+        if (selector) selector.classList.add('cadastro-active');
     }
+
+    // Limpeza inteligente dos campos, preservando o e-mail lembrado
+    const todosInputs = document.querySelectorAll('.auth-card .input-field');
+    const emailSalvo = localStorage.getItem('fitai_remember_email');
+
+    todosInputs.forEach(input => {
+        if (tab === 'login' && input.id === 'login-email' && emailSalvo) {
+            input.value = emailSalvo;
+            return;
+        }
+        input.value = '';
+    });
 };
 
 // Inicializa o Firebase Core
@@ -116,8 +134,8 @@ let feedEvolucao = [];             // Carregado da coleção global /feed
 let assisData = null;              // Carregado do documento de perfil /usuarios/{UID}
 
 // --- CONTROLES DE INTERFACE, CRONÔMETROS E MÍDIA (Mantidos Locais) ---
-let midiaAnexada = null; 
-let cronometrosAtivos = {}; 
+let midiaAnexada = null;
+let cronometrosAtivos = {};
 let tempoMestreAtivo = null;
 let milisegundosAcumulados = 0;
 let timestampInicio = null;
@@ -126,9 +144,10 @@ let fluxoTrocaEmailPendente = null;
 
 // Variáveis de timers WOD e gravação de áudio
 let cfTimerInterval = null;
-let cfStartTime = 0; 
-let cfLimitSeconds = 600; 
+let cfStartTime = 0;
+let cfLimitSeconds = 600;
 let cfModo = 'AMRAP';
+let cfTempoDecorridoAcumulado = 0;
 let mediaRecorder;
 let audioChunks = [];
 let gravando = false;
@@ -164,23 +183,23 @@ window.carregarDadosDoAtleta = async function(uid) {
             console.error("Erro: O objeto 'db' do Firestore não foi inicializado.");
             return;
         }
-        
+
         const doc = await window.db.collection("usuarios").doc(uid).get();
-        
+
         if (doc.exists) {
             const dados = doc.data();
             console.log("Dados do atleta localizados no Firestore:", dados);
-            
+
             if (dados.treinos) {
                 bancoDeDados = dados.treinos;
             } else if (dados.bancoDeDados) {
                 bancoDeDados = dados.bancoDeDados;
             }
-            
+
             if (dados.diasTreinados) {
                 diasTreinados = dados.diasTreinados;
             }
-            
+
         } else {
             console.log("Novo atleta detectado. Criando perfil inicial no Firestore...");
             await window.db.collection("usuarios").doc(uid).set({
@@ -234,7 +253,7 @@ function atualizarListaExercicios() {
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
-// Funções do perfil 
+// Funções do perfil
 
 function carregarDadosPerfil() {
     const emailAtivo = localStorage.getItem('user_email');
@@ -266,10 +285,10 @@ function atualizarFotoPerfil(input) {
             localStorage.setItem('user_foto', fotoUrl);
 
             const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
-            
+
             if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
             if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
-            
+
             if (typeof atualizarFeedUI === "function") atualizarFeedUI();
         };
         reader.readAsDataURL(input.files[0]);
@@ -284,7 +303,7 @@ async function salvarDadosPerfil(event) {
     const tel = document.getElementById('perfil-tel').value;
     const novoEmail = document.getElementById('perfil-email').value.trim();
     const emailAntigo = localStorage.getItem('user_email');
-    
+
     const btn = event.currentTarget;
 
     if (novoEmail !== emailAntigo) {
@@ -318,7 +337,7 @@ async function salvarDadosPerfil(event) {
 
         mostrarAvisoNotificacao("Códigos de segurança enviados!", "sucesso");
         abrirModalEmail();
-        return; 
+        return;
     }
 
     localStorage.setItem('user_nome', nome);
@@ -393,14 +412,14 @@ async function processarTrocaEmail() {
     }
 
     const f = fluxoTrocaEmailPendente;
-    
+
     localStorage.setItem('user_nome', f.nome);
     localStorage.setItem('user_tel', f.tel);
     localStorage.setItem('user_email', f.novoEmail);
 
     let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
     const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
+
     if (index !== -1) {
         usuarios[index].nome = f.nome;
         usuarios[index].tel = f.tel;
@@ -413,7 +432,7 @@ async function processarTrocaEmail() {
     exibirFeedbackSucessoBotao(f.btnAlvo);
     fecharModalEmail();
     mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
+
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
@@ -421,7 +440,7 @@ function exibirFeedbackSucessoBotao(btn) {
     if (!btn) return;
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
-    btn.style.background = "#22c55e"; 
+    btn.style.background = "#22c55e";
     btn.style.transform = "scale(0.98)";
 
     setTimeout(() => {
@@ -468,7 +487,7 @@ async function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
     const emailAtivo = localStorage.getItem('user_email');
-    
+
     let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
     const index = usuarios.findIndex(u => u.email === emailAtivo);
 
@@ -487,7 +506,7 @@ async function processarTrocaSenha() {
 
     usuarios[index].pass = novaSenha;
     localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    
+
     if (typeof salvarDados === 'function') salvarDados();
 
     fecharModalSenha();
@@ -500,161 +519,12 @@ async function processarTrocaSenha() {
             btnPrincipal.style.background = "";
         }, 3000);
     }
-    
+
     const inputNova = document.getElementById('pass-nova');
     const inputConf = document.getElementById('pass-confirmar');
     if (inputNova) inputNova.value = "";
     if (inputConf) inputConf.value = "";
     mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
-}
-
-    const f = fluxoTrocaEmailPendente;
-    
-    localStorage.setItem('user_nome', f.nome);
-    localStorage.setItem('user_tel', f.tel);
-    localStorage.setItem('user_email', f.novoEmail);
-
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
-    if (index !== -1) {
-        usuarios[index].nome = f.nome;
-        usuarios[index].tel = f.tel;
-        usuarios[index].email = f.novoEmail;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    }
-
-    if (typeof salvarDados === 'function') salvarDados();
-
-    exibirFeedbackSucessoBotao(f.btnAlvo);
-    fecharModalEmail();
-    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-}
-
-function exibirFeedbackSucessoBotao(btn) {
-    if (!btn) return;
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
-    btn.style.background = "#22c55e"; 
-    btn.style.transform = "scale(0.98)";
-
-    setTimeout(() => {
-        btn.innerHTML = originalContent;
-        btn.style.background = "";
-        btn.style.transform = "";
-    }, 2000);
-}
-
-function alterarSenhaPerfil() {
-    const nova = document.getElementById('pass-nova').value;
-    const confirmar = document.getElementById('pass-confirmar') ? document.getElementById('pass-confirmar').value : "";
-
-    if (nova.length < 4) {
-        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 4 caracteres!", "erro");
-        return;
-    }
-
-    if (nova !== confirmar) {
-        mostrarAvisoNotificacao("As senhas digitadas não coincidem!", "erro");
-        return;
-    }
-
-    document.getElementById('modal-confirmar-senha').classList.remove('hidden');
-    document.getElementById('modal-confirmar-senha').style.display = 'flex';
-    document.getElementById('confirm-pass-atual').focus();
-}
-
-function fecharModalSenha() {
-    document.getElementById('modal-confirmar-senha').classList.add('hidden');
-    document.getElementById('modal-confirmar-senha').style.display = 'none';
-    document.getElementById('confirm-pass-atual').value = "";
-}
-
-async function processarTrocaSenha() {
-    const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
-    const novaSenha = document.getElementById('pass-nova').value;
-    const emailAtivo = localStorage.getItem('user_email');
-    
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === emailAtivo);
-
-    if (index === -1) return;
-
-    if (usuarios[index].pass !== senhaAtualDigitada) {
-        const inputModal = document.getElementById('confirm-pass-atual');
-        if (inputModal) {
-            inputModal.style.border = "1px solid #ef4444";
-            inputModal.value = "";
-            inputModal.placeholder = "SENHA INCORRETA!";
-            setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
-        }
-        return;
-    }
-
-    usuarios[index].pass = novaSenha;
-    localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    
-    if (typeof salvarDados === 'function') salvarDados();
-
-    fecharModalSenha();
-    const btnPrincipal = document.getElementById('btn-senha-perfil');
-    if (btnPrincipal) {
-        btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
-        btnPrincipal.style.background = "#22c55e";
-        setTimeout(() => {
-            btnPrincipal.innerHTML = "ALTERAR SENHA";
-            btnPrincipal.style.background = "";
-        }, 3000);
-    }
-    
-    const inputNova = document.getElementById('pass-nova');
-    const inputConf = document.getElementById('pass-confirmar');
-    if (inputNova) inputNova.value = "";
-    if (inputConf) inputConf.value = "";
-    mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
-}
-
-async function processarTrocaEmail() {
-    if (!fluxoTrocaEmailPendente) return;
-
-    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
-    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
-
-    if (codAntigoDigitado !== fluxoTrocaEmailPendente.codigoAntigoGerado) {
-        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
-        return;
-    }
-
-    if (codNovoDigitado !== fluxoTrocaEmailPendente.codigoNovoGerado) {
-        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
-        return;
-    }
-
-    const f = fluxoTrocaEmailPendente;
-    
-    localStorage.setItem('user_nome', f.nome);
-    localStorage.setItem('user_tel', f.tel);
-    localStorage.setItem('user_email', f.novoEmail);
-
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
-    if (index !== -1) {
-        usuarios[index].nome = f.nome;
-        usuarios[index].tel = f.tel;
-        usuarios[index].email = f.novoEmail;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    }
-
-    if (typeof salvarDados === 'function') salvarDados();
-
-    exibirFeedbackSucessoBotao(f.btnAlvo);
-    fecharModalEmail();
-    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
@@ -663,20 +533,58 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 
     const toast = document.createElement('div');
     toast.id = 'toast-notificacao';
-    toast.className = tipo; 
 
-    const icone = tipo === 'sucesso' 
-        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+    // Cores do padrão Assist Fit
+    const corDestaque = tipo === 'sucesso' ? '#22c55e' : '#ef4444';
+
+    // Estilo Ultra-Moderno via JS (Garante que o visual mude agora!)
+    toast.style.cssText = `
+        position: fixed;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 4px solid ${corDestaque};
+        padding: 16px 25px;
+        border-radius: 20px;
+        z-index: 1000000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        pointer-events: none;
+        white-space: nowrap;
+    `;
+
+    const icone = tipo === 'sucesso'
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
 
     toast.innerHTML = `
         ${icone}
-        <span>${mensagem}</span>
+        <span style="margin-top: 2px;">${mensagem}</span>
     `;
 
     document.body.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '1'; }, 10);
 
+    // Animação de entrada (Desliza e aparece)
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    }, 50);
+
+    // Saída automática
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translateX(-50%) translateY(-20px)';
@@ -812,7 +720,7 @@ function mostrarAviso(mensagem) {
         background: rgba(0,0,0,0.85); display: flex; align-items: center;
         justify-content: center; z-index: 10000; backdrop-filter: blur(6px);
     `;
-    
+
     modal.innerHTML = `
         <div class="glass-panel" style="max-width: 320px; padding: 25px; text-align: center; border: 1px solid #3b82f6; border-radius: 20px; background: #0f172a; box-shadow: 0 0 20px rgba(59,130,246,0.3);">
             <h3 class="italic-bold" style="color: #3b82f6; margin-bottom: 12px; letter-spacing: 1px;">FITAI PRO</h3>
@@ -855,37 +763,7 @@ function showView(viewId) {
 }
 
 // --- 2. SISTEMA DE AUTENTICAÇÃO ---
-function toggleAuthTab(tab) {
-    const selector = document.getElementById('auth-tab-selector');
-    const loginForm = document.getElementById('form-login');
-    const cadastroForm = document.getElementById('form-cadastro');
-    
-    // 1. Alterna a visibilidade das abas
-    if (tab === 'login') {
-        selector.classList.remove('cadastro-active');
-        loginForm.classList.remove('hidden');
-        cadastroForm.classList.add('hidden');
-    } else {
-        selector.classList.add('cadastro-active');
-        loginForm.classList.add('hidden');
-        cadastroForm.classList.remove('hidden');
-    }
-
-    // 2. Limpeza inteligente dos campos
-    const todosInputs = document.querySelectorAll('.auth-card .input-field');
-    const emailSalvo = localStorage.getItem('fitai_remember_email');
-
-    todosInputs.forEach(input => {
-        // Se estivermos voltando para o Login e este for o campo de e-mail com dado salvo, não limpa
-        if (tab === 'login' && input.id === 'login-email' && emailSalvo) {
-            input.value = emailSalvo;
-            return;
-        }
-        
-        // Limpa todos os outros campos (senhas, nomes, campos de cadastro, etc)
-        input.value = '';
-    });
-}
+// (a função toggleAuthTab já foi definida de forma unificada no topo do arquivo)
 
 async function handleCadastro() {
     const nome = document.getElementById('reg-nome').value.trim();
@@ -915,7 +793,7 @@ async function handleCadastro() {
         });
 
         // 3. Mantém compatibilidade temporária de sessão local caso outros módulos usem
-        localStorage.setItem('user_email', email); 
+        localStorage.setItem('user_email', email);
         localStorage.setItem('user_nome', nome);
         localStorage.setItem('user_tel', tel);
 
@@ -935,83 +813,18 @@ async function handleCadastro() {
     }
 }
 
-function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
-    const existente = document.getElementById('toast-notificacao');
-    if (existente) existente.remove();
-
-    const toast = document.createElement('div');
-    toast.id = 'toast-notificacao';
-    
-    // Cores do padrão Assist Fit
-    const corDestaque = tipo === 'sucesso' ? '#22c55e' : '#ef4444';
-    
-    // Estilo Ultra-Moderno via JS (Garante que o visual mude agora!)
-    toast.style.cssText = `
-        position: fixed;
-        top: 30px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-20px);
-        opacity: 0;
-        background: rgba(15, 23, 42, 0.9);
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-left: 4px solid ${corDestaque};
-        padding: 16px 25px;
-        border-radius: 20px;
-        z-index: 1000000;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        color: white;
-        font-family: 'Inter', sans-serif;
-        font-weight: 800;
-        font-size: 10px;
-        letter-spacing: 1.2px;
-        text-transform: uppercase;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-        pointer-events: none;
-        white-space: nowrap;
-    `;
-
-    const icone = tipo === 'sucesso' 
-        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-
-    toast.innerHTML = `
-        ${icone}
-        <span style="margin-top: 2px;">${mensagem}</span>
-    `;
-
-    document.body.appendChild(toast);
-
-    // Animação de entrada (Desliza e aparece)
-    setTimeout(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateX(-50%) translateY(0)';
-    }, 50);
-
-    // Saída automática
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(-20px)';
-        setTimeout(() => toast.remove(), 500);
-    }, 3500);
-}
-
 async function logout() {
     // Cria o modal de confirmação
     const modalSair = document.createElement('div');
     modalSair.style = `
-        position: fixed; 
-        top: 0; left: 0; 
+        position: fixed;
+        top: 0; left: 0;
         width: 100%; height: 100%;
-        background: rgba(2, 6, 23, 0.85); 
+        background: rgba(2, 6, 23, 0.85);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         display: flex; align-items: center; justify-content: center;
-        z-index: 100000; 
+        z-index: 100000;
         padding: 20px;
     `;
 
@@ -1022,7 +835,7 @@ async function logout() {
             </div>
             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; letter-spacing: 1px;">ENCERRAR SESSÃO?</h3>
             <p style="color: #94a3b8; margin-bottom: 25px; font-size: 13px; line-height: 1.5;">Você voltará para a tela de login e seus dados locais serão preservados.</p>
-            
+
             <div style="display: flex; gap: 10px;">
                 <button id="btn-cancelar-sair" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
                 <button id="btn-confirmar-sair" style="flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">SAIR</button>
@@ -1069,7 +882,7 @@ function renderizarFichas() {
             <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
 
               ← VOLTAR
-            </button>          
+            </button>
         </div>
     `;
     const keys = Object.keys(bancoDeDados.fichas);
@@ -1155,7 +968,7 @@ function solicitarNomeFichaCustom(callback) {
 
             <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
 
-           
+
 
             <div class="form-group" style="margin-bottom: 25px;">
 
@@ -1181,7 +994,7 @@ function solicitarNomeFichaCustom(callback) {
 
     document.body.appendChild(modalInput);
 
-   
+
 
     const inputField = document.getElementById('input-nome-ficha');
 
@@ -1266,25 +1079,14 @@ function mascaraTempo(input) {
 // Função para formatar a exibição final com siglas (Ex: 01h 20m 30s)
 
 function formatarTempoParaExibicao(valor) {
-
-    if (!valor) return "";
-
+    if (!valor) return "00s";
     const partes = valor.split(':');
-
-   
-
     if (partes.length === 3) {
-
         return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
-
     } else if (partes.length === 2) {
-
         return `${partes[0]}m ${partes[1]}s`;
-
     }
-
     return valor + "s";
-
 }
 
 
@@ -1355,19 +1157,19 @@ function excluirFicha(nome) {
 
         delete bancoDeDados.fichas[nome];
 
-       
+
 
         // 2. CHAMA O NOME CORRETO: salvarBanco (que você já usa em outras partes)
 
         salvarBanco();
 
-       
+
 
         // 3. Atualiza a tela para a ficha sumir da lista
 
         renderizarFichas();
 
-       
+
 
         // 4. Feedback visual para o usuário
 
@@ -1412,7 +1214,7 @@ function renderizarFichasConsulta() {
         htmlGerado += `
             <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                
+
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
                     <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
@@ -1480,7 +1282,7 @@ function verExerciciosConsulta(nome) {
 
                 <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 45px; text-align: center; letter-spacing: 0.5px;">0s</span>
 
-               
+
 
                 <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})"
 
@@ -1623,7 +1425,7 @@ function executarRelogio(id, startTime) {
         texto += (m < 10 ? "0"+m : m) + ":";
         texto += (s < 10 ? "0"+s : s) + ".";
         texto += (ms < 10 ? "0"+ms : ms);
-       
+
         if (display) display.innerText = texto;
     }, 40);
 }
@@ -1668,37 +1470,6 @@ function voltarListaConsulta() {
 }
 
 // --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
-function atualizarListaExercicios() {
-    // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
-    const campoGrupo = document.getElementById('select-grupo-sub');
-    
-    // TRAVA DE SEGURANÇA: Se o campo não existir na tela atual (como no logout), para aqui e não quebra!
-    if (!campoGrupo) return;
-
-    // 2. Captura o valor selecionado
-    const grupo = campoGrupo.value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
-
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
-        return;
-    }
-    // Alternar campos entre Peso (Força) e Tempo (Cardio)
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
-    } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
-    }
-    const lista = dicionarioExercicios[grupo] || [];
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-}
-
 
 function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
@@ -1754,10 +1525,10 @@ function adicionarExercicio() {
         bancoDeDados.fichas[ativa] = [];
     }
     bancoDeDados.fichas[ativa].unshift(novo);
-    
+
     // 5. Grava as alterações permanentemente
     salvarBanco();
-    
+
     console.log("Set estruturado e salvo com sucesso no banco:", novo);
 
     // 6. Atualiza todas as interfaces de forma síncrona e imediata
@@ -1772,18 +1543,6 @@ function adicionarExercicio() {
     if (campoReps) campoReps.value = "";
     if (campoCarga) campoCarga.value = "";
     if (campoTempo) campoTempo.value = "";
-}
-
-
-function formatarTempoParaExibicao(valor) {
-    if (!valor) return "00s";
-    const partes = valor.split(':');
-    if (partes.length === 3) {
-        return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
-    } else if (partes.length === 2) {
-        return `${partes[0]}m ${partes[1]}s`;
-    }
-    return valor + "s";
 }
 
 function renderizarLogTreino() {
@@ -1815,166 +1574,34 @@ function renderizarLogTreino() {
     });
 }
 
-
-
 function ativarEdicaoInline(id, tipo) {
-
     const ativa = fichaAtivaNoMomento || fichaAtiva;
-
     const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
 
-   
-
     const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
-
     const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
 
-
-
     const estiloEsconderSetas = `
-
         <style>
-
             input::-webkit-outer-spin-button,
-
             input::-webkit-inner-spin-button {
-
                 -webkit-appearance: none;
-
                 margin: 0;
-
             }
-
             input[type=number] {
-
                 -moz-appearance: textfield;
-
             }
-
         </style>
-
     `;
 
-
-
     // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
-
     if (ex.tempo && ex.tempo.toString().trim() !== "") {
-
         const valorTempo = ex.tempo || "00:00:00";
 
-
-
         // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
-
         document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-
             <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
-
                 <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric"
-
-                    oninput="automatizarMascaraTempo(this)"
-
-                    style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
-
-                <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">
-
-            </div>`;
-
-    } else {
-
-        // Formato para Musculação Pura (Séries x Reps — KG)
-
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-
-            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-
-               
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-
-               
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
-
-            </div>`;
-
-    }
-
-
-
-    // Botões de Confirmação e Cancelamento Inline
-
-    document.getElementById(acoesId).innerHTML = `
-
-        <div style="display: flex; gap: 8px; align-items: center;">
-
-            <button onclick="salvarEdicaoInline(${id}, '${tipo}')"
-
-                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-
-                onmouseover="this.style.background='#10b981'; this.style.color='white'"
-
-                onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
-
-                ✓
-
-            </button>
-
-            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}"
-
-                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-
-                onmouseover="this.style.background='#ef4444'; this.style.color='white'"
-
-                onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
-
-                ✕
-
-            </button>
-
-        </div>`;
-
-}
-
-
-
-function ativarEdicaoInline(id, tipo) {
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
-    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-    
-    const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
-    const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
-
-    const estiloEsconderSetas = `
-        <style>
-            input::-webkit-outer-spin-button,
-            input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
-            input[type=number] {
-                -moz-appearance: textfield;
-            }
-        </style>
-    `;
-
-    // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
-    if (ex.tempo && ex.tempo.toString().trim() !== "") {
-        const valorTempo = ex.tempo || "00:00:00";
-
-        // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
-                <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric" 
                     oninput="automatizarMascaraTempo(this)"
                     style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
                 <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">Formato: HH:MM:SS</small>
@@ -1985,10 +1612,10 @@ function ativarEdicaoInline(id, tipo) {
             <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-                
+
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-                
+
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
             </div>`;
@@ -1997,15 +1624,15 @@ function ativarEdicaoInline(id, tipo) {
     // Botões de Confirmação e Cancelamento Inline
     document.getElementById(acoesId).innerHTML = `
         <div style="display: flex; gap: 8px; align-items: center;">
-            <button onclick="salvarEdicaoInline(${id}, '${tipo}')" 
+            <button onclick="salvarEdicaoInline(${id}, '${tipo}')"
                 style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-                onmouseover="this.style.background='#10b981'; this.style.color='white'" 
+                onmouseover="this.style.background='#10b981'; this.style.color='white'"
                 onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
                 ✓
             </button>
-            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" 
+            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}"
                 style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-                onmouseover="this.style.background='#ef4444'; this.style.color='white'" 
+                onmouseover="this.style.background='#ef4444'; this.style.color='white'"
                 onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
                 ✕
             </button>
@@ -2015,10 +1642,10 @@ function ativarEdicaoInline(id, tipo) {
 function salvarEdicaoInline(id, tipo) {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-    
+
     if (ex) {
         const inputTempo = document.getElementById(`edit-tempo-${id}`);
-        
+
         if (inputTempo) {
             // Atualiza o tempo digitado no formato correto
             ex.tempo = inputTempo.value || "00:00:00";
@@ -2051,19 +1678,19 @@ function salvarEdicaoInline(id, tipo) {
 function automatizarMascaraTempo(input) {
     // Remove tudo o que não for número puro
     let v = input.value.replace(/\D/g, "");
-    
+
     // Limita a digitação a no máximo 6 números (HHMMSS)
     if (v.length > 6) {
         v = v.substring(0, 6);
     }
-    
+
     // Aplica formatação de trás para frente inserindo os dois pontos dinamicamente
     if (v.length >= 5) {
         v = v.replace(/^(\d{2})(\d{2})(\d{1,2})$/, "$1:$2:$3");
     } else if (v.length >= 3) {
         v = v.replace(/^(\d{2})(\d{1,2})$/, "$1:$2");
     }
-    
+
     input.value = v;
 }
 
@@ -2073,9 +1700,9 @@ function removerExercicio(id, contexto) {
 
     // Filtra o exercício para remover
     bancoDeDados.fichas[ativa] = bancoDeDados.fichas[ativa].filter(ex => ex.id !== id);
-    
+
     // CORREÇÃO AQUI: de salvarDados() para salvarBanco()
-    salvarBanco(); 
+    salvarBanco();
 
     if (contexto === 'resumo') {
         renderizarResumoFicha(ativa);
@@ -2132,7 +1759,7 @@ function limparTreino() {
         bancoDeDados.fichas[ativa] = [];
         salvarBanco();
         renderizarLogTreino();
-        
+
         // Se a tela de consulta estática também precisar atualizar o resumo:
         if (typeof renderizarResumoFicha === "function") {
             renderizarResumoFicha(ativa);
@@ -2168,8 +1795,8 @@ async function salvarBanco() {
 }
 
 // Mantém o atalho que você já usa no resto do sistema
-const salvarDados = () => { 
-    salvarBanco(); 
+const salvarDados = () => {
+    salvarBanco();
 };
 
 function renderizarPaginaCronograma() {
@@ -2199,7 +1826,7 @@ function renderizarPaginaCronograma() {
 
             <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid rgba(59,130,246,0.3); margin-bottom: 25px;">
                 <div id="display-timer" style="font-size: 2.8rem; color: white; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 0 0 15px rgba(59,130,246,0.5);">00:00:00<span style="font-size: 1.5rem; color: #3b82f6;">.00</span></div>
-                
+
                 <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
                     <button onclick="setTimerMode(false)" id="btn-modo-livre" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloLivreBg}; color: ${estiloLivreTexto}; cursor: pointer;">LIVRE</button>
                     <button onclick="setTimerMode(true)" id="btn-modo-timer" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloTimerBg}; color: ${estiloTimerTexto}; cursor: pointer;">TIMER</button>
@@ -2207,7 +1834,7 @@ function renderizarPaginaCronograma() {
 
                 <div id="timer-input-container" class="${classeContainerInput}" style="margin-bottom: 15px;">
                     <p style="color: gray; font-size: 10px; margin-bottom: 5px;">DEFINIR TEMPO (HORAS:MIN:SEG)</p>
-                    <input type="time" id="input-timer-native" step="1" value="00:00:00" 
+                    <input type="time" id="input-timer-native" step="1" value="00:00:00"
                         style="background: #0f172a; border: 1px solid #3b82f6; color: white; padding: 10px; border-radius: 10px; text-align: center; outline: none; font-family: monospace; font-size: 1.2rem; width: 100%; max-width: 200px;">
                 </div>
 
@@ -2216,7 +1843,7 @@ function renderizarPaginaCronograma() {
                     <button onclick="resetTimer()" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 12px; border-radius: 12px; cursor: pointer; flex: 1;">ZERAR</button>
                 </div>
             </div>
-            
+
             <div style="margin-bottom: 25px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência semanal (Toque para alternar)</h3>
@@ -2234,7 +1861,7 @@ function renderizarPaginaCronograma() {
                 </div>
             </div>
         </div>
-        
+
         <style>
             input[type="time"]::-webkit-inner-spin-button,
             input[type="time"]::-webkit-calendar-picker-indicator {
@@ -2257,8 +1884,8 @@ function gerarCalendario() {
 
     for (let i = 0; i < 7; i++) {
         const registro = diasTreinados.find(d => d.dia === i);
-        const letraTreino = registro ? registro.treino : ""; 
-        
+        const letraTreino = registro ? registro.treino : "";
+
         let estiloAtivo = "border: 1px solid rgba(255,255,255,0.1);";
         if (registro) {
             if (registro.treino === "★") {
@@ -2281,7 +1908,7 @@ function gerarCalendario() {
 
 function alternarTreinoDia(index) {
     const ciclos = ["", "A", "B", "C", "D", "E", "F", "G", "★"];
-    
+
     let registroIdx = diasTreinados.findIndex(d => d.dia === index);
     let novaLetra = "";
 
@@ -2321,7 +1948,7 @@ function limparFrequencia() {
         <div class="glass-panel" style="background: var(--bg-card, #1e293b); border: 1px solid var(--border-color, rgba(59,130,246,0.3)); border-radius: 24px; padding: 25px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
             <h4 class="italic-bold" style="color: white; margin: 0 0 10px 0; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">ZERAR SEMANA?</h4>
             <p style="color: #94a3b8; font-size: 12px; margin: 0 0 20px 0; line-height: 1.5;">Tem certeza que deseja apagar todas as marcações de treino da frequência semanal?</p>
-            
+
             <div style="display: flex; gap: 10px;">
                 <button id="btn-modal-cancelar" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CANCELAR</button>
                 <button id="btn-modal-confirmar" style="flex: 1; background: #ef4444; border: none; color: white; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CONFIRMAR</button>
@@ -2406,7 +2033,7 @@ function toggleTimer() {
     if (!isTimerRunning) {
         if (isCountdownMode && milissegundosTotais === 0) {
             const timeVal = document.getElementById('input-timer-native').value;
-            
+
             if (!timeVal) return mostrarAviso("Defina o tempo!");
 
             const partes = timeVal.split(':');
@@ -2426,7 +2053,7 @@ function toggleTimer() {
         isTimerRunning = true;
         btn.innerText = "PAUSAR";
         btn.style.background = "#ef4444"; // Cor vermelha ao rodar
-        
+
         timerInterval = setInterval(() => {
             if (isCountdownMode) {
                 milissegundosTotais -= 10;
@@ -2447,7 +2074,7 @@ function toggleTimer() {
 function pausarTimer() {
     clearInterval(timerInterval);
     isTimerRunning = false;
-    
+
     const btn = document.getElementById('btn-timer-toggle');
     if (btn) {
         btn.innerText = "RETOMAR";
@@ -2464,7 +2091,7 @@ function resetTimer() {
     if (btn) { btn.innerText = "INICIAR"; btn.style.background = "#3b82f6"; }
 }
 
-// funções notificação de tempo esgotado fora da pagina cronograma 
+// funções notificação de tempo esgotado fora da pagina cronograma
 
 function finalizarTimer() {
     clearInterval(timerInterval);
@@ -2481,13 +2108,13 @@ function atualizarDisplayTimer() {
     const display = document.getElementById('display-timer');
     if (!display) return;
     let tempo = Math.max(0, milissegundosTotais);
-    
+
     // Extração matemática correta de Horas, Minutos, Segundos e Milissegundos
     const horas = Math.floor(tempo / 3600000);
     const min = Math.floor((tempo % 3600000) / 60000);
     const seg = Math.floor((tempo % 60000) / 1000);
     const ms = Math.floor((tempo % 1000) / 10);
-    
+
     // Injeta o formato HH:MM:SS mantendo os milissegundos isolados no span menor
     display.innerHTML = `${horas.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}<span style="font-size: 1.5rem; color: #3b82f6;">.${ms.toString().padStart(2, '0')}</span>`;
 }
@@ -2503,7 +2130,7 @@ window.setTimerMode = function(modo) {
 
     isCountdownMode = modo;
     resetTimer();
-    
+
     const btnTimer = document.getElementById('btn-modo-timer');
     const btnLivre = document.getElementById('btn-modo-livre');
     const inputContainer = document.getElementById('timer-input-container');
@@ -2527,14 +2154,14 @@ async function toggleLembrete(id) {
     const l = lembretes.find(item => item.id === id);
     if (l) {
         l.feito = !l.feito;
-        
+
         try {
             // Atualiza diretamente no banco de dados do usuário logado
             await db.collection("usuarios").doc(usuarioAtualId)
                     .collection("lembretes").doc(id.toString()).update({
                         feito: l.feito
                     });
-            
+
             renderizarLembretes();
         } catch (error) {
             console.error("Erro ao atualizar lembrete no banco:", error);
@@ -2558,7 +2185,7 @@ window.addEventListener('DOMContentLoaded', () => {
             } catch (err) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
             }
-            
+
             if (typeof showView === 'function') {
                 showView('lobby');
             }
@@ -2675,12 +2302,12 @@ function postarNoFeed() {
 
     feedEvolucao.unshift(novoPost);
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-    
+
     midiaAnexada = null;
     document.getElementById('post-texto').value = "";
     document.getElementById('preview-midia').innerHTML = "";
     atualizarFeedUI();
-    
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
     mostrarAviso("Postagem realizada!");
 }
@@ -2724,10 +2351,10 @@ async function toggleGravacao() {
 
     if (!gravando) {
         try {
-            audioChunks = []; 
+            audioChunks = [];
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             mediaRecorder = new MediaRecorder(stream);
-            
+
             mediaRecorder.ondataavailable = e => {
                 if (e.data.size > 0) audioChunks.push(e.data);
             };
@@ -2737,7 +2364,7 @@ async function toggleGravacao() {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     midiaAnexada = { tipo: 'audio', data: reader.result };
-                    if (typeof atualizarPreviewMidia === 'function') atualizarPreviewMidia(); 
+                    if (typeof atualizarPreviewMidia === 'function') atualizarPreviewMidia();
                 };
                 reader.readAsDataURL(audioBlob);
                 stream.getTracks().forEach(track => track.stop());
@@ -2745,8 +2372,8 @@ async function toggleGravacao() {
 
             mediaRecorder.start();
             gravando = true;
-            
-            btn.style.background = "#ef4444"; 
+
+            btn.style.background = "#ef4444";
             btn.classList.add('mic-gravando');
             if(timer) timer.classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2766,8 +2393,8 @@ async function toggleGravacao() {
             mediaRecorder.stop();
         }
         gravando = false;
-        
-        btn.style.background = "rgba(255,255,255,0.05)"; 
+
+        btn.style.background = "rgba(255,255,255,0.05)";
         btn.classList.remove('mic-gravando');
         if(timer) timer.classList.add('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2799,7 +2426,7 @@ function excluirPost(id) {
             </div>
             <h3 class="italic-bold" style="color: white; margin-bottom: 8px; font-size: 1.05rem; letter-spacing: 1px;">EXCLUIR POST?</h3>
             <p style="color: #94a3b8; margin-bottom: 20px; font-size: 13px; line-height: 1.5;">Essa ação não pode ser desfeita e removerá este momento da sua história.</p>
-            
+
             <div style="display: flex; gap: 10px;">
                 <button id="btn-cancelar-exclusao" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">CANCELAR</button>
                 <button id="btn-confirmar-exclusao" style="flex: 1; background: #ef4444; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">EXCLUIR</button>
@@ -2816,7 +2443,7 @@ function excluirPost(id) {
         feedEvolucao = feedEvolucao.filter(p => p.id !== id);
         localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
         modalConfirm.remove();
-        atualizarFeedUI(); 
+        atualizarFeedUI();
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Post removido com sucesso.");
     };
@@ -2870,7 +2497,7 @@ window.addEventListener('load', () => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 if (typeof cfIsPaused === 'undefined') {
-    window.cfIsPaused = false; 
+    window.cfIsPaused = false;
 }
 
 function gerarSugestao() {
@@ -2933,7 +2560,7 @@ function gerarSugestao() {
 function carregarExerciciosSub() {
     const grupo = document.getElementById('select-grupo-sub').value;
     const selectEx = document.getElementById('select-ex-ocupado');
-    
+
     if (!selectEx) return;
 
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
@@ -3006,7 +2633,7 @@ function gerarSugestaoComModal() {
         if (nomeSugestao) nomeSugestao.innerText = sugestaoEncontrada;
         if (resultadoDiv) {
             resultadoDiv.classList.remove('hidden');
-            resultadoDiv.classList.add('fade-in'); 
+            resultadoDiv.classList.add('fade-in');
         }
     } else {
         mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
@@ -3027,7 +2654,7 @@ function calcularCargasCF() {
     }
 
     const porcentagens = [95, 90, 85, 80, 75, 70, 60, 50];
-    
+
     container.innerHTML = porcentagens.map(p => {
         // Define a cor da tag lateral baseado na zona de intensidade do CrossFit
         let corZona = '#22c55e'; // Verde (50% a 70%)
@@ -3045,7 +2672,7 @@ function calcularCargasCF() {
 
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
- 
+
 
 if (typeof audioCtx === 'undefined' || !audioCtx) {
     window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -3070,15 +2697,15 @@ function setWodTimerMode(modo) {
     if (typeof modo !== 'string') return;
 
     if (cfTimerInterval && !cfIsPaused) {
-        return; 
+        return;
     }
 
     cfModo = modo;
     const btnAmrap = document.getElementById('btn-amrap');
     const btnEmom = document.getElementById('btn-emom');
     const status = document.getElementById('status-timer');
-    const groupSec = document.getElementById('group-seconds'); 
-    const labelTempo = document.getElementById('label-tempo-wod'); 
+    const groupSec = document.getElementById('group-seconds');
+    const labelTempo = document.getElementById('label-tempo-wod');
 
     if (modo === 'AMRAP') {
         if (btnAmrap) {
@@ -3092,7 +2719,7 @@ function setWodTimerMode(modo) {
             btnEmom.style.filter = "none";
         }
         if (status) status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
-        
+
         if (groupSec) groupSec.style.display = "none";
         if (labelTempo) labelTempo.innerText = "Duração Total (Minutos)";
     } else {
@@ -3107,7 +2734,7 @@ function setWodTimerMode(modo) {
             btnAmrap.style.filter = "none";
         }
         if (status) status.innerText = "EMOM (ALERTA POR INTERVALO)";
-        
+
         if (groupSec) groupSec.style.display = "flex";
         if (labelTempo) labelTempo.innerText = "Intervalo do Alerta (Min:Seg)";
     }
@@ -3145,9 +2772,9 @@ function iniciarTimerCF() {
     if (cfIsPaused) {
         cfIsPaused = false;
         cfStartTime = Date.now() - (cfTempoDecorridoAcumulado * 1000);
-        
+
         if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
-        
+
         travarControlesTempo(true);
         executarWodReal();
         atualizarAlternadorInterface(false);
@@ -3158,31 +2785,31 @@ function iniciarTimerCF() {
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
     const minSet = parseInt(document.getElementById('wod-minutes').value) || 0;
-    
+
     if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
     travarControlesTempo(true);
 
     let prep = 10;
     if (status) status.innerText = "PREPARAR...";
-    if (display) display.style.color = "#ffae00"; 
+    if (display) display.style.color = "#ffae00";
 
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
-            tocarBeep(600, 0.1); 
+            tocarBeep(600, 0.1);
             if (display) display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
-            
+
             const txtPrep = `PREP ${prep}`;
             atualizarMiniTimerWidget(txtPrep);
             configurarNotificacaoMedia('playing', txtPrep);
-            
+
             prep--;
         } else {
             clearInterval(cfTimerInterval);
-            tocarBeep(880, 0.5); 
+            tocarBeep(880, 0.5);
             cfTempoDecorridoAcumulado = 0;
             cfStartTime = Date.now();
             executarWodReal(minSet);
-            
+
             atualizarAlternadorInterface(false);
             configurarNotificacaoMedia('playing', '00:00');
         }
@@ -3192,20 +2819,20 @@ function iniciarTimerCF() {
 function pausarTimerCF() {
     const btnStart = document.getElementById('btn-start-wod');
     if (!cfTimerInterval) return;
-    
+
     clearInterval(cfTimerInterval);
     cfTimerInterval = null;
     cfIsPaused = true;
-    
+
     const agora = Date.now();
     cfTempoDecorridoAcumulado = (agora - cfStartTime) / 1000;
-    
+
     const status = document.getElementById('status-timer');
     const display = document.getElementById('timer-display');
-    
+
     if (status) status.innerText = "PAUSADO";
     if (display) display.style.color = "#94a3b8";
-    
+
     if (btnStart) btnStart.innerHTML = "<span>RETOMAR WOD</span>";
 
     configurarNotificacaoMedia('paused', 'Pausado');
@@ -3216,13 +2843,13 @@ function executarWodReal() {
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
     const btnStart = document.getElementById('btn-start-wod');
-    
+
     const mSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     const sSet = parseInt(document.getElementById('wod-seconds')?.value) || 0;
     const intervaloTotalSegundos = (mSet * 60) + sSet;
 
     if (status) status.innerText = "WORK!";
-    if (display) display.style.color = "#22c55e"; 
+    if (display) display.style.color = "#22c55e";
     if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
 
     let ultimoSegundoApitado = -1;
@@ -3235,7 +2862,7 @@ function executarWodReal() {
 
         if (cfModo === 'AMRAP') {
             tempoFinal = intervaloTotalSegundos - decorrido;
-            
+
             if (tempoFinal <= 5 && tempoFinal > 0) {
                 if (display) {
                     const blink = Math.floor(decorrido * 5) % 2 === 0;
@@ -3254,17 +2881,17 @@ function executarWodReal() {
             }
         } else {
             tempoFinal = decorrido;
-            
+
             const cicloAtual = Math.floor(decorrido / intervaloTotalSegundos);
             if (decorrido > 0 && cicloAtual !== ultimoSegundoApitado) {
                 tocarBeep(880, 0.6);
                 ultimoSegundoApitado = cicloAtual;
-                
+
                 if (display && status) {
                     display.style.color = "#00d4ff";
                     status.innerText = "NOVO ROUND!";
                     status.style.color = "#00d4ff";
-                    
+
                     setTimeout(() => {
                         if(!cfIsPaused && cfTimerInterval) {
                             display.style.color = "#22c55e";
@@ -3279,15 +2906,15 @@ function executarWodReal() {
         const m = Math.floor(Math.abs(tempoFinal) / 60);
         const s = Math.floor(Math.abs(tempoFinal) % 60);
         const ms = Math.floor((Math.abs(tempoFinal) % 1) * 100);
-        
+
         const tempoFormatado = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        
+
         if (display) {
             display.innerHTML = `${tempoFormatado}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
         }
 
         document.title = `${tempoFormatado} | ${cfModo}`;
-        
+
         atualizarMiniTimerWidget(tempoFormatado);
         configurarNotificacaoMedia('playing', tempoFormatado);
     }, 10);
@@ -3300,7 +2927,7 @@ function finalizarTudo() {
     ocultarMiniTimerWidget();
     limparNotificacaoMedia();
     travarControlesTempo(false);
-    
+
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
     const status = document.getElementById('status-timer');
@@ -3322,7 +2949,7 @@ function resetarTimerCF() {
     travarControlesTempo(false);
     cfTempoDecorridoAcumulado = 0;
     cfIsPaused = false;
-    
+
     const display = document.getElementById('timer-display');
     const btnStart = document.getElementById('btn-start-wod');
     const status = document.getElementById('status-timer');
@@ -3404,7 +3031,7 @@ function atualizarAlternadorInterface(estaPausado) {
         iconPause.style.display = "block";
         iconPlay.style.display = "none";
     }
-    
+
     const btnStart = document.getElementById('btn-start-wod');
     if (btnStart) {
         btnStart.innerHTML = estaPausado ? "<span>RETOMAR WOD</span>" : "<span>PAUSAR WOD</span>";
@@ -3421,4 +3048,3 @@ window.setWodTimerMode = setWodTimerMode;
 window.iniciarTimerCF = iniciarTimerCF;
 window.pausarTimerCF = pausarTimerCF;
 window.resetarTimerCF = resetarTimerCF;
-
