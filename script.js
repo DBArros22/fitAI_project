@@ -1209,21 +1209,13 @@ function solicitarNomeFichaCustom(callback) {
 }
 
 
-
 function abrirFicha(nome) {
-
     fichaAtivaNoMomento = nome;
-
     fichaAtiva = nome;
-
     showView('consulta');
-
     const titulo = document.getElementById('titulo-consulta');
-
     if(titulo) titulo.innerText = nome.toUpperCase();
-
     renderizarResumoFicha(nome);
-
 }
 
 
@@ -2540,26 +2532,24 @@ function removerLembrete(id) {
 window.addEventListener('DOMContentLoaded', () => {
     // Escuta mudanças no estado de login do Firebase
     auth.onAuthStateChanged(async (user) => {
-    if (user) {
-        // Usuário conectado com sucesso
-        usuarioAtualId = user.uid;
-        try {
-            await window.carregarDadosDoAtleta(user.uid);
-        } catch (err) {
-            console.error("Erro ao carregar dados do atleta no login:", err);
+        if (user) {
+            usuarioAtualId = user.uid;
+            try {
+                await window.carregarDadosDoAtleta(user.uid);
+            } catch (err) {
+                console.error("Erro ao carregar dados do atleta no login:", err);
+            }
+            
+            if (typeof showView === 'function') {
+                showView('lobby');
+            }
+        } else {
+            usuarioAtualId = null;
+            if (typeof showView === 'function') {
+                showView('login');
+            }
         }
-        
-        // Garante a transição limpa para a tela do aplicativo
-        if (typeof showView === 'function') {
-            showView('lobby');
-        }
-    } else {
-        // Usuário desconectado - Limpa os estados e força a exibição da tela de login
-        usuarioAtualId = null;
-        if (typeof showView === 'function') {
-            showView('login');
-        }
-    }
+    });
 });
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
