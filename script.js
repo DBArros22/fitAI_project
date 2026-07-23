@@ -74,6 +74,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+window.toggleAuthTab = function(tab) {
+    const loginForm = document.getElementById('form-login') || document.getElementById('login-form');
+    const registerForm = document.getElementById('form-register') || document.getElementById('register-form');
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+
+    if (tab === 'login') {
+        if (loginForm) loginForm.classList.remove('hidden');
+        if (registerForm) registerForm.classList.add('hidden');
+        if (tabLogin) tabLogin.classList.add('active');
+        if (tabRegister) tabRegister.classList.remove('active');
+    } else if (tab === 'register') {
+        if (loginForm) loginForm.classList.add('hidden');
+        if (registerForm) registerForm.classList.remove('hidden');
+        if (tabLogin) tabLogin.classList.remove('active');
+        if (tabRegister) tabRegister.classList.add('active');
+    }
+};
+
 // Inicializa o Firebase Core
 firebase.initializeApp(firebaseConfig);
 
