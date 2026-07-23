@@ -463,7 +463,7 @@ function fecharModalSenha() {
     if (inputPass) inputPass.value = "";
 }
 
-aasync function processarTrocaSenha() {
+async function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
     const emailAtivo = localStorage.getItem('user_email');
