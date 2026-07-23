@@ -61,7 +61,7 @@
             overflow: hidden;
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);">
             
-            <img src="logoAssisfitPro.png"Logo AssisFiT" style="
+            <img src="logoAssisfitPro.png" alt="Logo AssisFiT" style="
                 width: 100%; 
                 height: 100%; 
                 object-fit: cover;" />
@@ -95,69 +95,65 @@
     </div>
 </nav>
 
-
-<!-- Lobby tela inicial -->
-  <main id="view-lobby" class="content-grid">
-    <div onclick="showView('planilhas')" class="menu-card">
-        <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+<div id="app-shell">
+    <main id="view-lobby" class="content-grid view-screen">
+        <div onclick="showView('planilhas')" class="menu-card">
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+            </div>
+            <h3 class="italic-bold uppercase">Registrar Treino</h3>
+            <p>Crie e edite seus treinos.</p>
         </div>
-        <h3 class="italic-bold uppercase">Registrar Treino</h3>
-        <p>Crie e edite seus treinos.</p>
-    </div>
 
-    <div onclick="showView('calendario')" class="menu-card">
-        <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+        <div onclick="showView('calendario')" class="menu-card">
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <h3 class="italic-bold uppercase">Cronograma</h3>
+            <p>Planejamento semanal.</p>
         </div>
-        <h3 class="italic-bold uppercase">Cronograma</h3>
-        <p>Planejamento semanal.</p>
-    </div>
 
-    <div onclick="showView('blog')" class="menu-card">
-        <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+        <div onclick="showView('blog')" class="menu-card">
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+            </div>
+            <h3 class="italic-bold uppercase">Evolução</h3>
+            <p>Blog pessoal e progresso.</p>
         </div>
-        <h3 class="italic-bold uppercase">Evolução</h3>
-        <p>Blog pessoal e progresso.</p>
-    </div>
 
-    <div onclick="showView('consulta-geral')" class="menu-card">
-        <div class="card-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <div onclick="showView('consulta-geral')" class="menu-card">
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+            <h3 class="italic-bold uppercase">Consultar</h3>
+            <p>Visualize seus treinos.</p>
         </div>
-        <h3 class="italic-bold uppercase">Consultar</h3>
-        <p>Visualize seus treinos.</p>
-    </div>
 
-    <div onclick="showView('aparelho-ocupado')" class="menu-card" style="border-left: 4px solid #00d4ff;">
-    <div class="card-icon" style="color: #00d4ff;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-        </svg>
-    </div>
-    <h3 class="italic-bold uppercase">Aparelho Cheio?</h3>
-    <p>Encontre um substituto agora.</p>
-</div>
+        <div onclick="showView('aparelho-ocupado')" class="menu-card" style="border-left: 4px solid #00d4ff;">
+            <div class="card-icon" style="color: #00d4ff;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+            </div>
+            <h3 class="italic-bold uppercase">Aparelho Cheio?</h3>
+            <p>Encontre um substituto agora.</p>
+        </div>
 
-<div onclick="showView('crossfit-lobby')" class="menu-card" style="border-left: 4px solid #ff9d00;">
-    <div class="card-icon" style="color: #ff9d00;">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M6 12h12"></path>
-            <path d="M12 6v12"></path>
-            <path d="M8 8l8 8"></path>
-            <path d="M16 8l-8 8"></path>
-        </svg>
-    </div>
-    <h3 class="italic-bold uppercase">Zona Crossfit</h3>
-    <p>WOD Timers e Tabela de Carga.</p>
-</div>
-
-<!-- Fim da area lobby -->
-</main>
-
+        <div onclick="showView('crossfit-lobby')" class="menu-card" style="border-left: 4px solid #ff9d00;">
+            <div class="card-icon" style="color: #ff9d00;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 12h12"></path>
+                    <path d="M12 6v12"></path>
+                    <path d="M8 8l8 8"></path>
+                    <path d="M16 8l-8 8"></path>
+                </svg>
+            </div>
+            <h3 class="italic-bold uppercase">Zona Crossfit</h3>
+            <p>WOD Timers e Tabela de Carga.</p>
+        </div>
     </main>
-    <main id="view-planilhas" class="hidden" style="padding: 20px 5%;">
+
+    <main id="view-planilhas" class="view-screen hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="max-width: 800px; margin: 0 auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2 class="italic-bold">MEUS TREINOS</h2>
@@ -167,127 +163,122 @@
         </div>
     </main>
 
-    <main id="view-consulta" class="hidden" style="padding: 20px 5%;">
-    <div class="glass-panel" style="max-width: 600px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
-            <h2 id="titulo-consulta" class="italic-bold uppercase" style="color: var(--accent-blue); font-size: 1.1rem; letter-spacing: 1px;">NOME DA FICHA</h2>          
-            <button onclick="showView('planilhas')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-        <div id="lista-exercicios-estaticos" class="form-group fade-in">
-            </div>
-
-        <button onclick="showView('registro')" class="btn-primary" style="margin-top: 25px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-               ADICIONAR EXERCÍCIOS
-           </button>
-     </div>
-</main>
-
-<!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
-<main id="view-consulta-geral" class="hidden" style="padding: 20px 5%;">
-    <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 25px;">
-        
-        <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
-            <div style="display: flex; justify-content: flex-start;">
-                <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-voltar-premium">
+    <main id="view-consulta" class="view-screen hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="max-width: 600px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+                <h2 id="titulo-consulta" class="italic-bold uppercase" style="color: var(--accent-blue); font-size: 1.1rem; letter-spacing: 1px;">NOME DA FICHA</h2>          
+                <button onclick="showView('planilhas')" class="btn-voltar-premium">
                     <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="19" y1="12" x2="5" y2="12"></line>
                         <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
                     VOLTAR
                 </button>
-
-                <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-voltar-premium hidden" style="border-color: var(--accent-green); color: var(--accent-green);">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="19" y1="12" x2="5" y2="12"></line>
-                        <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                    VER TODOS OS TREINOS
-                </button>
             </div>
+            <div id="lista-exercicios-estaticos" class="form-group fade-in"></div>
 
-            <h2 id="cabecalho-consulta" class="italic-bold uppercase blue-text" style="font-size: 1.5rem;">Consultar Treinos</h2>
+            <button onclick="showView('registro')" class="btn-primary" style="margin-top: 25px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                ADICIONAR EXERCÍCIOS
+            </button>
         </div>
-        
-        <div id="lista-nomes-treinos" class="grid-2" style="gap: 20px; margin-top: 10px;"></div>
-        <div id="detalhes-treino-consulta" class="hidden"></div>
-    </div>
-</main>
+    </main>
 
-<!---  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -->
-<main id="view-registro" class="hidden registro-container">
-    <aside class="form-group">
-        <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-            <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVO SET</h3>
+    <main id="view-consulta-geral" class="view-screen hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 25px;">
+            <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
+                <div style="display: flex; justify-content: flex-start;">
+                    <button onclick="showView('lobby')" id="btn-sair-consulta" class="btn-voltar-premium">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        VOLTAR
+                    </button>
+
+                    <button onclick="voltarListaConsulta()" id="btn-voltar-consulta" class="btn-voltar-premium hidden" style="border-color: var(--accent-green); color: var(--accent-green);">
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        VER TODOS OS TREINOS
+                    </button>
+                </div>
+
+                <h2 id="cabecalho-consulta" class="italic-bold uppercase blue-text" style="font-size: 1.5rem;">Consultar Treinos</h2>
+            </div>
             
-            <div class="form-group">
-  <select id="select-grupo-sub" onchange="atualizarListaExercicios()">    <option value="">Selecione o Grupo...</option>
-    <option value="Peitoral">Peitoral</option>
-    <option value="Dorsais">Dorsais (Costas)</option>
-    <option value="Trapézio">Trapézio</option>
-    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-    <option value="Quadríceps">Quadríceps</option>
-    <option value="Posteriores de Coxa">Posteriores de Coxa</option>
-    <option value="Glúteos">Glúteos</option>
-    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-    <option value="Tríceps Braquial">Tríceps Braquial</option>
-    <option value="Antebraço">Antebraço</option>
-    <option value="Core/Abdominal">Core/Abdominal</option>
-    <option value="Panturrilhas">Panturrilhas</option>
-    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-</select>
-                 
-                <select id="select-exercicio" class="input-field"></select>
-
-                <div id="campos-forca" class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 5px;">
-                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 20px;">
-                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 900; font-style: italic;">x</span>
-                    </div>
-                    
-                    <div class="input-wrapper">
-                        <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field" style="text-align: center;">
-                    </div>
-                    
-                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 25px;">
-                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 800; font-size: 0.7rem;">KG</span>
-                    </div>
-                </div>
-
-                <div id="campos-cardio" class="hidden">                 
-                    <div style="position: relative; width: 100%;">
-                        <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="text-align: center; letter-spacing: 2px; font-weight: 800;">
-                        <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 8px; text-transform: uppercase;">Formato: HH:MM:SS</small>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                    <button onclick="adicionarExercicio()" class="btn-primary" style="width: 100%;">SALVAR SET</button>
-                    <button onclick="showView('planilhas')" class="btn-recuperar-senha" style="margin: 0 auto;">← Voltar para Planilhas</button>
-                </div>
-            </div>
-        </section>
-    </aside>
-
-    <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-            <h2 class="italic-bold" style="font-size: 1rem; letter-spacing: 1px;">LOG DE PERFORMANCE</h2>
-            <button onclick="limparTreino()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: 0.3s;">LIMPAR</button>
+            <div id="lista-nomes-treinos" class="grid-2" style="gap: 20px; margin-top: 10px;"></div>
+            <div id="detalhes-treino-consulta" class="hidden"></div>
         </div>
-        <div id="lista-treino" class="fade-in" style="max-height: 500px; overflow-y: auto;">
-            </div>
-    </section>
-</main>
+    </main>
 
-<main id="view-blog" class="hidden" style="padding: 20px 5%;">
+    <main id="view-registro" class="view-screen hidden registro-container">
+        <aside class="form-group">
+            <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+                <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVO SET</h3>
+                
+                <div class="form-group">
+                    <select id="select-grupo-registro" onchange="atualizarListaExercicios()">
+                        <option value="">Selecione o Grupo...</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Dorsais">Dorsais (Costas)</option>
+                        <option value="Trapézio">Trapézio</option>
+                        <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                        <option value="Quadríceps">Quadríceps</option>
+                        <option value="Posteriores de Coxa">Posteriores de Coxa</option>
+                        <option value="Glúteos">Glúteos</option>
+                        <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                        <option value="Tríceps Braquial">Tríceps Braquial</option>
+                        <option value="Antebraço">Antebraço</option>
+                        <option value="Core/Abdominal">Core/Abdominal</option>
+                        <option value="Panturrilhas">Panturrilhas</option>
+                        <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                    </select>
+                     
+                    <select id="select-exercicio" class="input-field"></select>
+
+                    <div id="campos-forca" class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 5px;">
+                        <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                            <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 20px;">
+                            <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 900; font-style: italic;">x</span>
+                        </div>
+                        
+                        <div class="input-wrapper">
+                            <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field" style="text-align: center;">
+                        </div>
+                        
+                        <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                            <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 25px;">
+                            <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 800; font-size: 0.7rem;">KG</span>
+                        </div>
+                    </div>
+
+                    <div id="campos-cardio" class="hidden">                 
+                        <div style="position: relative; width: 100%;">
+                            <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="text-align: center; letter-spacing: 2px; font-weight: 800;">
+                            <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 8px; text-transform: uppercase;">Formato: HH:MM:SS</small>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                        <button onclick="adicionarExercicio()" class="btn-primary" style="width: 100%;">SALVAR SET</button>
+                        <button onclick="showView('planilhas')" class="btn-recuperar-senha" style="margin: 0 auto;">← Voltar para Planilhas</button>
+                    </div>
+                </div>
+            </section>
+        </aside>
+
+        <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                <h2 class="italic-bold" style="font-size: 1rem; letter-spacing: 1px;">LOG DE PERFORMANCE</h2>
+                <button onclick="limparTreino()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: 0.3s;">LIMPAR</button>
+            </div>
+            <div id="lista-treino" class="fade-in" style="max-height: 500px; overflow-y: auto;"></div>
+        </section>
+    </main>
+
+    <main id="view-blog" class="view-screen hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
             <h2 class="italic-bold" style="margin-bottom:20px;">NOVA ATUALIZAÇÃO</h2>
             
@@ -307,255 +298,290 @@
                 </button>
                 
                 <button onclick="postarEvolucao()" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-    </svg>
-    POSTAR
-</button>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    POSTAR
+                </button>
+            </div>
             <div id="preview-container" style="margin-top: 15px;"></div>
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
-            <div id="feed-container"></div> </div>
+            <div id="feed-container"></div> 
+        </div>
     </main>
 
-    <main id="view-calendario" class="hidden"></main>
+    <main id="view-calendario" class="view-screen hidden"></main>
 
-<div id="view-aparelho-ocupado" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 30px;">
-            <button onclick="showView('lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-
-        <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Plano B</h2>
-        <p style="color: var(--text-secondary); margin-bottom: 40px;">Aparelho ocupado? Escolha uma alternativa.</p>
-        
-        <div class="glass-card-action">
-            <div class="input-group" style="margin-bottom: 25px; text-align: left;">
-                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">1. Grupo Muscular</label>
-                <select id="select-grupo-sub" onchange="carregarExerciciosSub()">
-                    <option value="">Selecione o Grupo...</option>
-                    <option value="Peitoral">Peitoral</option>
-                    <option value="Dorsais">Dorsais</option>
-                    <option value="Quadríceps">Quadríceps</option>
-                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
-                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-                    <option value="Tríceps Braquial">Tríceps Braquial</option>
-                    <option value="Core/Abdominal">Core/Abdominal</option>
-                    <option value="Panturrilhas">Panturrilhas</option>
-                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-                </select>
-            </div>
-
-            <div class="input-group" style="margin-bottom: 30px; text-align: left;">
-                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">2. Qual aparelho está ocupado?</label>
-                <select id="select-ex-ocupado">
-                    <option value="">Aguardando grupo...</option>
-                </select>
-            </div>
-
-            <button class="btn-sugerir-glow" onclick="gerarSugestao()">
-                <span>SUGERIR ALTERNATIVA</span>
-            </button>
-
-            <div id="resultado-sugestao" class="hidden" style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                <p class="label-res" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 800; text-transform: uppercase;">Troca Sugerida:</p>
-                <div class="sugestao-destaque">
-                    <span id="nome-sugestao">---</span>
-                </div>
-            </div>
-        </div>
-    </div> <div id="modal-aviso" class="modal-overlay hidden">
-        <div class="modal-confirm" style="max-width: 350px;">
-            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-                <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-            </div>
-            <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
-            <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
-                Selecione o grupo e o aparelho ocupado!
-            </p>
-            <button onclick="fecharModalAviso()" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
-        </div>
-    </div>
-</div>
-
-    <!--   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Página CrossFitxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-->
-<div id="view-crossfit-lobby" class="page-container hidden">
-    <div class="container-central">
-        <!-- Div ajustada com padding para dar o respiro correto nas bordas e topo -->
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 20px; box-sizing: border-box;">
-            <button onclick="showView('lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 35px;">
-            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Zona Crossfit</h2>
-            <p style="color: var(--text-secondary);">Selecione sua ferramenta de treino.</p>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px; margin: 0 auto;">
-            <div onclick="showView('crossfit-timers')" class="menu-card" style="border-left: 4px solid #00d4ff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
-                <div class="card-icon" style="color: #00d4ff; margin-bottom: 15px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
+    <div id="view-aparelho-ocupado" class="page-container view-screen hidden">
+        <div class="container-central">
+            <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 30px;">
+                <button onclick="showView('lobby')" class="btn-voltar-premium">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
                     </svg>
+                    VOLTAR
+                </button>
+            </div>
+
+            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Plano B</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 40px;">Aparelho ocupado? Escolha uma alternativa.</p>
+            
+            <div class="glass-card-action">
+                <div class="input-group" style="margin-bottom: 25px; text-align: left;">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">1. Grupo Muscular</label>
+                    <select id="select-grupo-sub" onchange="carregarExerciciosSub()">
+                        <option value="">Selecione o Grupo...</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Dorsais">Dorsais</option>
+                        <option value="Quadríceps">Quadríceps</option>
+                        <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                        <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                        <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                        <option value="Tríceps Braquial">Tríceps Braquial</option>
+                        <option value="Core/Abdominal">Core/Abdominal</option>
+                        <option value="Panturrilhas">Panturrilhas</option>
+                        <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                    </select>
                 </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.9rem; margin-bottom: 5px;">WOD Timers</h3>
-                <p style="font-size: 0.7rem; opacity: 0.7;">AMRAP, EMOM e Tabata.</p>
-            </div>
 
-          <div onclick="showView('crossfit-strength-calc')" class="menu-card" style="border-left: 4px solid #22c55e; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
-               <div class="card-icon" style="color: #22c55e; margin-bottom: 15px;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z"></path>
-                 <path d="M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2V8z"></path>
-                 <path d="M6 12h12"></path>
-                 <path d="M6 7v10"></path>
-                 <path d="M18 7v10"></path>
-                </svg>
-             </div>
-               <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Calculadora 1RM</h3>
-               <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px; line-height: 1.2;">Descubra as porcentagens do seu PR.</p>
-           </div>
-         </div>
-    </div>
-</div>
+                <div class="input-group" style="margin-bottom: 30px; text-align: left;">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">2. Qual aparelho está ocupado?</label>
+                    <select id="select-ex-ocupado">
+                        <option value="">Aguardando grupo...</option>
+                    </select>
+                </div>
 
-<div id="view-crossfit-strength-calc" class="page-container hidden" style="position: relative; padding-top: 60px;">
-    <!-- Estilo local para sumir com as setas do input number -->
-    <style scoped>
-        #input-1rm::-webkit-outer-spin-button,
-        #input-1rm::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        #input-1rm {
-            -moz-appearance: textfield;
-            appearance: textfield;
-            outline: none;
-        }
-    </style>
+                <button class="btn-sugerir-glow" onclick="gerarSugestao()">
+                    <span>SUGERIR ALTERNATIVA</span>
+                </button>
 
-    <!-- Botão Único: flutuando perfeitamente no topo esquerdo da página -->
-    <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; align-items: center; gap: 6px;">
-        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-        </svg>
-        VOLTAR
-    </button>
-
-    <div class="container-central">
-        <!-- Cabeçalho Alinhado com a Cultura do CrossFit -->
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 class="italic-bold uppercase blue-text" style="letter-spacing: 0.5px;">Calculadora 1RM</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Descubra os percentuais exatos para o seu WOD</p>
-        </div>
-
-        <!-- Bloco Auxiliar de Instrução de Zonas de Carga -->
-        <div class="glass-card" style="width: 100%; max-width: 450px; margin: 0 auto 20px auto; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; text-align: left;">
-            <div style="font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; text-align: center; letter-spacing: 0.5px;">💡 Guia de Intensidade para o Treino</div>
-            <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; color: var(--text-secondary);">
-                <div>🟢 <strong style="color: #fff;">50% a 70%:</strong> Foco em técnica, velocidade e aquecimentos.</div>
-                <div>🟡 <strong style="color: #fff;">75% a 85%:</strong> Força ideal, ideal para o padrão da maioria dos WODs.</div>
-                <div>🔴 <strong style="color: #fff;">90% a 95%:</strong> Carga máxima / Força pura (poucas repetições).</div>
-            </div>
-        </div>
-
-        <div class="glass-card-action" style="width: 100%; max-width: 450px; margin: 0 auto;">
-            <!-- Input Preparada para Mobile e sem Setas -->
-            <div class="input-group" style="text-align: left; margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Seu Recorde Pessoal / PR Máximo (KG)</label>
-                <input type="number" 
-                       inputmode="numeric" 
-                       pattern="[0-9]*" 
-                       min="0"
-                       id="input-1rm" 
-                       placeholder="Digite o peso em KG (Ex: 100)" 
-                       oninput="calcularCargasCF()" 
-                       style="width: 100%; padding: 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.6); color: white; border: 1px solid var(--accent-blue); text-align: center; font-size: 1.5rem; font-weight: 900; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
-            </div>
-            
-            <!-- Grid de Resultados -->
-            <div id="lista-cargas-cf" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
-                <!-- O texto inicial avisa o usuário caso o input esteja vazio -->
-                <p style="grid-column: span 2; color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px 0;">Insira sua carga máxima acima para gerar a tabela automaticamente.</p>
+                <div id="resultado-sugestao" class="hidden" style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <p class="label-res" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 800; text-transform: uppercase;">Troca Sugerida:</p>
+                    <div class="sugestao-destaque">
+                        <span id="nome-sugestao">---</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
+    <div id="view-crossfit-lobby" class="page-container view-screen hidden">
+        <div class="container-central">
+            <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 20px; box-sizing: border-box;">
+                <button onclick="showView('lobby')" class="btn-voltar-premium">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    VOLTAR
+                </button>
+            </div>
 
-<div id="view-crossfit-timers" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 15px 5px 5px 5px; margin-bottom: 15px;">
-            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
+            <div style="text-align: center; margin-bottom: 35px;">
+                <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Zona Crossfit</h2>
+                <p style="color: var(--text-secondary);">Selecione sua ferramenta de treino.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 500px; margin: 0 auto;">
+                <div onclick="showView('crossfit-timers')" class="menu-card" style="border-left: 4px solid #00d4ff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                    <div class="card-icon" style="color: #00d4ff; margin-bottom: 15px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                    </div>
+                    <h3 class="italic-bold uppercase" style="font-size: 0.9rem; margin-bottom: 5px;">WOD Timers</h3>
+                    <p style="font-size: 0.7rem; opacity: 0.7;">AMRAP, EMOM e Tabata.</p>
+                </div>
+
+                <div onclick="showView('crossfit-strength-calc')" class="menu-card" style="border-left: 4px solid #22c55e; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                    <div class="card-icon" style="color: #22c55e; margin-bottom: 15px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z"></path>
+                            <path d="M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2V8z"></path>
+                            <path d="M6 12h12"></path>
+                            <path d="M6 7v10"></path>
+                            <path d="M18 7v10"></path>
+                        </svg>
+                    </div>
+                    <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Calculadora 1RM</h3>
+                    <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px; line-height: 1.2;">Descubra as porcentagens do seu PR.</p>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div style="text-align: center; margin-bottom: 15px;">
-            <h2 class="italic-bold uppercase blue-text">WOD Timers</h2>
-            <div id="status-timer" style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">PRONTO</div>
+    <div id="view-crossfit-strength-calc" class="page-container view-screen hidden" style="position: relative; padding-top: 60px;">
+        <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; align-items: center; gap: 6px;">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            VOLTAR
+        </button>
+
+        <div class="container-central">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h2 class="italic-bold uppercase blue-text" style="letter-spacing: 0.5px;">Calculadora 1RM</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;">Descubra os percentuais exatos para o seu WOD</p>
+            </div>
+
+            <div class="glass-card" style="width: 100%; max-width: 450px; margin: 0 auto 20px auto; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; text-align: left;">
+                <div style="font-size: 0.75rem; color: #64748b; font-weight: bold; text-transform: uppercase; margin-bottom: 6px; text-align: center; letter-spacing: 0.5px;">💡 Guia de Intensidade para o Treino</div>
+                <div style="display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; color: var(--text-secondary);">
+                    <div>🟢 <strong style="color: #fff;">50% a 70%:</strong> Foco em técnica, velocidade e aquecimentos.</div>
+                    <div>🟡 <strong style="color: #fff;">75% a 85%:</strong> Força ideal, ideal para o padrão da maioria dos WODs.</div>
+                    <div>🔴 <strong style="color: #fff;">90% a 95%:</strong> Carga máxima / Força pura (poucas repetições).</div>
+                </div>
+            </div>
+
+            <div class="glass-card-action" style="width: 100%; max-width: 450px; margin: 0 auto;">
+                <div class="input-group" style="text-align: left; margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Seu Recorde Pessoal / PR Máximo (KG)</label>
+                    <input type="number" 
+                           inputmode="numeric" 
+                           pattern="[0-9]*" 
+                           min="0"
+                           id="input-1rm" 
+                           placeholder="Digite o peso em KG (Ex: 100)" 
+                           oninput="calcularCargasCF()" 
+                           style="width: 100%; padding: 16px; border-radius: 12px; background: rgba(15, 23, 42, 0.6); color: white; border: 1px solid var(--accent-blue); text-align: center; font-size: 1.5rem; font-weight: 900; box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);">
+                </div>
+
+                <div id="lista-cargas-cf" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px;">
+                    <p style="grid-column: span 2; color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px 0;">Insira sua carga máxima acima para gerar a tabela automaticamente.</p>
+                </div>
+            </div>
         </div>
+    </div>
 
-        <div class="glass-card-action" style="width: 100%; max-width: 400px; margin: 0 auto; padding: 25px; text-align: center;">
-            <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span></div>
-            
-            <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease;">
-                <label id="label-tempo-wod" style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração Total (Minutos)</label>
+    <div id="view-crossfit-timers" class="page-container view-screen hidden">
+        <div class="container-central">
+            <div style="width: 100%; display: flex; justify-content: flex-start; padding: 15px 5px 5px 5px; margin-bottom: 15px;">
+                <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    VOLTAR
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h2 class="italic-bold uppercase blue-text">WOD Timers</h2>
+                <div id="status-timer" style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">PRONTO</div>
+            </div>
+
+            <div class="glass-card-action" style="width: 100%; max-width: 400px; margin: 0 auto; padding: 25px; text-align: center;">
+                <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span></div>
                 
-                <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <div style="display: flex; align-items: center; gap: 5px;">
-                        <button id="btn-min-down" onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
-                        <input type="number" id="wod-minutes" value="10" min="0" max="60" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
-                        <button id="btn-min-up" onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
-                    </div>
+                <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease;">
+                    <label id="label-tempo-wod" style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração Total (Minutos)</label>
+                    
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <button id="btn-min-down" onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                            <input type="number" id="wod-minutes" value="10" min="0" max="60" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
+                            <button id="btn-min-up" onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
+                        </div>
 
-                    <div id="group-seconds" style="display: none; align-items: center; gap: 5px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
-                        <button id="btn-sec-down" onclick="document.getElementById('wod-seconds').stepDown()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
-                        <input type="number" id="wod-seconds" value="0" min="0" max="59" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
-                        <button id="btn-sec-up" onclick="document.getElementById('wod-seconds').stepUp()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
+                        <div id="group-seconds" style="display: none; align-items: center; gap: 5px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
+                            <button id="btn-sec-down" onclick="document.getElementById('wod-seconds').stepDown()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
+                            <input type="number" id="wod-seconds" value="0" min="0" max="59" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
+                            <button id="btn-sec-up" onclick="document.getElementById('wod-seconds').stepUp()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <button onclick="setWodTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">AMRAP</button>
-                <button onclick="setWodTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
-            </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <button onclick="setWodTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">AMRAP</button>
+                    <button onclick="setWodTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
+                </div>
 
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                    <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;"><span>INICIAR WOD</span></button>
-                    <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #94a3b8;">RESET</button>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                        <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;"><span>INICIAR WOD</span></button>
+                        <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #94a3b8;">RESET</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <main id="view-perfil" class="view-screen hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
+        <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <button onclick="showView('lobby')" class="btn-voltar-premium">
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    VOLTAR
+                </button>
+                <h2 class="italic-bold" style="color: var(--accent-blue); font-size: 0.9rem; letter-spacing: 1px;">MEU PERFIL</h2>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 25px;">
+                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+                    <div id="perfil-foto-preview" style="width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--accent-blue); background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                    <label for="input-foto" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="#020617" stroke-width="3" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFotoPerfil(this)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group" style="gap: 12px; display: flex; flex-direction: column;">
+                <label style="font-size: 0.7rem; color: var(--accent-blue); font-weight: 800;">DADOS PESSOAIS</label>
+                <input type="text" id="perfil-nome" placeholder="Nome" class="input-field input-perfil-muted">
+                <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field input-perfil-muted">
+                
+                <div style="position: relative; width: 100%;">
+                    <input type="email" id="perfil-email" placeholder="E-mail de Acesso e Recuperação" class="input-field input-perfil-muted" style="padding-right: 40px; border: 1px solid rgba(56, 189, 248, 0.15); background: rgba(15, 23, 42, 0.4);">
+                    <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none;" title="Item Crítico de Segurança">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                    </div>
+                </div>
+                
+                <button onclick="salvarDadosPerfil(event)" id="btn-salvar-perfil" class="btn-primary">SALVAR ALTERAÇÕES</button>
+            </div>
+
+            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+                <label style="font-size: 0.7rem; color: #ef4444; font-weight: 800; display: block; margin-bottom: 12px;">SEGURANÇA</label>
+                <div class="form-group" style="gap: 10px; display: flex; flex-direction: column;">
+                    <input type="password" id="pass-nova" placeholder="Digite a nova senha" class="input-field input-perfil-muted">
+                    <input type="password" id="pass-confirmar" placeholder="Confirmar nova senha" class="input-field input-perfil-muted">
+                    <button onclick="alterarSenhaPerfil()" id="btn-senha-perfil" class="btn-action" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">ALTERAR SENHA</button>
+                </div>
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+                <button onclick="logout()" class="btn-logout-nav" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; font-weight: bold;">
+                    ENCERRAR SESSÃO
+                </button>
+            </div>
+        </div>
+    </main>
 </div>
 
-      <!-- minimizdo timer wod corssfit -->
+<div id="modal-aviso" class="modal-overlay hidden">
+    <div class="modal-confirm" style="max-width: 350px;">
+        <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+            <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+        </div>
+        <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
+        <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
+            Selecione o grupo e o aparelho ocupado!
+        </p>
+        <button onclick="fecharModalAviso()" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
+    </div>
+</div>
+
 <div id="mini-timer-widget" onclick="showView('crossfit-timers')" style="
     display: none; 
     align-items: center; 
@@ -586,108 +612,51 @@
     </div>
 </div>
 
+<div id="modal-confirmar-senha" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
+        <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
+        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual</b> para prosseguir:</p>
+        
+        <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
+            <button onclick="processarTrocaSenha()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="modal-verificar-email" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="glass-panel" style="width: 90%; max-width: 420px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px; color: white;">
+        <h3 class="italic-bold" style="color: white; margin-bottom: 5px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Autenticação Crítica</h3>
+        <p style="color: #64748b; font-size: 0.75rem; margin-bottom: 25px;">Para sua proteção, valide a alteração inserindo os códigos enviados.</p>
+        
+        <div style="margin-bottom: 18px; text-align: left;">
+            <label id="label-email-antigo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no E-mail Antigo (...):</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="codigo-email-antigo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
+                <button onclick="reenviarTokenSeguranca('antigo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 25px; text-align: left;">
+            <label id="label-email-novo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no Novo E-mail (...):</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="codigo-email-novo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
+                <button onclick="reenviarTokenSeguranca('novo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button onclick="fecharModalEmail()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
+            <button onclick="processarTrocaEmail()" class="btn-primary" style="flex: 1;">VERIFICAR</button>
+        </div>
+    </div>
+</div>
+
 <style>
 @keyframes pulseWod { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
-</style>
 
-<main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
-    <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-        
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-            <button onclick="showView('lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                VOLTAR
-            </button>
-            <h2 class="italic-bold" style="color: var(--accent-blue); font-size: 0.9rem; letter-spacing: 1px;">MEU PERFIL</h2>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 25px;">
-            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
-                <div id="perfil-foto-preview" style="width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--accent-blue); background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                    <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </div>
-                <label for="input-foto" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
-                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="#020617" stroke-width="3" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                    <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFotoPerfil(this)">
-                </label>
-            </div>
-        </div>
-
-        <div class="form-group" style="gap: 12px; display: flex; flex-direction: column;">
-            <label style="font-size: 0.7rem; color: var(--accent-blue); font-weight: 800;">DADOS PESSOAIS</label>
-            <input type="text" id="perfil-nome" placeholder="Nome" class="input-field input-perfil-muted">
-            <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field input-perfil-muted">
-            
-            <div style="position: relative; width: 100%;">
-                <input type="email" id="perfil-email" placeholder="E-mail de Acesso e Recuperação" class="input-field input-perfil-muted" style="padding-right: 40px; border: 1px solid rgba(56, 189, 248, 0.15); background: rgba(15, 23, 42, 0.4);">
-                <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none;" title="Item Crítico de Segurança">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                </div>
-            </div>
-            
-            <button onclick="salvarDadosPerfil(event)" id="btn-salvar-perfil" class="btn-primary">SALVAR ALTERAÇÕES</button>
-        </div>
-
-        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
-            <label style="font-size: 0.7rem; color: #ef4444; font-weight: 800; display: block; margin-bottom: 12px;">SEGURANÇA</label>
-            <div class="form-group" style="gap: 10px; display: flex; flex-direction: column;">
-                <input type="password" id="pass-nova" placeholder="Digite a nova senha" class="input-field input-perfil-muted">
-                <input type="password" id="pass-confirmar" placeholder="Confirmar nova senha" class="input-field input-perfil-muted">
-                <button onclick="alterarSenhaPerfil()" id="btn-senha-perfil" class="btn-action" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">ALTERAR SENHA</button>
-            </div>
-        </div>
-
-        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-            <button onclick="logout()" class="btn-logout-nav" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; font-weight: bold;">
-                ENCERRAR SESSÃO
-            </button>
-        </div>
-    </div>
-
-    <div id="modal-confirmar-senha" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
-            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
-            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual</b> para prosseguir:</p>
-            
-            <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
-            
-            <div style="display: flex; gap: 10px;">
-                <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-                <button onclick="processarTrocaSenha()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-verificar-email" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div class="glass-panel" style="width: 90%; max-width: 420px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px; color: white;">
-            <h3 class="italic-bold" style="color: white; margin-bottom: 5px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Autenticação Crítica</h3>
-            <p style="color: #64748b; font-size: 0.75rem; margin-bottom: 25px;">Para sua proteção, valide a alteração inserindo os códigos enviados.</p>
-            
-            <div style="margin-bottom: 18px; text-align: left;">
-                <label id="label-email-antigo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no E-mail Antigo (...):</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="codigo-email-antigo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                    <button onclick="reenviarTokenSeguranca('antigo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 25px; text-align: left;">
-                <label id="label-email-novo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no Novo E-mail (...):</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="codigo-email-novo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                    <button onclick="reenviarTokenSeguranca('novo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button onclick="fecharModalEmail()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-                <button onclick="processarTrocaEmail()" class="btn-primary" style="flex: 1;">VERIFICAR</button>
-            </div>
-        </div>
-    </div>
-</main>
-
-<style>
 .input-perfil-muted {
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
@@ -699,6 +668,17 @@
     border-color: var(--accent-blue) !important;
     color: #ffffff !important;
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
+}
+
+#input-1rm::-webkit-outer-spin-button,
+#input-1rm::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+#input-1rm {
+    -moz-appearance: textfield;
+    appearance: textfield;
+    outline: none;
 }
 </style>
 
