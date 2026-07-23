@@ -463,7 +463,7 @@ function fecharModalSenha() {
     if (inputPass) inputPass.value = "";
 }
 
-async function processarTrocaSenha() {
+aasync function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
     const emailAtivo = localStorage.getItem('user_email');
@@ -507,7 +507,9 @@ async function processarTrocaSenha() {
     mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
 }
 
+function concluirTrocaEmail() { // <--- Esta linha abre a concluirTrocaEmail
     const f = fluxoTrocaEmailPendente;
+    if (!f) return;
     
     localStorage.setItem('user_nome', f.nome);
     localStorage.setItem('user_tel', f.tel);
