@@ -33,22 +33,52 @@ body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     line-height: 1.5;
-    overflow-x: hidden; /* Evita quebra lateral em dispositivos móveis */
+    overflow-x: hidden;
 }
 
-/* --- ESTRUTURA GERAL --- */
+/* --- ESTRUTURA GERAL E GERENCIAMENTO DE VIEWS --- */
 #app-shell { 
     min-height: 100vh; 
     display: flex; 
     flex-direction: column; 
 }
 
-/* CORREÇÃO DO VAZAMENTO: Garante que as páginas ocultas não apareçam embaixo do Lobby */
-.page-container { display: none !important; }
-.page-container:not(.hidden) { display: flex !important; flex-direction: column; }
-.hidden { display: none !important; }
+.page-container,
+.view-screen { 
+    display: none !important; 
+}
 
-/* OCULTAR NAVBAR NO LOGIN: Remove ícone de casa e botão sair da tela de login */
+.page-container:not(.hidden),
+.view-screen:not(.hidden),
+.view-screen.active { 
+    display: flex !important; 
+    flex-direction: column; 
+}
+
+.hidden { 
+    display: none !important; 
+}
+
+/* --- TELA DE LOGIN/CADASTRO (FIXA E ISOLADA) --- */
+#view-login {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    padding: 20px;
+    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+    overflow-y: auto;
+}
+
+#view-login.hidden {
+    display: none !important;
+}
+
 body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
@@ -57,7 +87,6 @@ body:has(#view-login:not(.hidden)) #app-shell,
 body:has(#view-registro:not(.hidden)) #app-shell {
     display: none !important;
 }
-
 
 /* --- NAVBAR PREMIUM --- */
 .navbar {
@@ -71,16 +100,6 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     position: sticky;
     top: 0; 
     z-index: 50;
-}
-
-/* --- TELA DE LOGIN/CADASTRO --- */
-#view-login {
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    min-height: 100vh; 
-    padding: 20px;
-    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
 }
 
 .auth-card {
@@ -299,12 +318,12 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     .registro-container { grid-template-columns: 1fr; }
 }
 
-/* --- AJUSTES EXCLUSIVOS PLANO B (CENTRALIZADO E COMPACTADO PARA MOBILE) --- */
+/* --- AJUSTES EXCLUSIVOS PLANO B --- */
 #view-aparelho-ocupado {
     justify-content: center;
     align-items: center;
     padding: 15px;
-    min-height: calc(100vh - 80px); /* Desconta a altura da navbar */
+    min-height: calc(100vh - 80px);
 }
 
 #view-aparelho-ocupado .container-central {
@@ -327,7 +346,6 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     box-shadow: var(--shadow-pro);
 }
 
-/* Evita margens gigantes no mobile para o conteúdo não "vazar" para baixo */
 #view-aparelho-ocupado h2 { margin-bottom: 6px !important; }
 #view-aparelho-ocupado p { margin-bottom: 20px !important; }
 
@@ -385,7 +403,6 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     .content-grid { padding: 20px 4%; grid-template-columns: 1fr; }
     .navbar { padding: 1rem 4%; }
     
-    /* Encolhimento dinâmico do formulário em telas de celulares pequenos */
     #view-aparelho-ocupado .glass-card-action {
         padding: 20px;
     }
