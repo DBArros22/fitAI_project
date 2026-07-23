@@ -8,7 +8,6 @@ const firebaseConfig = {
   measurementId: "G-0V4XD960QL"
 };
 
- // Função de Login
 async function handleLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass = document.getElementById('login-pass').value;
@@ -2549,7 +2548,6 @@ function removerLembrete(id) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-    // Escuta mudanças no estado de login do Firebase
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             usuarioAtualId = user.uid;
