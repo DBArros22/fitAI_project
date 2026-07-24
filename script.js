@@ -207,6 +207,25 @@ async function carregarDadosDoUsuarioDoBanco() {
     }
 }
 
+function alternarAbaAuth(modo) {
+    const formLogin = document.getElementById('form-login');
+    const formCadastro = document.getElementById('form-cadastro');
+    const tabLogin = document.getElementById('tab-login');
+    const tabCadastro = document.getElementById('tab-cadastro');
+
+    if (modo === 'cadastro') {
+        if (formLogin) formLogin.classList.add('hidden');
+        if (formCadastro) formCadastro.classList.remove('hidden');
+        if (tabLogin) tabLogin.classList.remove('active');
+        if (tabCadastro) tabCadastro.classList.add('active');
+    } else {
+        if (formCadastro) formCadastro.classList.add('hidden');
+        if (formLogin) formLogin.classList.remove('hidden');
+        if (tabCadastro) tabCadastro.classList.remove('active');
+        if (tabLogin) tabLogin.classList.add('active');
+    }
+}
+
 function atualizarListaExercicios() {
     const campoGrupo = document.getElementById('select-grupo-sub');
     if (!campoGrupo) return;
