@@ -97,25 +97,33 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.toggleAuthTab = function(modo) {
-    const formLogin = document.getElementById('form-login') || document.getElementById('login-form');
-    const formCadastro = document.getElementById('form-cadastro') || document.getElementById('form-register') || document.getElementById('register-form');
-    const tabLogin = document.getElementById('tab-login');
-    const tabCadastro = document.getElementById('tab-cadastro') || document.getElementById('tab-register');
+window.toggleAuthTab = function(tab) {
+    // 1. Pega os formulários exatos do seu HTML
+    const formLogin = document.getElementById('form-login');
+    const formCadastro = document.getElementById('form-cadastro');
+    
+    // 2. Pega os botões exatos com o prefixo 'btn-' que está no seu HTML
+    const btnTabLogin = document.getElementById('btn-tab-login');
+    const btnTabCadastro = document.getElementById('btn-tab-cadastro');
 
-    if (modo === 'cadastro' || modo === 'register') {
+    if (tab === 'cadastro') {
+        // Exibe formulário de cadastro e esconde login
         if (formLogin) formLogin.classList.add('hidden');
         if (formCadastro) formCadastro.classList.remove('hidden');
-        if (tabLogin) tabLogin.classList.remove('active');
-        if (tabCadastro) tabCadastro.classList.add('active');
+        
+        // Ajusta classe ativa dos botões
+        if (btnTabLogin) btnTabLogin.classList.remove('active');
+        if (btnTabCadastro) btnTabCadastro.classList.add('active');
     } else {
+        // Exibe formulário de login e esconde cadastro
         if (formCadastro) formCadastro.classList.add('hidden');
         if (formLogin) formLogin.classList.remove('hidden');
-        if (tabCadastro) tabCadastro.classList.remove('active');
-        if (tabLogin) tabLogin.classList.add('active');
+        
+        // Ajusta classe ativa dos botões
+        if (btnTabCadastro) btnTabCadastro.classList.remove('active');
+        if (btnTabLogin) btnTabLogin.classList.add('active');
     }
 };
-
 // Mantém o apelido para não quebrar chamadas antigas
 window.alternarAbaAuth = window.toggleAuthTab;
 
