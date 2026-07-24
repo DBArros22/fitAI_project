@@ -830,31 +830,25 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    window.currentView = viewId;
+    // 1. Esconde todas as telas com a classe 'view'
+    const todasViews = document.querySelectorAll('.view');
+    todasViews.forEach(v => v.classList.add('hidden'));
 
-    // Lista de todas as views registradas no seu sistema
-    const views = ['login', 'lobby', 'blog', 'crossfit-timers', 'sugestao'];
+    // 2. Exibe apenas a tela solicitada
+    const viewAlvo = document.getElementById(`view-${viewId}`);
+    if (viewAlvo) {
+        viewAlvo.classList.remove('hidden');
+    } else {
+        console.warn(`View 'view-${viewId}' não foi encontrada no HTML.`);
+    }
 
-    views.forEach(id => {
-        const container = document.getElementById(`view-${id}`);
-        if (container) {
-            if (id === viewId) {
-                container.style.display = 'block';
-                container.classList.remove('hidden');
-            } else {
-                container.style.display = 'none';
-                container.classList.add('hidden');
-            }
-        }
-    });
-
-    // Rola para o topo e limpa qualquer trava de scroll residual
-    window.scrollTo(0, 0);
-    document.body.style.overflow = 'auto';
-
-    // Atualiza widgets dinâmicos
-    if (typeof atualizarMiniTimerWidget === 'function') {
-        atualizarMiniTimerWidget("");
+    // 3. Executa a renderização específica da tela, se existir
+    if (viewId === 'lobby') {
+        if (typeof renderizarFichas === 'function') renderizarFichas();
+    } else if (viewId === 'consulta') {
+        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+    } else if (viewId === 'calendario') {
+        if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 }
 
