@@ -161,35 +161,6 @@ async function handleLogin(e) {
     }
 }
 
-window.carregarDadosDoAtleta = async function(uid) {
-    if (!uid || typeof db === 'undefined') return;
-    try {
-        // 1. Carrega fichas de treino
-        const docFichas = await db.collection("usuarios").doc(uid)
-                                  .collection("treinos").doc("fichas").get();
-        if (docFichas.exists) {
-            bancoDeDados = docFichas.data() || { fichas: {} };
-            console.log("Dados do atleta localizados no Firestore:", bancoDeDados);
-        }
-
-        // 2. Carrega histórico de frequência
-        const docHist = await db.collection("usuarios").doc(uid)
-                                .collection("historico").doc("frequencia").get();
-        if (docHist.exists && docHist.data().dias) {
-            diasTreinados = docHist.data().dias;
-            localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
-        }
-
-        // 3. RENDERIZA OS CARDS E INTERFACE (Isso faz os cards aparecerem!)
-        if (typeof renderizarFichas === 'function') renderizarFichas();
-        if (typeof renderizarLogTreino === 'function') renderizarLogTreino();
-        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-
-    } catch (e) {
-        console.warn("Aviso ao carregar dados do Firestore (usando cache local):", e);
-    }
-};
-
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
         await window.carregarDadosDoAtleta(usuarioAtualId);
