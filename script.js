@@ -97,29 +97,43 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-window.toggleAuthTab = function(tab) {
-    const loginForm = document.getElementById('form-login') || document.getElementById('login-form');
-    const registerForm = document.getElementById('form-register') || document.getElementById('register-form');
+window.toggleAuthTab = function(modo) {
+    const formLogin = document.getElementById('form-login') || document.getElementById('login-form');
+    const formCadastro = document.getElementById('form-cadastro') || document.getElementById('form-register') || document.getElementById('register-form');
     const tabLogin = document.getElementById('tab-login');
-    const tabRegister = document.getElementById('tab-register');
+    const tabCadastro = document.getElementById('tab-cadastro') || document.getElementById('tab-register');
 
-    if (tab === 'login') {
-        if (loginForm) loginForm.classList.remove('hidden');
-        if (registerForm) registerForm.classList.add('hidden');
-        if (tabLogin) tabLogin.classList.add('active');
-        if (tabRegister) tabRegister.classList.remove('active');
-    } else if (tab === 'register') {
-        if (loginForm) loginForm.classList.add('hidden');
-        if (registerForm) registerForm.classList.remove('hidden');
+    if (modo === 'cadastro' || modo === 'register') {
+        if (formLogin) formLogin.classList.add('hidden');
+        if (formCadastro) formCadastro.classList.remove('hidden');
         if (tabLogin) tabLogin.classList.remove('active');
-        if (tabRegister) tabRegister.classList.add('active');
+        if (tabCadastro) tabCadastro.classList.add('active');
+    } else {
+        if (formCadastro) formCadastro.classList.add('hidden');
+        if (formLogin) formLogin.classList.remove('hidden');
+        if (tabCadastro) tabCadastro.classList.remove('active');
+        if (tabLogin) tabLogin.classList.add('active');
     }
 };
 
-async function handleLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    const rememberMe = document.getElementById('remember-me').checked;
+// Mantém o apelido para não quebrar chamadas antigas
+window.alternarAbaAuth = window.toggleAuthTab;
+
+async function handleLogin(e) {
+    // 1. OBRIGATÓRIO: Impede que a página recarregue ao clicar no botão
+    if (e && e.preventDefault) {
+        e.preventDefault();
+    }
+
+    const emailInput = document.getElementById('login-email');
+    const passInput = document.getElementById('login-pass');
+    const rememberMeInput = document.getElementById('remember-me');
+
+    if (!emailInput || !passInput) return;
+
+    const email = emailInput.value.trim();
+    const pass = passInput.value;
+    const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
 
     if (!email || !pass) {
         return mostrarAvisoNotificacao("Preencha o e-mail e a senha!");
@@ -129,37 +143,16 @@ async function handleLogin() {
         const credenciais = await auth.signInWithEmailAndPassword(email, pass);
         const user = credenciais.user;
 
-        const docPerfil = await db.collection("usuarios").doc(user.uid).get();
-        let nomeUsuario = "Atleta";
-        let telUsuario = "";
-
-        if (docPerfil.exists) {
-            const dados = docPerfil.data();
-            nomeUsuario = dados.nome || "Atleta";
-            telUsuario = dados.tel || "";
-        }
-
-        localStorage.setItem('fitai_session', JSON.stringify({ email, nome: nomeUsuario, tel: telUsuario }));
-        localStorage.setItem('user_email', email);
-        localStorage.setItem('user_nome', nomeUsuario);
-        localStorage.setItem('user_tel', telUsuario);
-
-        if (rememberMe) {
-            localStorage.setItem('fitai_remember_email', email);
-        } else {
-            localStorage.removeItem('fitai_remember_email');
-        }
-
-        showView('lobby');
+        // O listener 'auth.onAuthStateChanged' já vai detectar o login 
+        // e redirecionar para o lobby carregando os dados do atleta automaticamente!
+        
         mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
 
     } catch (error) {
         console.error("Erro ao fazer login:", error);
         
-        if (error.code === 'auth/user-not-found') {
-            mostrarAvisoNotificacao("E-mail não cadastrado!");
-        } else if (error.code === 'auth/wrong-password') {
-            mostrarAvisoNotificacao("Senha incorreta!");
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+            mostrarAvisoNotificacao("E-mail ou senha incorretos!");
         } else if (error.code === 'auth/invalid-email') {
             mostrarAvisoNotificacao("Formato de e-mail inválido!");
         } else {
