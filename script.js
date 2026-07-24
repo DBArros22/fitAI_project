@@ -177,6 +177,31 @@ async function handleLogin(e) {
     }
 }
 
+window.carregarDadosDoAtleta = async function(uid) {
+    if (!uid || typeof db === 'undefined') return;
+    try {
+        const docFichas = await db.collection("usuarios").doc(uid)
+                                  .collection("treinos").doc("fichas").get();
+        if (docFichas.exists) {
+            bancoDeDados = docFichas.data() || { fichas: {} };
+        }
+
+        const docHist = await db.collection("usuarios").doc(uid)
+                                .collection("historico").doc("frequencia").get();
+        if (docHist.exists && docHist.data().dias) {
+            diasTreinados = docHist.data().dias;
+            localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+        }
+
+        if (typeof renderizarFichas === 'function') renderizarFichas();
+        if (typeof renderizarLogTreino === 'function') renderizarLogTreino();
+        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+
+    } catch (e) {
+        console.warn("Aviso ao carregar dados do Firestore:", e);
+    }
+};
+
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
         await window.carregarDadosDoAtleta(usuarioAtualId);
@@ -852,37 +877,27 @@ function showView(viewId) {
 }
 
 // --- 2. SISTEMA DE AUTENTICAÇÃO ---
-function toggleAuthTab(tab) {
-    const selector = document.getElementById('auth-tab-selector');
-    const loginForm = document.getElementById('form-login');
-    const cadastroForm = document.getElementById('form-cadastro');
-    
-    // 1. Alterna a visibilidade das abas
-    if (tab === 'login') {
-        selector.classList.remove('cadastro-active');
-        loginForm.classList.remove('hidden');
-        cadastroForm.classList.add('hidden');
-    } else {
-        selector.classList.add('cadastro-active');
-        loginForm.classList.add('hidden');
-        cadastroForm.classList.remove('hidden');
-    }
+window.toggleAuthTab = function(tab) {
+    const formLogin = document.getElementById('form-login');
+    const formCadastro = document.getElementById('form-cadastro');
+    const btnTabLogin = document.getElementById('btn-tab-login');
+    const btnTabCadastro = document.getElementById('btn-tab-cadastro');
 
-    // 2. Limpeza inteligente dos campos
-    const todosInputs = document.querySelectorAll('.auth-card .input-field');
-    const emailSalvo = localStorage.getItem('fitai_remember_email');
-
-    todosInputs.forEach(input => {
-        // Se estivermos voltando para o Login e este for o campo de e-mail com dado salvo, não limpa
-        if (tab === 'login' && input.id === 'login-email' && emailSalvo) {
-            input.value = emailSalvo;
-            return;
-        }
+    if (tab === 'cadastro') {
+        if (formLogin) formLogin.classList.add('hidden');
+        if (formCadastro) formCadastro.classList.remove('hidden');
         
-        // Limpa todos os outros campos (senhas, nomes, campos de cadastro, etc)
-        input.value = '';
-    });
-}
+        // Alterna as classes para destacar visualmente a aba ativa
+        if (btnTabLogin) btnTabLogin.classList.remove('active');
+        if (btnTabCadastro) btnTabCadastro.classList.add('active');
+    } else {
+        if (formCadastro) formCadastro.classList.add('hidden');
+        if (formLogin) formLogin.classList.remove('hidden');
+        
+        if (btnTabCadastro) btnTabCadastro.classList.remove('active');
+        if (btnTabLogin) btnTabLogin.classList.add('active');
+    }
+};
 
 async function handleCadastro() {
     const nome = document.getElementById('reg-nome').value.trim();
