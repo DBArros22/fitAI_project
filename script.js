@@ -73,7 +73,8 @@ const equivalencias = {
 document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
-        btnLogin.addEventListener('click', handleLogin);
+        // Usa onclick diretamente para evitar escutadores duplicados
+        btnLogin.onclick = handleLogin;
     }
 
     // Monitora o estado da sessão Firebase
@@ -128,7 +129,7 @@ window.toggleAuthTab = function(tab) {
 window.alternarAbaAuth = window.toggleAuthTab;
 
 async function handleLogin(e) {
-    // 1. OBRIGATÓRIO: Impede que a página recarregue ao clicar no botão
+    // PREVINE O RECARREGAMENTO DA PÁGINA SE TIVER DENTRO DE UM <FORM>
     if (e && e.preventDefault) {
         e.preventDefault();
     }
@@ -148,13 +149,20 @@ async function handleLogin(e) {
     }
 
     try {
+        // Tenta autenticar no Firebase
         const credenciais = await auth.signInWithEmailAndPassword(email, pass);
         const user = credenciais.user;
 
-        // O listener 'auth.onAuthStateChanged' já vai detectar o login 
-        // e redirecionar para o lobby carregando os dados do atleta automaticamente!
-        
+        // Salva as preferências de e-mail/sessão
+        if (rememberMe) {
+            localStorage.setItem('fitai_remember_email', email);
+        } else {
+            localStorage.removeItem('fitai_remember_email');
+        }
+
         mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
+        // Nota: NÃO precisa chamar showView('lobby') aqui. 
+        // O auth.onAuthStateChanged acima já vai detectar e trocar a tela sozinho!
 
     } catch (error) {
         console.error("Erro ao fazer login:", error);
