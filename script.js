@@ -1,3 +1,4 @@
+// 1. CONFIGURAÇÃO DO FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyCQcfeMAGcGFp1MTZTpAevihoSsg57M2U8",
   authDomain: "assisfit-pro.firebaseapp.com",
@@ -8,69 +9,92 @@ const firebaseConfig = {
   measurementId: "G-0V4XD960QL"
 };
 
-async function handleLogin() {
-    const email = document.getElementById('login-email').value.trim();
-    const pass = document.getElementById('login-pass').value;
-    const rememberMe = document.getElementById('remember-me').checked;
-
-    if (!email || !pass) {
-        return mostrarAvisoNotificacao("Preencha o e-mail e a senha!");
-    }
-
-    try {
-        // 1. Autentica no Firebase Auth
-        const credenciais = await auth.signInWithEmailAndPassword(email, pass);
-        const user = credenciais.user;
-
-        // 2. Busca os dados de perfil salvos no Firestore
-        const docPerfil = await db.collection("usuarios").doc(user.uid).get();
-        let nomeUsuario = "Atleta";
-        let telUsuario = "";
-
-        if (docPerfil.exists) {
-            const dados = docPerfil.data();
-            nomeUsuario = dados.nome || "Atleta";
-            telUsuario = dados.tel || "";
-        }
-
-        // 3. Salva sessão local para compatibilidade com o resto do código
-        localStorage.setItem('fitai_session', JSON.stringify({ email, nome: nomeUsuario, tel: telUsuario }));
-        localStorage.setItem('user_email', email);
-        localStorage.setItem('user_nome', nomeUsuario);
-        localStorage.setItem('user_tel', telUsuario);
-
-        // 4. Lógica de "Lembrar de Mim"
-        if (rememberMe) {
-            localStorage.setItem('fitai_remember_email', email);
-        } else {
-            localStorage.removeItem('fitai_remember_email');
-        }
-
-        // 5. Entra no App
-        showView('lobby');
-        mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
-
-    } catch (error) {
-        console.error("Erro ao fazer login:", error);
-        
-        // Mantém a UX original tratando erros específicos
-        if (error.code === 'auth/user-not-found') {
-            mostrarAvisoNotificacao("E-mail não cadastrado!");
-        } else if (error.code === 'auth/wrong-password') {
-            mostrarAvisoNotificacao("Senha incorreta!");
-        } else if (error.code === 'auth/invalid-email') {
-            mostrarAvisoNotificacao("Formato de e-mail inválido!");
-        } else {
-            mostrarAvisoNotificacao("Erro ao conectar. Tente novamente!");
-        }
-    }
+// 2. INICIALIZAÇÃO IMEDIATA DO FIREBASE (Precisa vir ANTES das funções!)
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
 }
+const auth = firebase.auth();
+const db = firebase.firestore();
 
+// Disponibiliza no escopo do window para evitar o erro do db undefined
+window.auth = auth;
+window.db = db;
+
+db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
+db.enablePersistence().catch(err => console.warn("Persistência offline desativada:", err.code));
+
+// 3. VARIÁVEIS GLOBAIS DE ESTADO
+let usuarioAtualId = null;
+let bancoDeDados = { fichas: {} };
+let diasTreinados = [];
+let lembretes = [];
+let feedEvolucao = [];
+let assisData = null;
+
+let midiaAnexada = null; 
+let cronometrosAtivos = {}; 
+let tempoMestreAtivo = null;
+let milisegundosAcumulados = 0;
+let timestampInicio = null;
+window.cfIsPaused = false;
+let fluxoTrocaEmailPendente = null;
+
+let cfTimerInterval = null;
+let cfStartTime = 0; 
+let cfLimitSeconds = 600; 
+let cfModo = 'AMRAP';
+let mediaRecorder;
+let audioChunks = [];
+let gravando = false;
+let fichaAtivaNoMomento = "";
+let fichaAtiva = null;
+let timerInterval;
+let milissegundosTotais = 0;
+let isTimerRunning = false;
+let isCountdownMode = false;
+
+const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
+const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
+const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+const equivalencias = {
+    "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
+    "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
+    "Puxada": ["Lat Pulldown (Puxada Aberta)", "Puxada Triângulo", "Barra Fixa (Pull-up)"],
+    "Remada": ["Remada Curvada (Barra)", "Remada Baixa (Triângulo)", "Remada Unilateral (Serrote)", "Remada Articulada (Máquina)"],
+    "Agachamento": ["Agachamento Livre (Back Squat)", "Agachamento no Smith", "Leg Press 45°", "Agachamento Hack", "Goblet Squat (Halter)"],
+    "Extensora": ["Cadeira Extensora", "Sissy Squat"],
+    "Posterior": ["Mesa Flexora", "Cadeira Flexora", "Stiff (Romanian Deadlift)"],
+    "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
+};
+
+// 4. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
 document.addEventListener('DOMContentLoaded', () => {
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.addEventListener('click', handleLogin);
     }
+
+    // Monitora o estado da sessão Firebase
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            usuarioAtualId = user.uid;
+            try {
+                await window.carregarDadosDoAtleta(user.uid);
+            } catch (err) {
+                console.error("Erro ao carregar dados do atleta no login:", err);
+            }
+            if (typeof showView === 'function') {
+                showView('lobby');
+            }
+        } else {
+            usuarioAtualId = null;
+            if (typeof showView === 'function') {
+                showView('login');
+            }
+        }
+    });
 });
 
 window.toggleAuthTab = function(tab) {
@@ -92,70 +116,57 @@ window.toggleAuthTab = function(tab) {
     }
 };
 
-// Inicializa o Firebase Core
-firebase.initializeApp(firebaseConfig);
+async function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const rememberMe = document.getElementById('remember-me').checked;
 
-// Atalhos globais para os serviços do Firebase
-const auth = firebase.auth();
-const db = firebase.firestore();
+    if (!email || !pass) {
+        return mostrarAvisoNotificacao("Preencha o e-mail e a senha!");
+    }
 
-// Ativa a persistência offline básica do Firestore (opcional, para apps fitness em rede instável)
-db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-db.enablePersistence().catch(err => console.warn("Persistência offline desativada:", err.code));
+    try {
+        const credenciais = await auth.signInWithEmailAndPassword(email, pass);
+        const user = credenciais.user;
 
-// ============================================================================================================
-// VARIÁVEIS GLOBAIS DE ESTADO (Substituindo o LocalStorage direto)
-// ============================================================================================================
+        const docPerfil = await db.collection("usuarios").doc(user.uid).get();
+        let nomeUsuario = "Atleta";
+        let telUsuario = "";
 
-let usuarioAtualId = null;         // ID único (UID) do atleta logado no Firebase Auth
-let bancoDeDados = { fichas: {} }; // Carregado de /usuarios/{UID}/treinos/fichas
-let diasTreinados = [];            // Carregado de /usuarios/{UID}/historico/frequencia
-let lembretes = [];                // Carregado de /usuarios/{UID}/lembretes
-let feedEvolucao = [];             // Carregado da coleção global /feed
-let assisData = null;              // Carregado do documento de perfil /usuarios/{UID}
+        if (docPerfil.exists) {
+            const dados = docPerfil.data();
+            nomeUsuario = dados.nome || "Atleta";
+            telUsuario = dados.tel || "";
+        }
 
-// --- CONTROLES DE INTERFACE, CRONÔMETROS E MÍDIA (Mantidos Locais) ---
-let midiaAnexada = null; 
-let cronometrosAtivos = {}; 
-let tempoMestreAtivo = null;
-let milisegundosAcumulados = 0;
-let timestampInicio = null;
-window.cfIsPaused = false;
-let fluxoTrocaEmailPendente = null;
+        localStorage.setItem('fitai_session', JSON.stringify({ email, nome: nomeUsuario, tel: telUsuario }));
+        localStorage.setItem('user_email', email);
+        localStorage.setItem('user_nome', nomeUsuario);
+        localStorage.setItem('user_tel', telUsuario);
 
-// Variáveis de timers WOD e gravação de áudio
-let cfTimerInterval = null;
-let cfStartTime = 0; 
-let cfLimitSeconds = 600; 
-let cfModo = 'AMRAP';
-let mediaRecorder;
-let audioChunks = [];
-let gravando = false;
-let fichaAtivaNoMomento = "";
-let fichaAtiva = null;
-let timerInterval;
-let milissegundosTotais = 0;
-let isTimerRunning = false;
-let isCountdownMode = false;
+        if (rememberMe) {
+            localStorage.setItem('fitai_remember_email', email);
+        } else {
+            localStorage.removeItem('fitai_remember_email');
+        }
 
-// Helpers auxiliares de input
-const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
-const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
-const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        showView('lobby');
+        mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
 
-// Equivalências do Plano B (Estáticas)
-const equivalencias = {
-    "Supino": ["Supino Reto (Barra Olímpica)", "Supino Reto (Halteres)", "Supino Reto (Máquina Articulada)", "Chest Press Machine", "Flexão de Braços (Push-up)"],
-    "Inclinado": ["Supino Inclinado (Halteres)", "Supino Inclinado (Barra)", "Supino Inclinado (Máquina)"],
-    "Puxada": ["Lat Pulldown (Puxada Aberta)", "Puxada Triângulo", "Barra Fixa (Pull-up)"],
-    "Remada": ["Remada Curvada (Barra)", "Remada Baixa (Triângulo)", "Remada Unilateral (Serrote)", "Remada Articulada (Máquina)"],
-    "Agachamento": ["Agachamento Livre (Back Squat)", "Agachamento no Smith", "Leg Press 45°", "Agachamento Hack", "Goblet Squat (Halter)"],
-    "Extensora": ["Cadeira Extensora", "Sissy Squat"],
-    "Posterior": ["Mesa Flexora", "Cadeira Flexora", "Stiff (Romanian Deadlift)"],
-    "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
-};
-
+    } catch (error) {
+        console.error("Erro ao fazer login:", error);
+        
+        if (error.code === 'auth/user-not-found') {
+            mostrarAvisoNotificacao("E-mail não cadastrado!");
+        } else if (error.code === 'auth/wrong-password') {
+            mostrarAvisoNotificacao("Senha incorreta!");
+        } else if (error.code === 'auth/invalid-email') {
+            mostrarAvisoNotificacao("Formato de e-mail inválido!");
+        } else {
+            mostrarAvisoNotificacao("Erro ao conectar. Tente novamente!");
+        }
+    }
+}
 
 window.carregarDadosDoAtleta = async function(uid) {
     try {
@@ -193,7 +204,6 @@ window.carregarDadosDoAtleta = async function(uid) {
     }
 };
 
-// Funções auxiliares globais isoladas corretamente
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
         await window.carregarDadosDoAtleta(usuarioAtualId);
