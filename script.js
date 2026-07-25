@@ -24,16 +24,16 @@ db.settings({
     cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
 });
 
-if (typeof db.enablePersistence === 'function') {
-    db.enablePersistence({ synchronizeTabs: true })
-        .catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.warn("Múltiplas abas do app abertas ao mesmo tempo.");
-            } else if (err.code === 'unimplemented') {
-                console.warn("Navegador atual não suporta cache local.");
-            }
-        });
+if (typeof firebase !== 'undefined') {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+} else {
+    console.error("SDK do Firebase não foi encontrado! Verifique as tags <script> no index.html.");
 }
+
+const auth = typeof firebase !== 'undefined' ? firebase.auth() : null;
+const db = typeof firebase !== 'undefined' ? firebase.firestore() : null;
 
 // 3. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
