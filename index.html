@@ -209,6 +209,62 @@
         </div>
     </main>
 
+<main id="view-calendario" class="view-screen hidden" style="padding: 20px 5%;">
+    <div class="glass-panel" style="max-width: 900px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <h2 class="italic-bold uppercase blue-text" style="font-size: 1.1rem; letter-spacing: 1px;">Cronograma e Calendário</h2>
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <label style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 15px;">Planejamento Semanal (Siglas)</label>
+            <div id="cronograma-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px;">
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">SEG</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">TER</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">QUA</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">QUI</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">SEX</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">SÁB</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+                <div class="treino-item" style="flex-direction: column; text-align: center; gap: 8px; padding: 12px;">
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--text-secondary);">DOM</span>
+                    <input type="text" placeholder="Sigla" class="input-field" style="text-align: center; padding: 8px; font-size: 0.85rem;" maxlength="5">
+                </div>
+            </div>
+        </div>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px;">
+            <label style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 12px;">Anotações e Lembretes</label>
+            <div class="form-group" style="gap: 12px;">
+                <textarea id="input-anotacoes-cronograma" placeholder="Digite suas metas, notas da semana ou lembretes importantes..." class="input-field" style="resize: vertical; min-height: 100px; font-family: inherit;"></textarea>
+                <button onclick="salvarAnotacoesCronograma()" class="btn-primary" style="padding: 14px; font-size: 0.8rem;">SALVAR ANOTAÇÕES</button>
+            </div>
+        </div>
+
+    </div>
+</main>
+
     <main id="view-consulta-geral" class="view-screen hidden" style="padding: 20px 5%;">
         <div class="glass-panel" style="max-width: 800px; margin: 0 auto; padding: 25px;">
             <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px;">
