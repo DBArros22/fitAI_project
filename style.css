@@ -36,6 +36,11 @@ body {
     overflow-x: hidden;
 }
 
+/* --- CLASSE UNIVERSAL HIDDEN (PRIORIDADE MÁXIMA) --- */
+.hidden { 
+    display: none !important; 
+}
+
 /* --- ESTRUTURA GERAL E GERENCIAMENTO DE VIEWS --- */
 #app-shell { 
     min-height: 100vh; 
@@ -44,30 +49,20 @@ body {
 }
 
 .page-container,
-.view-screen { 
-    display: none !important; 
+.view-screen,
+.view { 
+    display: none; 
 }
 
 .page-container:not(.hidden),
 .view-screen:not(.hidden),
+.view:not(.hidden),
 .view-screen.active { 
     display: flex !important; 
     flex-direction: column; 
 }
 
-#view-login {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100%;
-}
-
-.hidden { 
-    display: none !important; 
-}
-
-/* --- TELA DE LOGIN/CADASTRO (FIXA E ISOLADA) --- */
+/* --- TELA DE LOGIN/CADASTRO --- */
 #view-login {
     position: fixed;
     top: 0;
@@ -88,11 +83,6 @@ body {
 }
 
 body:has(#view-login:not(.hidden)) .navbar {
-    display: none !important;
-}
-
-body:has(#view-login:not(.hidden)) #app-shell,
-body:has(#view-registro:not(.hidden)) #app-shell {
     display: none !important;
 }
 
@@ -130,7 +120,7 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
-/* --- TAB SYSTEM (SLIDING) --- */
+/* --- TAB SYSTEM (SLIDING ANIMADO) --- */
 .tab-system {
     display: flex; 
     background: #020617; 
@@ -151,7 +141,7 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     cursor: pointer;
     position: relative; 
     z-index: 2; 
-    transition: 0.3s;
+    transition: color 0.3s ease;
 }
 
 .tab-system::before {
@@ -163,13 +153,20 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     height: calc(100% - 10px);
     background: var(--accent-blue); 
     border-radius: 12px;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
     z-index: 1;
     box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
 }
 
-.tab-system.cadastro-active::before { transform: translateX(100%); }
-.tab-btn.active { color: #020617; }
+/* Regras para mover o slider de acordo com a aba ativa */
+.tab-system.cadastro-active::before,
+.tab-system:has(#btn-tab-cadastro.active)::before { 
+    transform: translateX(100%); 
+}
+
+.tab-btn.active { 
+    color: #020617 !important; 
+}
 
 /* --- INPUTS E SELECTS --- */
 .form-group { display: flex; flex-direction: column; gap: 16px; }
@@ -326,7 +323,7 @@ body:has(#view-registro:not(.hidden)) #app-shell {
     .registro-container { grid-template-columns: 1fr; }
 }
 
-/* --- AJUSTES EXCLUSIVOS PLANO B --- */
+/* --- PLANO B --- */
 #view-aparelho-ocupado {
     justify-content: center;
     align-items: center;

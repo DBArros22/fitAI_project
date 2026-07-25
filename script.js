@@ -99,40 +99,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.toggleAuthTab = function(tab) {
-    // 1. Pega os formulários exatos do seu HTML
     const formLogin = document.getElementById('form-login');
     const formCadastro = document.getElementById('form-cadastro');
-    
-    // 2. Pega os botões exatos com o prefixo 'btn-' que está no seu HTML
     const btnTabLogin = document.getElementById('btn-tab-login');
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
 
     if (tab === 'cadastro') {
-        // Exibe formulário de cadastro e esconde login
         if (formLogin) formLogin.classList.add('hidden');
         if (formCadastro) formCadastro.classList.remove('hidden');
         
-        // Ajusta classe ativa dos botões
         if (btnTabLogin) btnTabLogin.classList.remove('active');
         if (btnTabCadastro) btnTabCadastro.classList.add('active');
     } else {
-        // Exibe formulário de login e esconde cadastro
         if (formCadastro) formCadastro.classList.add('hidden');
         if (formLogin) formLogin.classList.remove('hidden');
         
-        // Ajusta classe ativa dos botões
         if (btnTabCadastro) btnTabCadastro.classList.remove('active');
         if (btnTabLogin) btnTabLogin.classList.add('active');
     }
 };
+
+window.alternarAbaAuth = window.toggleAuthTab;
+
 // Mantém o apelido para não quebrar chamadas antigas
 window.alternarAbaAuth = window.toggleAuthTab;
 
 async function handleLogin(e) {
-    // PREVINE O RECARREGAMENTO DA PÁGINA SE TIVER DENTRO DE UM <FORM>
-    if (e && e.preventDefault) {
-        e.preventDefault();
-    }
+    if (e && e.preventDefault) e.preventDefault();
 
     const emailInput = document.getElementById('login-email');
     const passInput = document.getElementById('login-pass');
@@ -149,11 +142,9 @@ async function handleLogin(e) {
     }
 
     try {
-        // Tenta autenticar no Firebase
         const credenciais = await auth.signInWithEmailAndPassword(email, pass);
         const user = credenciais.user;
 
-        // Salva as preferências de e-mail/sessão
         if (rememberMe) {
             localStorage.setItem('fitai_remember_email', email);
         } else {
@@ -161,16 +152,16 @@ async function handleLogin(e) {
         }
 
         mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
-        // Nota: NÃO precisa chamar showView('lobby') aqui. 
-        // O auth.onAuthStateChanged acima já vai detectar e trocar a tela sozinho!
+
+        // FORÇA O REDIRECIONAMENTO PARA O LOBBY
+        if (typeof showView === 'function') {
+            showView('lobby');
+        }
 
     } catch (error) {
         console.error("Erro ao fazer login:", error);
-        
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
             mostrarAvisoNotificacao("E-mail ou senha incorretos!");
-        } else if (error.code === 'auth/invalid-email') {
-            mostrarAvisoNotificacao("Formato de e-mail inválido!");
         } else {
             mostrarAvisoNotificacao("Erro ao conectar. Tente novamente!");
         }
@@ -899,53 +890,57 @@ window.toggleAuthTab = function(tab) {
     }
 };
 
-async function handleCadastro() {
-    const nome = document.getElementById('reg-nome').value.trim();
-    const email = document.getElementById('reg-email').value.trim();
-    const tel = document.getElementById('reg-tel').value.trim();
-    const senha = document.getElementById('reg-pass').value;
-    const confirmaSenha = document.getElementById('reg-pass-conf').value;
+async function handleCadastro(e) {
+    if (e && e.preventDefault) e.preventDefault();
 
-    if (!nome || !email || !senha) {
-        return mostrarAviso("Preencha todos os campos obrigatórios!");
+    const nome = document.getElementById('reg-nome')?.value.trim();
+    const email = document.getElementById('reg-email')?.value.trim();
+    const tel = document.getElementById('reg-tel')?.value.trim();
+    const pass = document.getElementById('reg-pass')?.value;
+    const passConf = document.getElementById('reg-pass-conf')?.value;
+
+    if (!nome || !email || !pass) {
+        return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios!");
     }
-    if (senha !== confirmaSenha) {
-        return mostrarAviso("As senhas não coincidem!");
+
+    if (pass !== passConf) {
+        return mostrarAvisoNotificacao("As senhas não coincidem!");
     }
 
     try {
         // 1. Cria a conta no Firebase Authentication
-        const credenciais = await auth.createUserWithEmailAndPassword(email, senha);
-        const user = credenciais.user;
+        const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+        const user = userCredential.user;
 
-        // 2. Cria o documento de perfil complementar do usuário no Firestore
+        // 2. Salva o perfil do novo atleta no Firestore
         await db.collection("usuarios").doc(user.uid).set({
             nome: nome,
             email: email,
-            tel: tel,
-            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            tel: tel || "",
+            criadoEm: new Date()
         });
 
-        // 3. Mantém compatibilidade temporária de sessão local caso outros módulos usem
-        localStorage.setItem('user_email', email); 
-        localStorage.setItem('user_nome', nome);
-        localStorage.setItem('user_tel', tel);
+        mostrarAvisoNotificacao("Conta criada com sucesso!", "sucesso");
 
-        mostrarAviso("Conta criada com sucesso!");
-        toggleAuthTab('login');
+        // 3. Redireciona diretamente para o Lobby
+        if (typeof showView === 'function') {
+            showView('lobby');
+        }
+
     } catch (error) {
         console.error("Erro ao cadastrar:", error);
-        let mensagemErro = "Erro ao cadastrar usuário.";
         if (error.code === 'auth/email-already-in-use') {
-            mensagemErro = "Este e-mail já está em uso.";
+            mostrarAvisoNotificacao("Este e-mail já está cadastrado!");
         } else if (error.code === 'auth/weak-password') {
-            mensagemErro = "A senha deve ter pelo menos 6 caracteres.";
-        } else if (error.code === 'auth/invalid-email') {
-            mensagemErro = "Formato de e-mail inválido.";
+            mostrarAvisoNotificacao("A senha deve ter pelo menos 6 caracteres!");
+        } else {
+            mostrarAvisoNotificacao("Erro ao criar conta. Tente novamente!");
         }
-        mostrarAviso(mensagemErro);
     }
 }
+
+// Torna a função acessível ao onclick do HTML
+window.handleCadastro = handleCadastro;
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
