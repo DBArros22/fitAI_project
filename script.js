@@ -913,9 +913,8 @@ function showView(viewId) {
 
 window.showView = showView;
 
-// Garante acesso global
-window.showView = showView;
-
+// Função para alternar as abas de autenticação (Com o cabeçalho correto!)
+window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
     const formCadastro = document.getElementById('form-cadastro');
     const btnTabLogin = document.getElementById('btn-tab-login');
