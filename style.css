@@ -36,7 +36,7 @@ body {
     overflow-x: hidden;
 }
 
-/* --- CLASSE UNIVERSAL HIDDEN (PRIORIDADE MÁXIMA) --- */
+/* --- CLASSE UNIVERSAL HIDDEN (PRIORIDADE ABSOLUTA) --- */
 .hidden { 
     display: none !important; 
 }
@@ -48,18 +48,20 @@ body {
     flex-direction: column; 
 }
 
+/* Oculta por padrão todas as views e telas */
 .page-container,
 .view-screen,
 .view { 
-    display: none; 
+    display: none !important; 
 }
 
+/* Exibe SOMENTE a view ativa que NÃO tiver a classe .hidden */
 .page-container:not(.hidden),
 .view-screen:not(.hidden),
-.view:not(.hidden),
-.view-screen.active { 
+.view:not(.hidden) { 
     display: flex !important; 
     flex-direction: column; 
+    width: 100%;
 }
 
 /* --- TELA DE LOGIN/CADASTRO --- */
@@ -70,7 +72,7 @@ body {
     width: 100vw;
     height: 100vh;
     z-index: 99999;
-    display: flex; 
+    display: flex !important; 
     align-items: center; 
     justify-content: center;
     padding: 20px;
@@ -82,6 +84,10 @@ body {
     display: none !important;
 }
 
+/* Garante que nada do App apareça quando o login estiver ativo */
+#view-login:not(.hidden) ~ #app-shell,
+#view-login:not(.hidden) ~ .navbar,
+body:has(#view-login:not(.hidden)) #app-shell,
 body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
@@ -142,6 +148,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     position: relative; 
     z-index: 2; 
     transition: color 0.3s ease;
+    text-align: center;
 }
 
 .tab-system::before {
@@ -158,7 +165,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
 }
 
-/* Regras para mover o slider de acordo com a aba ativa */
 .tab-system.cadastro-active::before,
 .tab-system:has(#btn-tab-cadastro.active)::before { 
     transform: translateX(100%); 
@@ -169,7 +175,11 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* --- INPUTS E SELECTS --- */
-.form-group { display: flex; flex-direction: column; gap: 16px; }
+.form-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+}
 
 .input-field, select {
     width: 100%; 
@@ -189,14 +199,16 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
-/* --- SAGUÃO (CARDS) --- */
-.content-grid {
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px; 
+/* --- SAGUÃO / LOBBY (CARDS EM GRID HORIZONTAL) --- */
+.content-grid,
+#view-lobby .content-grid {
+    display: grid !important; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 24px !important; 
     padding: 40px 5%; 
     max-width: 1300px; 
     margin: 0 auto;
+    width: 100%;
 }
 
 .menu-card {
@@ -210,7 +222,9 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: flex; 
     flex-direction: column; 
     align-items: center;
+    justify-content: center;
     text-align: center;
+    width: 100%;
 }
 
 .menu-card:hover {
@@ -262,10 +276,22 @@ body:has(#view-login:not(.hidden)) .navbar {
     cursor: pointer; 
     text-transform: uppercase; 
     transition: 0.3s;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.btn-primary.success { background: linear-gradient(135deg, #10b981, #059669); color: white; }
-.btn-primary:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); }
+.btn-primary.success { 
+    background: linear-gradient(135deg, #10b981, #059669); 
+    color: white; 
+}
+
+.btn-primary:hover { 
+    filter: brightness(1.1); 
+    transform: translateY(-2px); 
+    box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); 
+}
 
 /* --- LISTAGEM E AÇÕES --- */
 .treino-item, .ficha-item {
@@ -280,11 +306,15 @@ body:has(#view-login:not(.hidden)) .navbar {
     transition: 0.3s ease;
 }
 
-.ficha-item { background: var(--bg-card); border-radius: 20px; padding: 20px; }
+.ficha-item { 
+    background: var(--bg-card); 
+    border-radius: 20px; 
+    padding: 20px; 
+}
 
 .treino-item:hover, .ficha-item:hover {
     border-color: var(--accent-blue);
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
 
 .btn-action {
@@ -317,10 +347,13 @@ body:has(#view-login:not(.hidden)) .navbar {
     max-width: 1400px;
     margin: 0 auto;
     align-items: start;
+    width: 100%;
 }
 
 @media (max-width: 900px) {
-    .registro-container { grid-template-columns: 1fr; }
+    .registro-container { 
+        grid-template-columns: 1fr; 
+    }
 }
 
 /* --- PLANO B --- */
@@ -397,6 +430,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     border-radius: 24px;
     text-align: center;
     width: 100%;
+    max-width: 400px;
 }
 
 .italic-bold { font-weight: 900; font-style: italic; }
@@ -405,7 +439,10 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 600px) {
-    .content-grid { padding: 20px 4%; grid-template-columns: 1fr; }
+    .content-grid, #view-lobby .content-grid { 
+        padding: 20px 4% !important; 
+        grid-template-columns: 1fr !important; 
+    }
     .navbar { padding: 1rem 4%; }
     
     #view-aparelho-ocupado .glass-card-action {
@@ -469,7 +506,7 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 .btn-voltar-premium {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     background: transparent; 
@@ -548,23 +585,4 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 #toast-notificacao.erro {
     border-left: 4px solid #ef4444; 
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* 2. Garante que, enquanto o login existir/estiver visível, NADA do lobby vaze por trás */
-#view-login:not(.hidden) ~ #app-shell,
-#view-login:not(.hidden) ~ .navbar,
-body:has(#view-login:not(.hidden)) #app-shell {
-    display: none !important;
-}
-
-/* 3. Força o layout dos Cards do Lobby em Grid (horizontal/lado a lado) em vez de linha vertical */
-#view-lobby .content-grid,
-.content-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-    gap: 24px !important;
 }
