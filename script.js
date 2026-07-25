@@ -24,14 +24,16 @@ db.settings({
     cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
 });
 
-db.enableIndexedDbPersistence({ synchronizeTabs: true })
-    .catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.warn("Múltiplas abas do app abertas ao mesmo tempo.");
-        } else if (err.code === 'unimplemented') {
-            console.warn("Navegador atual não suporta cache local.");
-        }
-    });
+if (typeof db.enablePersistence === 'function') {
+    db.enablePersistence({ synchronizeTabs: true })
+        .catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.warn("Múltiplas abas do app abertas ao mesmo tempo.");
+            } else if (err.code === 'unimplemented') {
+                console.warn("Navegador atual não suporta cache local.");
+            }
+        });
+}
 
 // 3. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
