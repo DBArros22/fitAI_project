@@ -692,13 +692,11 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Remove prefixo se enviado duplicado
     const cleanId = viewId.replace('view-', '');
-
     const viewLogin = document.getElementById('view-login');
     const appShell = document.getElementById('app-shell');
 
-    // 1. Se for Login
+    // 1. Caso Login
     if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         if (appShell) appShell.classList.add('hidden');
@@ -706,28 +704,27 @@ function showView(viewId) {
         return;
     }
 
-    // 2. Se for qualquer outra tela do App
+    // 2. Exibe o App e oculta o Login
     if (viewLogin) viewLogin.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Esconde todas as views internas sem alterar o display CSS delas
+    // Oculta todas as views sem injetar inline styles
     const todasViews = document.querySelectorAll('.view-screen, .view, .page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
-        v.style.display = ''; // Limpa estilos inline anteriores para não quebrar o CSS
+        v.style.display = '';
     });
 
-    // Procura e exibe a view alvo
+    // Mostra a view solicitada
     const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
-    
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
-        viewAlvo.style.display = ''; // Deixa o CSS original controlar (flex/grid/block)
+        viewAlvo.style.display = '';
     } else {
-        console.warn(`View '${cleanId}' não foi encontrada no HTML.`);
+        console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // Callbacks de carregamento específicos
+    // Callbacks de renderização
     if (cleanId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
     } else if (cleanId === 'perfil') {
