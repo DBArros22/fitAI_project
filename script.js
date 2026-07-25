@@ -158,7 +158,6 @@ window.toggleAuthTab = function(tab) {
     }
 };
 
-
 window.alternarAbaAuth = window.toggleAuthTab;
 
 async function handleLogin(e) {
