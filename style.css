@@ -203,12 +203,27 @@ body:has(#view-login:not(.hidden)) .navbar {
 .content-grid,
 #view-lobby .content-grid {
     display: grid !important; 
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    grid-template-columns: repeat(3, 1fr) !important; /* Exatamente 3 em cima e 3 em baixo */
     gap: 24px !important; 
-    padding: 40px 5%; 
+    padding: 40px 5% !important; 
     max-width: 1300px; 
     margin: 0 auto;
     width: 100%;
+}
+
+/* Responsividade de 2 em 2 no Mobile / Tablet */
+@media (max-width: 900px) {
+    .content-grid, #view-lobby .content-grid { 
+        grid-template-columns: repeat(2, 1fr) !important; /* 2 em 2 */
+        gap: 16px !important;
+        padding: 20px 4% !important; 
+    }
+}
+
+@media (max-width: 480px) {
+    .content-grid, #view-lobby .content-grid { 
+        grid-template-columns: 1fr !important; /* 1 por linha em telas muito pequenas */
+    }
 }
 
 .menu-card {
@@ -593,19 +608,15 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
-/* EXIBIÇÃO APENAS DA VIEW ATIVA */
-#app-shell > .view-screen:not(.hidden) {
-    display: flex !important;
-    flex-direction: column;
+/* EXIBIÇÃO DAS VIEWS ATIVAS SEM FORÇAR FLEX EM QUEM É GRID */
+#app-shell > .view-screen:not(.hidden),
+#app-shell > .view:not(.hidden),
+#app-shell > .page-container:not(.hidden) {
+    display: block !important;
     width: 100%;
 }
 
-/* GRID DO LOBBY EXCLUSIVO QUANDO ATIVO */
+/* O LOBBY É O ÚNICO QUE RENDERIZA DIRETO O GRID */
 #view-lobby:not(.hidden) {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-    gap: 24px !important;
-    padding: 40px 5% !important;
-    max-width: 1300px;
-    margin: 0 auto;
+    display: block !important;
 }
