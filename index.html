@@ -49,22 +49,8 @@
 
 <nav class="navbar">
     <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="app-logo-container" style="
-            width: 40px; 
-            height: 40px; 
-            border-radius: 12px; 
-            border: 1px solid var(--border-color); 
-            background: #000; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);">
-            
-            <img src="logoAssisfitPro.png" alt="Logo AssisFiT" style="
-                width: 100%; 
-                height: 100%; 
-                object-fit: cover;" />
+        <div id="app-logo-container" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border-color); background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 0 10px rgba(56, 189, 248, 0.15);">
+            <img src="logoAssisfitPro.png" alt="Logo AssisFiT" style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         
         <h1 class="italic-bold" style="color: var(--accent-blue); font-size: 1.4rem; letter-spacing: -1px;"> 
@@ -73,20 +59,7 @@
     </div>
     
     <div class="perfil-nav-wrapper" style="display: flex; align-items: center; margin-left: auto;">
-        <div onclick="showView('perfil')" id="nav-perfil-icon" class="fade-in" style="
-            width: 42px; 
-            height: 42px; 
-            border-radius: 14px; 
-            border: 1px solid var(--border-color); 
-            background: var(--bg-card); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer; 
-            overflow: hidden;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-            
+        <div onclick="showView('perfil')" id="nav-perfil-icon" class="fade-in" style="width: 42px; height: 42px; border-radius: 14px; border: 1px solid var(--border-color); background: var(--bg-card); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
             <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--icon-platinum)" stroke-width="2" fill="none" style="filter: drop-shadow(0 0 5px rgba(255,255,255,0.2));">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                 <circle cx="12" cy="7" r="4"></circle>
@@ -313,7 +286,7 @@
 
     <main id="view-calendario" class="view-screen hidden"></main>
 
-    <div id="view-aparelho-ocupado" class="page-container view-screen hidden">
+    <div id="view-aparelho-ocupado" class="view-screen hidden">
         <div class="container-central">
             <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 30px;">
                 <button onclick="showView('lobby')" class="btn-voltar-premium">
@@ -367,7 +340,7 @@
         </div>
     </div>
 
-    <div id="view-crossfit-lobby" class="page-container view-screen hidden">
+    <div id="view-crossfit-lobby" class="view-screen hidden">
         <div class="container-central">
             <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 20px; box-sizing: border-box;">
                 <button onclick="showView('lobby')" class="btn-voltar-premium">
@@ -413,7 +386,7 @@
         </div>
     </div>
 
-    <div id="view-crossfit-strength-calc" class="page-container view-screen hidden" style="position: relative; padding-top: 60px;">
+    <div id="view-crossfit-strength-calc" class="view-screen hidden" style="position: relative; padding-top: 60px;">
         <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; align-items: center; gap: 6px;">
             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -457,7 +430,7 @@
         </div>
     </div>
 
-    <div id="view-crossfit-timers" class="page-container view-screen hidden">
+    <div id="view-crossfit-timers" class="view-screen hidden">
         <div class="container-central">
             <div style="width: 100%; display: flex; justify-content: flex-start; padding: 15px 5px 5px 5px; margin-bottom: 15px;">
                 <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
@@ -477,215 +450,13 @@
             <div class="glass-card-action" style="width: 100%; max-width: 400px; margin: 0 auto; padding: 25px; text-align: center;">
                 <div id="timer-display" style="font-size: 4rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center;">00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span></div>
                 
-                <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease;">
-                    <label id="label-tempo-wod" style="display: block; font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; text-transform: uppercase;">Duração Total (Minutos)</label>
-                    
-                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <div style="display: flex; align-items: center; gap: 5px;">
-                            <button id="btn-min-down" onclick="document.getElementById('wod-minutes').stepDown()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
-                            <input type="number" id="wod-minutes" value="10" min="0" max="60" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
-                            <button id="btn-min-up" onclick="document.getElementById('wod-minutes').stepUp()" style="background: var(--accent-blue); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
-                        </div>
-
-                        <div id="group-seconds" style="display: none; align-items: center; gap: 5px; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 10px;">
-                            <button id="btn-sec-down" onclick="document.getElementById('wod-seconds').stepDown()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">-</button>
-                            <input type="number" id="wod-seconds" value="0" min="0" max="59" readonly style="width: 50px; background: none; border: none; color: white; text-align: center; font-size: 1.5rem; font-weight: 900;">
-                            <button id="btn-sec-up" onclick="document.getElementById('wod-seconds').stepUp()" style="background: #22c55e; border: none; color: white; width: 30px; height: 30px; border-radius: 50%; font-weight: bold; cursor: pointer;">+</button>
-                        </div>
+                <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px;">
                     </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                    <button onclick="setWodTimerMode('AMRAP')" id="btn-amrap" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">AMRAP</button>
-                    <button onclick="setWodTimerMode('EMOM')" id="btn-emom" class="btn-primary" style="padding: 12px; font-size: 0.75rem; font-weight: 800; opacity: 0.4;">EMOM</button>
-                </div>
-
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
-                        <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-sugerir-glow" style="padding: 15px;"><span>INICIAR WOD</span></button>
-                        <button onclick="resetarTimerCF()" class="btn-voltar-premium" style="font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: #94a3b8;">RESET</button>
-                    </div>
-                </div>
             </div>
-        </div>
-    </div>
-
-    <main id="view-perfil" class="view-screen hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
-        <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-                <button onclick="showView('lobby')" class="btn-voltar-premium">
-                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
-                    VOLTAR
-                </button>
-                <h2 class="italic-bold" style="color: var(--accent-blue); font-size: 0.9rem; letter-spacing: 1px;">MEU PERFIL</h2>
-            </div>
-
-            <div style="text-align: center; margin-bottom: 25px;">
-                <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
-                    <div id="perfil-foto-preview" style="width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--accent-blue); background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    </div>
-                    <label for="input-foto" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="#020617" stroke-width="3" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                        <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFotoPerfil(this)">
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group" style="gap: 12px; display: flex; flex-direction: column;">
-                <label style="font-size: 0.7rem; color: var(--accent-blue); font-weight: 800;">DADOS PESSOAIS</label>
-                <input type="text" id="perfil-nome" placeholder="Nome" class="input-field input-perfil-muted">
-                <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field input-perfil-muted">
-                
-                <div style="position: relative; width: 100%;">
-                    <input type="email" id="perfil-email" placeholder="E-mail de Acesso e Recuperação" class="input-field input-perfil-muted" style="padding-right: 40px; border: 1px solid rgba(56, 189, 248, 0.15); background: rgba(15, 23, 42, 0.4);">
-                    <div style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; pointer-events: none;" title="Item Crítico de Segurança">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                    </div>
-                </div>
-                
-                <button onclick="salvarDadosPerfil(event)" id="btn-salvar-perfil" class="btn-primary">SALVAR ALTERAÇÕES</button>
-            </div>
-
-            <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
-                <label style="font-size: 0.7rem; color: #ef4444; font-weight: 800; display: block; margin-bottom: 12px;">SEGURANÇA</label>
-                <div class="form-group" style="gap: 10px; display: flex; flex-direction: column;">
-                    <input type="password" id="pass-nova" placeholder="Digite a nova senha" class="input-field input-perfil-muted">
-                    <input type="password" id="pass-confirmar" placeholder="Confirmar nova senha" class="input-field input-perfil-muted">
-                    <button onclick="alterarSenhaPerfil()" id="btn-senha-perfil" class="btn-action" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">ALTERAR SENHA</button>
-                </div>
-            </div>
-
-            <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
-                <button onclick="logout()" class="btn-logout-nav" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; font-weight: bold;">
-                    ENCERRAR SESSÃO
-                </button>
-            </div>
-        </div>
-    </main>
-</div>
-
-<div id="modal-aviso" class="modal-overlay hidden">
-    <div class="modal-confirm" style="max-width: 350px;">
-        <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-            <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-        </div>
-        <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
-        <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
-            Selecione o grupo e o aparelho ocupado!
-        </p>
-        <button onclick="fecharModalAviso()" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
-    </div>
-</div>
-
-<div id="mini-timer-widget" onclick="showView('crossfit-timers')" style="
-    display: none; 
-    align-items: center; 
-    justify-content: center; 
-    gap: 12px; 
-    position: fixed; 
-    top: 75px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    background: rgba(15, 23, 42, 0.95); 
-    border: 1px solid var(--accent-blue); 
-    padding: 8px 18px; 
-    border-radius: 20px; 
-    z-index: 9999; 
-    box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); 
-    cursor: pointer;
-    backdrop-filter: blur(5px);
-    transition: all 0.3s ease;">
-    
-    <span style="width: 8px; height: 8px; background: #22c55e; border-radius: 50%; display: inline-block; animation: pulseWod 1s infinite alternate;"></span>
-    <span id="mini-timer-text" class="italic-bold" style="color: #fff; font-size: 0.9rem; letter-spacing: 0.5px;">AMRAP: 00:00</span>
-    
-    <div style="display: flex; gap: 8px; margin-left: 5px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 10px;">
-        <button id="mini-btn-play-pause" onclick="event.stopPropagation(); alternarPlayPauseWidget();" style="background: none; border: none; color: var(--accent-blue); cursor: pointer; display: flex; align-items: center; padding: 0;">
-            <svg id="mini-icon-pause" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-            <svg id="mini-icon-play" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="display: none;"><polygon points="5,3 19,12 5,21"></polygon></svg>
-        </button>
-    </div>
-</div>
-
-<div id="modal-confirmar-senha" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
-        <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
-        <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual</b> para prosseguir:</p>
-        
-        <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
-        
-        <div style="display: flex; gap: 10px;">
-            <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-            <button onclick="processarTrocaSenha()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
         </div>
     </div>
 </div>
 
-<div id="modal-verificar-email" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div class="glass-panel" style="width: 90%; max-width: 420px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px; color: white;">
-        <h3 class="italic-bold" style="color: white; margin-bottom: 5px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Autenticação Crítica</h3>
-        <p style="color: #64748b; font-size: 0.75rem; margin-bottom: 25px;">Para sua proteção, valide a alteração inserindo os códigos enviados.</p>
-        
-        <div style="margin-bottom: 18px; text-align: left;">
-            <label id="label-email-antigo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no E-mail Antigo (...):</label>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="codigo-email-antigo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                <button onclick="reenviarTokenSeguranca('antigo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-            </div>
-        </div>
-        
-        <div style="margin-bottom: 25px; text-align: left;">
-            <label id="label-email-novo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no Novo E-mail (...):</label>
-            <div style="display: flex; gap: 8px;">
-                <input type="text" id="codigo-email-novo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                <button onclick="reenviarTokenSeguranca('novo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-            </div>
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-            <button onclick="fecharModalEmail()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-            <button onclick="processarTrocaEmail()" class="btn-primary" style="flex: 1;">VERIFICAR</button>
-        </div>
-    </div>
-</div>
-
-<style>
-@keyframes pulseWod { from { opacity: 0.4; transform: scale(0.9); } to { opacity: 1; transform: scale(1.1); } }
-
-.input-perfil-muted {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    color: #94a3b8 !important;
-    transition: all 0.25s ease-in-out !important;
-}
-.input-perfil-muted:focus {
-    background: rgba(15, 23, 42, 0.6) !important;
-    border-color: var(--accent-blue) !important;
-    color: #ffffff !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
-}
-
-#input-1rm::-webkit-outer-spin-button,
-#input-1rm::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-#input-1rm {
-    -moz-appearance: textfield;
-    appearance: textfield;
-    outline: none;
-}
-</style>
-
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="script.js"></script>
-    
+<script src="script.js"></script>
 </body>
 </html>

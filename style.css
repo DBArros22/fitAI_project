@@ -586,3 +586,26 @@ body:has(#view-login:not(.hidden)) .navbar {
 #toast-notificacao.erro {
     border-left: 4px solid #ef4444; 
 }
+
+/* TRAVA ABSOLUTA DE OCULTAÇÃO */
+.hidden,
+#app-shell .hidden {
+    display: none !important;
+}
+
+/* EXIBIÇÃO APENAS DA VIEW ATIVA */
+#app-shell > .view-screen:not(.hidden) {
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* GRID DO LOBBY EXCLUSIVO QUANDO ATIVO */
+#view-lobby:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 24px !important;
+    padding: 40px 5% !important;
+    max-width: 1300px;
+    margin: 0 auto;
+}

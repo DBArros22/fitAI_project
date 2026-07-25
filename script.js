@@ -894,28 +894,32 @@ function showView(viewId) {
     if (viewLogin) viewLogin.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // CORREÇÃO: Incluído .page-container para garantir que TODAS as telas anteriores sejam escondidas
-    const todasViews = document.querySelectorAll('.view, .view-screen, .page-container');
+    // Esconde absolutamente todas as telas filhas do app-shell
+    const todasViews = document.querySelectorAll('#app-shell .view-screen, #app-shell .view, #app-shell .page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
-        v.classList.remove('active');
     });
 
-    const viewAlvo = document.getElementById(`view-${viewId}`);
+    // Mapeamento caso a chamada não passe o prefixo 'view-'
+    let idBusca = viewId.startsWith('view-') ? viewId : `view-${viewId}`;
+    const viewAlvo = document.getElementById(idBusca);
+
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
-        viewAlvo.classList.add('active');
     } else {
-        console.warn(`View 'view-${viewId}' não foi encontrada no HTML.`);
+        console.warn(`View '${idBusca}' não foi encontrada no HTML.`);
     }
 
+    // Callbacks de inicialização por tela
     if (viewId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
-    } else if (viewId === 'consulta') {
+    } else if (viewId === 'consulta' || viewId === 'consulta-geral') {
         if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
     } else if (viewId === 'calendario') {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
+
+    window.scrollTo(0, 0);
 }
 
 window.showView = showView;
