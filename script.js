@@ -690,40 +690,51 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
+    if (!viewId) return;
+
+    // Remove prefixo se enviado duplicado
+    const cleanId = viewId.replace('view-', '');
+
     const viewLogin = document.getElementById('view-login');
     const appShell = document.getElementById('app-shell');
 
-    if (viewId === 'login') {
+    // 1. Se for Login
+    if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         if (appShell) appShell.classList.add('hidden');
+        window.scrollTo(0, 0);
         return;
     }
 
+    // 2. Se for qualquer outra tela do App
     if (viewLogin) viewLogin.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Esconde absolutamente todas as telas filhas do app-shell
-    const todasViews = document.querySelectorAll('#app-shell .view-screen, #app-shell .view, #app-shell .page-container');
+    // Esconde todas as views internas sem alterar o display CSS delas
+    const todasViews = document.querySelectorAll('.view-screen, .view, .page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
+        v.style.display = ''; // Limpa estilos inline anteriores para não quebrar o CSS
     });
 
-    // Mapeamento caso a chamada não passe o prefixo 'view-'
-    let idBusca = viewId.startsWith('view-') ? viewId : `view-${viewId}`;
-    const viewAlvo = document.getElementById(idBusca);
-
+    // Procura e exibe a view alvo
+    const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
+    
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
+        viewAlvo.style.display = ''; // Deixa o CSS original controlar (flex/grid/block)
     } else {
-        console.warn(`View '${idBusca}' não foi encontrada no HTML.`);
+        console.warn(`View '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // Callbacks de inicialização por tela
-    if (viewId === 'lobby') {
+    // Callbacks de carregamento específicos
+    if (cleanId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
-    } else if (viewId === 'consulta' || viewId === 'consulta-geral') {
+    } else if (cleanId === 'perfil') {
+        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
+    } else if (cleanId === 'consulta' || cleanId === 'consulta-geral') {
         if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-    } else if (viewId === 'calendario') {
+    } else if (cleanId === 'calendario') {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
@@ -731,7 +742,6 @@ function showView(viewId) {
 }
 
 window.showView = showView;
-        
 
 // Função para alternar as abas de autenticação (Com o cabeçalho correto!)
 window.toggleAuthTab = function(tab) {
