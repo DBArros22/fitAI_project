@@ -131,44 +131,22 @@ window.toggleAuthTab = function(tab) {
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
     const tabSystem = document.getElementById('auth-tab-selector');
 
-    // Elementos de input
-    const inputLoginPass = document.getElementById('login-pass');
-    const inputRegNome = document.getElementById('reg-nome');
-    const inputRegEmail = document.getElementById('reg-email');
-    const inputRegTel = document.getElementById('reg-tel');
-    const inputRegPass = document.getElementById('reg-pass');
-    const inputRegPassConf = document.getElementById('reg-pass-conf');
-
     if (tab === 'cadastro') {
         if (formLogin) formLogin.classList.add('hidden');
         if (formCadastro) formCadastro.classList.remove('hidden');
-        
         if (btnTabLogin) btnTabLogin.classList.remove('active');
         if (btnTabCadastro) btnTabCadastro.classList.add('active');
         if (tabSystem) tabSystem.classList.add('cadastro-active');
-
-        // Limpa a senha do login ao ir para o cadastro
-        if (inputLoginPass) inputLoginPass.value = '';
-
     } else {
         if (formCadastro) formCadastro.classList.add('hidden');
         if (formLogin) formLogin.classList.remove('hidden');
-        
         if (btnTabCadastro) btnTabCadastro.classList.remove('active');
         if (btnTabLogin) btnTabLogin.classList.add('active');
         if (tabSystem) tabSystem.classList.remove('cadastro-active');
-
-        // Limpa todos os campos do formulário de cadastro ao voltar para o login
-        if (inputRegNome) inputRegNome.value = '';
-        if (inputRegEmail) inputRegEmail.value = '';
-        if (inputRegTel) inputRegTel.value = '';
-        if (inputRegPass) inputRegPass.value = '';
-        if (inputRegPassConf) inputRegPassConf.value = '';
     }
 };
 
 window.alternarAbaAuth = window.toggleAuthTab;
-
 
 async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
