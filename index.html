@@ -72,6 +72,26 @@
     </div>
 </nav>
 
+<main id="view-perfil" class="view-screen hidden" style="padding: 20px 5%;">
+    <div class="glass-panel" style="max-width: 500px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <h2 class="italic-bold uppercase blue-text" style="font-size: 1.1rem; letter-spacing: 1px;">Meu Perfil</h2>
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                VOLTAR
+            </button>
+        </div>
+        <div class="form-group" style="text-align: center; gap: 20px;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-blue); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: var(--bg-main);" id="perfil-avatar-letra">F</div>
+            <div>
+                <p id="perfil-nome-txt" style="color: white; font-weight: 800; font-size: 1.2rem; text-transform: uppercase;">ATLETA</p>
+                <p id="perfil-email-txt" style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;"></p>
+            </div>
+            <button onclick="fazerLogout()" class="btn-logout-nav" style="width: 100%; margin-top: 10px; padding: 14px;">SAIR DA CONTA</button>
+        </div>
+    </div>
+</main>
+
 <div id="app-shell">
     <main id="view-lobby" class="content-grid view-screen">
         <div onclick="showView('planilhas')" class="menu-card">
@@ -256,39 +276,64 @@
     </main>
 
     <main id="view-blog" class="view-screen hidden" style="padding: 20px 5%;">
-        <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
-            <h2 class="italic-bold" style="margin-bottom:20px;">NOVA ATUALIZAÇÃO</h2>
-            
-            <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
-
-            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
-                <button id="btn-mic" onclick="toggleGravacao()" class="btn-action">
-                    <svg id="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                
-                <span id="timer-gravacao" class="hidden" style="color: var(--accent-blue); font-weight: bold; font-family: monospace;">00:00</span>
-                
-                <input type="file" id="input-media" accept="image/*,video/*" style="display:none" onchange="previewMidia(event)">
-                
-                <button onclick="document.getElementById('input-media').click()" class="btn-action">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                </button>
-                
-                <button onclick="postarEvolucao()" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                    POSTAR
-                </button>
-            </div>
-            <div id="preview-container" style="margin-top: 15px;"></div>
-            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
-            <div id="feed-container"></div> 
+    <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 20px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                VOLTAR
+            </button>
         </div>
-    </main>
+        <h2 class="italic-bold uppercase blue-text" style="margin-bottom:20px;">NOVA ATUALIZAÇÃO</h2>
+        ```
 
-    <main id="view-calendario" class="view-screen hidden"></main>
+---
+
+### 5. Zona Crossfit e WOD Timers incompletos
+O HTML da seção `view-crossfit-timers` estava incompleto (faltavam os seletores de tempo, botões de modo AMRAP/EMOM e os botões de controle de início/pausa).
+
+**Correção no HTML (substitua o bloco inteiro de `<div id="view-crossfit-timers"...>` por este completo):**
+```html
+<div id="view-crossfit-timers" class="view-screen hidden">
+    <div class="container-central" style="max-width: 480px; margin: 0 auto; padding: 20px 15px;">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 15px;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 class="italic-bold uppercase blue-text">WOD Timers</h2>
+            <div id="status-timer" style="color: var(--accent-blue); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">PRONTO</div>
+        </div>
+
+        <div class="glass-card-action" style="width: 100%; padding: 25px; text-align: center; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px;">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" class="btn-primary modo-timer-btn active" style="flex: 1; padding: 10px; font-size: 0.75rem;">AMRAP</button>
+                <button id="btn-emom" onclick="setWodTimerMode('EMOM')" class="btn-primary modo-timer-btn" style="flex: 1; padding: 10px; font-size: 0.75rem; background: rgba(255,255,255,0.05); color: white;">EMOM</button>
+            </div>
+
+            <div id="timer-display" style="font-size: 3.5rem; font-weight: 900; color: white; font-family: 'Courier New', Courier, monospace; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">00:00<span style="font-size: 2rem; opacity: 0.75; margin-left: 2px;">:00</span></div>
+            
+            <div id="container-ajuste-tempo" style="background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; margin-bottom: 20px;">
+                <span id="label-tempo-wod" style="display: block; font-size: 0.7rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; margin-bottom: 10px;">Duração Total (Minutos)</span>
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px;">
+                    <input type="number" id="wod-minutes" value="10" min="1" max="99" style="width: 80px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; padding: 10px; text-align: center; font-size: 1.2rem; font-weight: 900; outline: none;">
+                </div>
+                <div id="group-seconds" style="display: none; flex-direction: column; margin-top: 10px;">
+                    <label style="font-size: 0.65rem; color: var(--text-secondary); font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">Segundos do Intervalo</label>
+                    <input type="number" id="wod-seconds" value="0" min="0" max="59" style="width: 80px; margin: 0 auto; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: white; padding: 8px; text-align: center; font-size: 1rem; font-weight: 900; outline: none;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 14px; font-size: 0.8rem;"><span>INICIAR WOD</span></button>
+                <button onclick="resetarTimerCF()" class="btn-action" style="flex: 1; height: auto; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); font-size: 0.75rem; font-weight: 800;">RESET</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <div id="view-aparelho-ocupado" class="view-screen hidden">
         <div class="container-central">
