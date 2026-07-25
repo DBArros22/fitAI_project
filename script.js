@@ -894,12 +894,17 @@ function showView(viewId) {
     if (viewLogin) viewLogin.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    const todasViews = document.querySelectorAll('.view, .view-screen');
-    todasViews.forEach(v => v.classList.add('hidden'));
+    // CORREÇÃO: Incluído .page-container para garantir que TODAS as telas anteriores sejam escondidas
+    const todasViews = document.querySelectorAll('.view, .view-screen, .page-container');
+    todasViews.forEach(v => {
+        v.classList.add('hidden');
+        v.classList.remove('active');
+    });
 
     const viewAlvo = document.getElementById(`view-${viewId}`);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
+        viewAlvo.classList.add('active');
     } else {
         console.warn(`View 'view-${viewId}' não foi encontrada no HTML.`);
     }
@@ -914,6 +919,7 @@ function showView(viewId) {
 }
 
 window.showView = showView;
+        
 
 // Função para alternar as abas de autenticação (Com o cabeçalho correto!)
 window.toggleAuthTab = function(tab) {
