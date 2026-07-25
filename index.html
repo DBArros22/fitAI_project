@@ -72,22 +72,50 @@
     </div>
 </nav>
 
-<main id="view-perfil" class="view-screen hidden" style="padding: 20px 5%;">
-    <div class="glass-panel" style="max-width: 500px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
-            <h2 class="italic-bold uppercase blue-text" style="font-size: 1.1rem; letter-spacing: 1px;">Meu Perfil</h2>
+<main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
+    <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <button onclick="showView('lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                 VOLTAR
             </button>
+            <h2 class="italic-bold" style="color: var(--accent-blue); font-size: 0.9rem; letter-spacing: 1px;">MEU PERFIL</h2>
         </div>
-        <div class="form-group" style="text-align: center; gap: 20px;">
-            <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-blue); margin: 0 auto; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 900; color: var(--bg-main);" id="perfil-avatar-letra">F</div>
-            <div>
-                <p id="perfil-nome-txt" style="color: white; font-weight: 800; font-size: 1.2rem; text-transform: uppercase;">ATLETA</p>
-                <p id="perfil-email-txt" style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px;"></p>
+
+        <div style="text-align: center; margin-bottom: 25px;">
+            <div style="position: relative; width: 100px; height: 100px; margin: 0 auto;">
+                <div id="perfil-foto-preview" style="width: 100%; height: 100%; border-radius: 20px; border: 2px solid var(--accent-blue); background: var(--bg-input); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    <svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <label for="input-foto" style="position: absolute; bottom: -5px; right: -5px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="#020617" stroke-width="3" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                    <input type="file" id="input-foto" hidden accept="image/*" onchange="atualizarFotoPerfil(this)">
+                </label>
             </div>
-            <button onclick="fazerLogout()" class="btn-logout-nav" style="width: 100%; margin-top: 10px; padding: 14px;">SAIR DA CONTA</button>
+        </div>
+
+        <div class="form-group" style="gap: 12px; display: flex; flex-direction: column;">
+            <label style="font-size: 0.7rem; color: var(--accent-blue); font-weight: 800;">DADOS PESSOAIS</label>
+            <input type="text" id="perfil-nome" placeholder="Nome" class="input-field">
+            <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field">
+            <input type="email" id="perfil-email" placeholder="E-mail" class="input-field">
+            <button onclick="salvarDadosPerfil(event)" id="btn-salvar-perfil" class="btn-primary">SALVAR ALTERAÇÕES</button>
+        </div>
+
+        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <label style="font-size: 0.7rem; color: #ef4444; font-weight: 800; display: block; margin-bottom: 12px;">SEGURANÇA</label>
+            <div class="form-group" style="gap: 10px; display: flex; flex-direction: column;">
+                <input type="password" id="pass-atual" placeholder="Senha Atual" class="input-field">
+                <input type="password" id="pass-nova" placeholder="Nova Senha" class="input-field">
+                <button onclick="alterarSenhaPerfil()" id="btn-senha-perfil" class="btn-action" style="width: 100%; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">ALTERAR SENHA</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px;">
+            <button onclick="logout()" class="btn-logout-nav" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; border-radius: 14px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; font-weight: bold;">
+                ENCERRAR SESSÃO
+            </button>
         </div>
     </div>
 </main>
