@@ -935,22 +935,42 @@ window.toggleAuthTab = function(tab) {
     const formCadastro = document.getElementById('form-cadastro');
     const btnTabLogin = document.getElementById('btn-tab-login');
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
+    const tabSystem = document.getElementById('auth-tab-selector');
+
+    const inputLoginPass = document.getElementById('login-pass');
+    const inputRegNome = document.getElementById('reg-nome');
+    const inputRegEmail = document.getElementById('reg-email');
+    const inputRegTel = document.getElementById('reg-tel');
+    const inputRegPass = document.getElementById('reg-pass');
+    const inputRegPassConf = document.getElementById('reg-pass-conf');
 
     if (tab === 'cadastro') {
         if (formLogin) formLogin.classList.add('hidden');
         if (formCadastro) formCadastro.classList.remove('hidden');
         
-        // Alterna as classes para destacar visualmente a aba ativa
         if (btnTabLogin) btnTabLogin.classList.remove('active');
         if (btnTabCadastro) btnTabCadastro.classList.add('active');
+        if (tabSystem) tabSystem.classList.add('cadastro-active');
+
+        if (inputLoginPass) inputLoginPass.value = '';
+
     } else {
         if (formCadastro) formCadastro.classList.add('hidden');
         if (formLogin) formLogin.classList.remove('hidden');
         
         if (btnTabCadastro) btnTabCadastro.classList.remove('active');
         if (btnTabLogin) btnTabLogin.classList.add('active');
+        if (tabSystem) tabSystem.classList.remove('cadastro-active');
+
+        if (inputRegNome) inputRegNome.value = '';
+        if (inputRegEmail) inputRegEmail.value = '';
+        if (inputRegTel) inputRegTel.value = '';
+        if (inputRegPass) inputRegPass.value = '';
+        if (inputRegPassConf) inputRegPassConf.value = '';
     }
 };
+
+window.alternarAbaAuth = window.toggleAuthTab;
 
 async function handleCadastro(e) {
     if (e && e.preventDefault) e.preventDefault();
