@@ -81,13 +81,25 @@ const equivalencias = {
 
 // 4. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Associa o evento de clique ao botão de login
+    // 1. Associa os cliques das abas (Entrar / Cadastrar)
+    const btnTabLogin = document.getElementById('btn-tab-login');
+    const btnTabCadastro = document.getElementById('btn-tab-cadastro');
+
+    if (btnTabLogin) {
+        btnTabLogin.addEventListener('click', () => toggleAuthTab('login'));
+    }
+
+    if (btnTabCadastro) {
+        btnTabCadastro.addEventListener('click', () => toggleAuthTab('cadastro'));
+    }
+
+    // 2. Associa o evento de clique ao botão de login
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.onclick = handleLogin;
     }
 
-    // 2. Preenche o e-mail de "Lembrar-me" se existir no cache local
+    // 3. Preenche o e-mail de "Lembrar-me" se existir no cache local
     const savedEmail = localStorage.getItem('fitai_remember_email');
     const inputLoginEmail = document.getElementById('login-email');
     const rememberCheckbox = document.getElementById('remember-me');
@@ -97,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rememberCheckbox) rememberCheckbox.checked = true;
     }
 
-    // 3. Monitora o estado da sessão Firebase (Executa no carregamento e em mudanças de login)
+    // 4. Monitora o estado da sessão Firebase (Estrutura Corrigida)
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             usuarioAtualId = user.uid;
@@ -145,6 +157,7 @@ window.toggleAuthTab = function(tab) {
         if (tabSystem) tabSystem.classList.remove('cadastro-active');
     }
 };
+
 
 window.alternarAbaAuth = window.toggleAuthTab;
 
