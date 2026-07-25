@@ -9,33 +9,28 @@ const firebaseConfig = {
   measurementId: "G-0V4XD960QL"
 };
 
-// 2. INICIALIZAÇÃO IMEDIATA DO FIREBASE (Precisa vir ANTES das funções!)
-if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-}
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Disponibiliza no escopo do window para evitar o erro do db undefined
-window.auth = auth;
-window.db = db;
-
-db.settings({ 
-    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
-});
+// 1. INICIALIZAÇÃO SEGURA DO FIREBASE
+let auth = null;
+let db = null;
 
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
+    auth = firebase.auth();
+    db = firebase.firestore();
+
+    db.settings({ 
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
+    });
+
+    window.auth = auth;
+    window.db = db;
 } else {
     console.error("SDK do Firebase não foi encontrado! Verifique as tags <script> no index.html.");
 }
 
-const auth = typeof firebase !== 'undefined' ? firebase.auth() : null;
-const db = typeof firebase !== 'undefined' ? firebase.firestore() : null;
-
-// 3. VARIÁVEIS GLOBAIS DE ESTADO
+// 2. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
 let bancoDeDados = { fichas: {} };
 let diasTreinados = [];
@@ -81,9 +76,8 @@ const equivalencias = {
     "Desenvolvimento": ["Desenvolvimento Militar (OHP)", "Desenvolvimento (Halteres)", "Desenvolvimento (Máquina)", "Desenvolvimento Arnold"]
 };
 
-// 4. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
+// 3. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Associa os cliques das abas (Entrar / Cadastrar)
     const btnTabLogin = document.getElementById('btn-tab-login');
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
 
@@ -95,13 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
         btnTabCadastro.addEventListener('click', () => toggleAuthTab('cadastro'));
     }
 
-    // 2. Associa o evento de clique ao botão de login
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.onclick = handleLogin;
     }
 
-    // 3. Preenche o e-mail de "Lembrar-me" se existir no cache local
     const savedEmail = localStorage.getItem('fitai_remember_email');
     const inputLoginEmail = document.getElementById('login-email');
     const rememberCheckbox = document.getElementById('remember-me');
@@ -111,31 +103,30 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rememberCheckbox) rememberCheckbox.checked = true;
     }
 
-    // 4. Monitora o estado da sessão Firebase (Estrutura Corrigida)
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            usuarioAtualId = user.uid;
+    if (auth) {
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                usuarioAtualId = user.uid;
 
-            try {
-                // Tenta carregar as fichas e histórico primeiro
-                if (typeof window.carregarDadosDoAtleta === 'function') {
-                    await window.carregarDadosDoAtleta(user.uid);
+                try {
+                    if (typeof window.carregarDadosDoAtleta === 'function') {
+                        await window.carregarDadosDoAtleta(user.uid);
+                    }
+                } catch (err) {
+                    console.error("Erro ao carregar dados do atleta no login:", err);
                 }
-            } catch (err) {
-                console.error("Erro ao carregar dados do atleta no login:", err);
-            }
 
-            // Exibe o lobby apenas quando os dados já estiverem prontos
-            if (typeof showView === 'function') {
-                showView('lobby');
+                if (typeof showView === 'function') {
+                    showView('lobby');
+                }
+            } else {
+                usuarioAtualId = null;
+                if (typeof showView === 'function') {
+                    showView('login');
+                }
             }
-        } else {
-            usuarioAtualId = null;
-            if (typeof showView === 'function') {
-                showView('login');
-            }
-        }
-    });
+        });
+    }
 });
 
 window.toggleAuthTab = function(tab) {
@@ -170,7 +161,6 @@ async function handleLogin(e) {
 
     if (!emailInput || !passInput) return;
 
-    // Remove espaços acidentais nas pontas
     const email = emailInput.value.trim();
     const pass = passInput.value;
 
@@ -179,8 +169,8 @@ async function handleLogin(e) {
     }
 
     try {
-        const credenciais = await auth.signInWithEmailAndPassword(email, pass);
-        
+        if (!auth) throw new Error("Firebase não está carregado.");
+        await auth.signInWithEmailAndPassword(email, pass);
         mostrarAvisoNotificacao("SEJA BEM-VINDO!", "sucesso");
 
         if (typeof showView === 'function') {
@@ -190,7 +180,6 @@ async function handleLogin(e) {
     } catch (error) {
         console.error("Erro ao fazer login:", error);
 
-        // Trata o erro 400 / auth/invalid-credential
         if (
             error.code === 'auth/invalid-credential' || 
             error.code === 'auth/user-not-found' || 
@@ -206,7 +195,7 @@ async function handleLogin(e) {
 }
 
 window.carregarDadosDoAtleta = async function(uid) {
-    if (!uid || typeof db === 'undefined') return;
+    if (!uid || !db) return;
     try {
         const docFichas = await db.collection("usuarios").doc(uid)
                                   .collection("treinos").doc("fichas").get();
@@ -233,29 +222,10 @@ window.carregarDadosDoAtleta = async function(uid) {
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
         await window.carregarDadosDoAtleta(usuarioAtualId);
-    } else if (typeof auth !== 'undefined' && auth.currentUser) {
+    } else if (auth && auth.currentUser) {
         await window.carregarDadosDoAtleta(auth.currentUser.uid);
     } else {
         console.warn("Tentativa de carregar dados, mas nenhum ID de usuário foi encontrado.");
-    }
-}
-
-function alternarAbaAuth(modo) {
-    const formLogin = document.getElementById('form-login');
-    const formCadastro = document.getElementById('form-cadastro');
-    const tabLogin = document.getElementById('tab-login');
-    const tabCadastro = document.getElementById('tab-cadastro');
-
-    if (modo === 'cadastro') {
-        if (formLogin) formLogin.classList.add('hidden');
-        if (formCadastro) formCadastro.classList.remove('hidden');
-        if (tabLogin) tabLogin.classList.remove('active');
-        if (tabCadastro) tabCadastro.classList.add('active');
-    } else {
-        if (formCadastro) formCadastro.classList.add('hidden');
-        if (formLogin) formLogin.classList.remove('hidden');
-        if (tabCadastro) tabCadastro.classList.remove('active');
-        if (tabLogin) tabLogin.classList.add('active');
     }
 }
 
@@ -288,7 +258,7 @@ function atualizarListaExercicios() {
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
-// Funções do perfil 
+// 4. FUNÇÕES DO PERFIL
 
 function carregarDadosPerfil() {
     const emailAtivo = localStorage.getItem('user_email');
@@ -301,7 +271,6 @@ function carregarDadosPerfil() {
         if (document.getElementById('perfil-email')) document.getElementById('perfil-email').value = user.email || "";
     }
 
-    // Foto do Perfil
     const foto = localStorage.getItem('user_foto');
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
@@ -330,9 +299,6 @@ function atualizarFotoPerfil(input) {
     }
 }
 
-/**
- * 2. Salva Dados
- */
 async function salvarDadosPerfil(event) {
     const nome = document.getElementById('perfil-nome').value;
     const tel = document.getElementById('perfil-tel').value;
@@ -367,8 +333,8 @@ async function salvarDadosPerfil(event) {
         if (lblAntigo) lblAntigo.innerText = `Código no E-mail Antigo (${emailAntigo}):`;
         if (lblNovo) lblNovo.innerText = `Código no Novo E-mail (${novoEmail}):`;
 
-        console.log(`[BACKEND MOCK] Código para o e-mail antigo (${emailAntigo}): ${codAntigo}`);
-        console.log(`[BACKEND MOCK] Código para o novo e-mail (${novoEmail}): ${codNovo}`);
+        console.log(`[BACKEND MOCK] Código e-mail antigo (${emailAntigo}): ${codAntigo}`);
+        console.log(`[BACKEND MOCK] Código novo e-mail (${novoEmail}): ${codNovo}`);
 
         mostrarAvisoNotificacao("Códigos de segurança enviados!", "sucesso");
         abrirModalEmail();
@@ -390,9 +356,6 @@ async function salvarDadosPerfil(event) {
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
-/**
- * Função para reenviar o código de verificação individualmente por canal
- */
 function reenviarTokenSeguranca(tipo) {
     if (!fluxoTrocaEmailPendente) return;
 
@@ -400,11 +363,9 @@ function reenviarTokenSeguranca(tipo) {
 
     if (tipo === 'antigo') {
         fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
-        console.log(`[BACKEND REENVIO] Novo código para e-mail antigo (${fluxoTrocaEmailPendente.emailAntigo}): ${novoCodigo}`);
         mostrarAvisoNotificacao(`Código reenviado para o e-mail antigo!`, "sucesso");
     } else {
         fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
-        console.log(`[BACKEND REENVIO] Novo código para e-mail novo (${fluxoTrocaEmailPendente.novoEmail}): ${novoCodigo}`);
         mostrarAvisoNotificacao(`Código reenviado para o novo e-mail!`, "sucesso");
     }
 }
@@ -518,116 +479,6 @@ function fecharModalSenha() {
     if (inputPass) inputPass.value = "";
 }
 
-async function processarTrocaSenha(){
-    const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
-    const novaSenha = document.getElementById('pass-nova').value;
-    const emailAtivo = localStorage.getItem('user_email');
-    
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === emailAtivo);
-
-    if (index === -1) return;
-
-    if (usuarios[index].pass !== senhaAtualDigitada) {
-        const inputModal = document.getElementById('confirm-pass-atual');
-        if (inputModal) {
-            inputModal.style.border = "1px solid #ef4444";
-            inputModal.value = "";
-            inputModal.placeholder = "SENHA INCORRETA!";
-            setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
-        }
-        return;
-    }
-
-    usuarios[index].pass = novaSenha;
-    localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    
-    if (typeof salvarDados === 'function') salvarDados();
-
-    fecharModalSenha();
-    const btnPrincipal = document.getElementById('btn-senha-perfil');
-    if (btnPrincipal) {
-        btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
-        btnPrincipal.style.background = "#22c55e";
-        setTimeout(() => {
-            btnPrincipal.innerHTML = "ALTERAR SENHA";
-            btnPrincipal.style.background = "";
-        }, 3000);
-    }
-    
-    const inputNova = document.getElementById('pass-nova');
-    const inputConf = document.getElementById('pass-confirmar');
-    if (inputNova) inputNova.value = "";
-    if (inputConf) inputConf.value = "";
-    mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
-}
-
-function concluirTrocaEmail() { // <--- Esta linha abre a concluirTrocaEmail
-    const f = fluxoTrocaEmailPendente;
-    if (!f) return;
-    
-    localStorage.setItem('user_nome', f.nome);
-    localStorage.setItem('user_tel', f.tel);
-    localStorage.setItem('user_email', f.novoEmail);
-
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
-    if (index !== -1) {
-        usuarios[index].nome = f.nome;
-        usuarios[index].tel = f.tel;
-        usuarios[index].email = f.novoEmail;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    }
-
-    if (typeof salvarDados === 'function') salvarDados();
-
-    exibirFeedbackSucessoBotao(f.btnAlvo);
-    fecharModalEmail();
-    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-}
-
-function exibirFeedbackSucessoBotao(btn) {
-    if (!btn) return;
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="3" fill="none" style="margin-right:8px"><polyline points="20 6 9 17 4 12"></polyline></svg> SALVO COM SUCESSO!`;
-    btn.style.background = "#22c55e"; 
-    btn.style.transform = "scale(0.98)";
-
-    setTimeout(() => {
-        btn.innerHTML = originalContent;
-        btn.style.background = "";
-        btn.style.transform = "";
-    }, 2000);
-}
-
-function alterarSenhaPerfil() {
-    const nova = document.getElementById('pass-nova').value;
-    const confirmar = document.getElementById('pass-confirmar') ? document.getElementById('pass-confirmar').value : "";
-
-    if (nova.length < 4) {
-        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 4 caracteres!", "erro");
-        return;
-    }
-
-    if (nova !== confirmar) {
-        mostrarAvisoNotificacao("As senhas digitadas não coincidem!", "erro");
-        return;
-    }
-
-    document.getElementById('modal-confirmar-senha').classList.remove('hidden');
-    document.getElementById('modal-confirmar-senha').style.display = 'flex';
-    document.getElementById('confirm-pass-atual').focus();
-}
-
-function fecharModalSenha() {
-    document.getElementById('modal-confirmar-senha').classList.add('hidden');
-    document.getElementById('modal-confirmar-senha').style.display = 'none';
-    document.getElementById('confirm-pass-atual').value = "";
-}
-
 async function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
@@ -670,47 +521,6 @@ async function processarTrocaSenha() {
     if (inputNova) inputNova.value = "";
     if (inputConf) inputConf.value = "";
     mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
-}
-
-async function processarTrocaEmail() {
-    if (!fluxoTrocaEmailPendente) return;
-
-    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
-    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
-
-    if (codAntigoDigitado !== fluxoTrocaEmailPendente.codigoAntigoGerado) {
-        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
-        return;
-    }
-
-    if (codNovoDigitado !== fluxoTrocaEmailPendente.codigoNovoGerado) {
-        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
-        return;
-    }
-
-    const f = fluxoTrocaEmailPendente;
-    
-    localStorage.setItem('user_nome', f.nome);
-    localStorage.setItem('user_tel', f.tel);
-    localStorage.setItem('user_email', f.novoEmail);
-
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
-    if (index !== -1) {
-        usuarios[index].nome = f.nome;
-        usuarios[index].tel = f.tel;
-        usuarios[index].email = f.novoEmail;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    }
-
-    if (typeof salvarDados === 'function') salvarDados();
-
-    exibirFeedbackSucessoBotao(f.btnAlvo);
-    fecharModalEmail();
-    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
