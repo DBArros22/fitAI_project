@@ -20,8 +20,18 @@ const db = firebase.firestore();
 window.auth = auth;
 window.db = db;
 
-db.settings({ cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED });
-db.enablePersistence().catch(err => console.warn("Persistência offline desativada:", err.code));
+db.settings({ 
+    cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
+});
+
+db.enableIndexedDbPersistence({ synchronizeTabs: true })
+    .catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn("Múltiplas abas do app abertas ao mesmo tempo.");
+        } else if (err.code === 'unimplemented') {
+            console.warn("Navegador atual não suporta cache local.");
+        }
+    });
 
 // 3. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
@@ -71,21 +81,37 @@ const equivalencias = {
 
 // 4. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Associa o evento de clique ao botão de login
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
-        // Usa onclick diretamente para evitar escutadores duplicados
         btnLogin.onclick = handleLogin;
     }
 
-    // Monitora o estado da sessão Firebase
+    // 2. Preenche o e-mail de "Lembrar-me" se existir no cache local
+    const savedEmail = localStorage.getItem('fitai_remember_email');
+    const inputLoginEmail = document.getElementById('login-email');
+    const rememberCheckbox = document.getElementById('remember-me');
+
+    if (savedEmail && inputLoginEmail) {
+        inputLoginEmail.value = savedEmail;
+        if (rememberCheckbox) rememberCheckbox.checked = true;
+    }
+
+    // 3. Monitora o estado da sessão Firebase (Executa no carregamento e em mudanças de login)
     auth.onAuthStateChanged(async (user) => {
         if (user) {
             usuarioAtualId = user.uid;
+
             try {
-                await window.carregarDadosDoAtleta(user.uid);
+                // Tenta carregar as fichas e histórico primeiro
+                if (typeof window.carregarDadosDoAtleta === 'function') {
+                    await window.carregarDadosDoAtleta(user.uid);
+                }
             } catch (err) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
             }
+
+            // Exibe o lobby apenas quando os dados já estiverem prontos
             if (typeof showView === 'function') {
                 showView('lobby');
             }
@@ -103,6 +129,15 @@ window.toggleAuthTab = function(tab) {
     const formCadastro = document.getElementById('form-cadastro');
     const btnTabLogin = document.getElementById('btn-tab-login');
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
+    const tabSystem = document.getElementById('auth-tab-selector');
+
+    // Elementos de input
+    const inputLoginPass = document.getElementById('login-pass');
+    const inputRegNome = document.getElementById('reg-nome');
+    const inputRegEmail = document.getElementById('reg-email');
+    const inputRegTel = document.getElementById('reg-tel');
+    const inputRegPass = document.getElementById('reg-pass');
+    const inputRegPassConf = document.getElementById('reg-pass-conf');
 
     if (tab === 'cadastro') {
         if (formLogin) formLogin.classList.add('hidden');
@@ -110,32 +145,42 @@ window.toggleAuthTab = function(tab) {
         
         if (btnTabLogin) btnTabLogin.classList.remove('active');
         if (btnTabCadastro) btnTabCadastro.classList.add('active');
+        if (tabSystem) tabSystem.classList.add('cadastro-active');
+
+        // Limpa a senha do login ao ir para o cadastro
+        if (inputLoginPass) inputLoginPass.value = '';
+
     } else {
         if (formCadastro) formCadastro.classList.add('hidden');
         if (formLogin) formLogin.classList.remove('hidden');
         
         if (btnTabCadastro) btnTabCadastro.classList.remove('active');
         if (btnTabLogin) btnTabLogin.classList.add('active');
+        if (tabSystem) tabSystem.classList.remove('cadastro-active');
+
+        // Limpa todos os campos do formulário de cadastro ao voltar para o login
+        if (inputRegNome) inputRegNome.value = '';
+        if (inputRegEmail) inputRegEmail.value = '';
+        if (inputRegTel) inputRegTel.value = '';
+        if (inputRegPass) inputRegPass.value = '';
+        if (inputRegPassConf) inputRegPassConf.value = '';
     }
 };
 
 window.alternarAbaAuth = window.toggleAuthTab;
 
-// Mantém o apelido para não quebrar chamadas antigas
-window.alternarAbaAuth = window.toggleAuthTab;
 
 async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
 
     const emailInput = document.getElementById('login-email');
     const passInput = document.getElementById('login-pass');
-    const rememberMeInput = document.getElementById('remember-me');
 
     if (!emailInput || !passInput) return;
 
+    // Remove espaços acidentais nas pontas
     const email = emailInput.value.trim();
     const pass = passInput.value;
-    const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
 
     if (!email || !pass) {
         return mostrarAvisoNotificacao("Preencha o e-mail e a senha!");
@@ -143,27 +188,27 @@ async function handleLogin(e) {
 
     try {
         const credenciais = await auth.signInWithEmailAndPassword(email, pass);
-        const user = credenciais.user;
+        
+        mostrarAvisoNotificacao("SEJA BEM-VINDO!", "sucesso");
 
-        if (rememberMe) {
-            localStorage.setItem('fitai_remember_email', email);
-        } else {
-            localStorage.removeItem('fitai_remember_email');
-        }
-
-        mostrarAvisoNotificacao("SEJA BEM-VINDO AO ASSISFIT", "sucesso");
-
-        // FORÇA O REDIRECIONAMENTO PARA O LOBBY
         if (typeof showView === 'function') {
             showView('lobby');
         }
 
     } catch (error) {
         console.error("Erro ao fazer login:", error);
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+
+        // Trata o erro 400 / auth/invalid-credential
+        if (
+            error.code === 'auth/invalid-credential' || 
+            error.code === 'auth/user-not-found' || 
+            error.code === 'auth/wrong-password'
+        ) {
             mostrarAvisoNotificacao("E-mail ou senha incorretos!");
+        } else if (error.code === 'auth/invalid-email') {
+            mostrarAvisoNotificacao("Formato de e-mail inválido!");
         } else {
-            mostrarAvisoNotificacao("Erro ao conectar. Tente novamente!");
+            mostrarAvisoNotificacao("Erro de conexão. Tente novamente!");
         }
     }
 }
