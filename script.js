@@ -10,25 +10,23 @@ const firebaseConfig = {
 };
 
 // 1. INICIALIZAÇÃO SEGURA DO FIREBASE
-let auth = null;
-let db = null;
-
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
-    auth = firebase.auth();
-    db = firebase.firestore();
+    window.auth = firebase.auth();
+    window.db = firebase.firestore();
 
-    db.settings({ 
+    window.db.settings({ 
         cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED 
     });
-
-    window.auth = auth;
-    window.db = db;
 } else {
     console.error("SDK do Firebase não foi encontrado! Verifique as tags <script> no index.html.");
 }
+
+// Atalhos globais sem redeclarar com const/let
+var auth = window.auth;
+var db = window.db;
 
 // 2. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
