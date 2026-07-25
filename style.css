@@ -549,3 +549,22 @@ body:has(#view-login:not(.hidden)) .navbar {
 #toast-notificacao.erro {
     border-left: 4px solid #ef4444; 
 }
+
+.hidden {
+    display: none !important;
+}
+
+/* 2. Garante que, enquanto o login existir/estiver visível, NADA do lobby vaze por trás */
+#view-login:not(.hidden) ~ #app-shell,
+#view-login:not(.hidden) ~ .navbar,
+body:has(#view-login:not(.hidden)) #app-shell {
+    display: none !important;
+}
+
+/* 3. Força o layout dos Cards do Lobby em Grid (horizontal/lado a lado) em vez de linha vertical */
+#view-lobby .content-grid,
+.content-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
+    gap: 24px !important;
+}

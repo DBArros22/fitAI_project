@@ -893,14 +893,28 @@ window.toggleAuthTab = function(tab) {
 async function handleCadastro(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    const nome = document.getElementById('reg-nome')?.value.trim();
-    const email = document.getElementById('reg-email')?.value.trim();
-    const tel = document.getElementById('reg-tel')?.value.trim();
-    const pass = document.getElementById('reg-pass')?.value;
-    const passConf = document.getElementById('reg-pass-conf')?.value;
+    // Captura os elementos com garantia
+    const inputNome = document.getElementById('reg-nome');
+    const inputEmail = document.getElementById('reg-email');
+    const inputTel = document.getElementById('reg-tel');
+    const inputPass = document.getElementById('reg-pass');
+    const inputPassConf = document.getElementById('reg-pass-conf');
 
+    const nome = inputNome ? inputNome.value.trim() : "";
+    const email = inputEmail ? inputEmail.value.trim() : "";
+    const tel = inputTel ? inputTel.value.trim() : "";
+    const pass = inputPass ? inputPass.value : "";
+    const passConf = inputPassConf ? inputPassConf.value : "";
+
+    // Validações
     if (!nome || !email || !pass) {
         return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios!");
+    }
+
+    // RegEx para validar formato de e-mail e evitar erro 400 no Firebase
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return mostrarAvisoNotificacao("Digite um e-mail válido (ex: usuario@email.com)!");
     }
 
     if (pass !== passConf) {
@@ -908,11 +922,11 @@ async function handleCadastro(e) {
     }
 
     try {
-        // 1. Cria a conta no Firebase Authentication
+        // Cria a conta
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
-        // 2. Salva o perfil do novo atleta no Firestore
+        // Salva os dados no Firestore
         await db.collection("usuarios").doc(user.uid).set({
             nome: nome,
             email: email,
@@ -920,9 +934,8 @@ async function handleCadastro(e) {
             criadoEm: new Date()
         });
 
-        mostrarAvisoNotificacao("Conta criada com sucesso!", "sucesso");
+        mostrarAvisoNotificacao("CONTA CRIADA COM SUCESSO!", "sucesso");
 
-        // 3. Redireciona diretamente para o Lobby
         if (typeof showView === 'function') {
             showView('lobby');
         }
@@ -932,12 +945,16 @@ async function handleCadastro(e) {
         if (error.code === 'auth/email-already-in-use') {
             mostrarAvisoNotificacao("Este e-mail já está cadastrado!");
         } else if (error.code === 'auth/weak-password') {
-            mostrarAvisoNotificacao("A senha deve ter pelo menos 6 caracteres!");
+            mostrarAvisoNotificacao("A senha deve ter no mínimo 6 caracteres!");
+        } else if (error.code === 'auth/invalid-email') {
+            mostrarAvisoNotificacao("E-mail com formato inválido!");
         } else {
-            mostrarAvisoNotificacao("Erro ao criar conta. Tente novamente!");
+            mostrarAvisoNotificacao("Erro ao cadastrar. Verifique os dados!");
         }
     }
 }
+
+window.handleCadastro = handleCadastro;
 
 // Torna a função acessível ao onclick do HTML
 window.handleCadastro = handleCadastro;
