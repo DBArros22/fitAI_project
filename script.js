@@ -890,25 +890,21 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    // 1. Esconde a tela de login explicitamente se não for para a tela de login
     const viewLogin = document.getElementById('view-login');
     const appShell = document.getElementById('app-shell');
 
     if (viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         if (appShell) appShell.classList.add('hidden');
-        return; // Sai da função pois já está na tela de login
+        return;
     }
 
-    // Se for qualquer outra tela (ex: lobby, consulta, calendario):
     if (viewLogin) viewLogin.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // 2. Esconde todas as sub-telas internas (seja classe 'view' ou 'view-screen')
     const todasViews = document.querySelectorAll('.view, .view-screen');
     todasViews.forEach(v => v.classList.add('hidden'));
 
-    // 3. Exibe apenas a tela solicitada
     const viewAlvo = document.getElementById(`view-${viewId}`);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
@@ -916,7 +912,6 @@ function showView(viewId) {
         console.warn(`View 'view-${viewId}' não foi encontrada no HTML.`);
     }
 
-    // 4. Mantém suas renderizações nativas
     if (viewId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
     } else if (viewId === 'consulta') {
@@ -926,11 +921,11 @@ function showView(viewId) {
     }
 }
 
+window.showView = showView;
+
 // Garante acesso global
 window.showView = showView;
 
-// --- 2. SISTEMA DE AUTENTICAÇÃO ---
-window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
     const formCadastro = document.getElementById('form-cadastro');
     const btnTabLogin = document.getElementById('btn-tab-login');
