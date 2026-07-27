@@ -602,20 +602,21 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* TRAVA ABSOLUTA DE OCULTAÇÃO */
-.hidden,
-#app-shell .hidden {
+.hidden {
     display: none !important;
 }
 
-/* EXIBIÇÃO DAS VIEWS ATIVAS SEM FORÇAR FLEX EM QUEM É GRID */
-#app-shell > .view-screen:not(.hidden),
-#app-shell > .view:not(.hidden),
-#app-shell > .page-container:not(.hidden) {
-    display: block !important;
+/* Garante que o app-shell não atrapalhe o fluxo */
+#app-shell {
+    display: flex;
+    flex-direction: column;
     width: 100%;
 }
 
-/* O LOBBY É O ÚNICO QUE RENDERIZA DIRETO O GRID */
-#view-lobby:not(.hidden) {
-    display: block !important;
+/* Deixa o navegador gerenciar o display natural de cada view (grid, flex ou block) quando não estiverem ocultas */
+.view-screen:not(.hidden),
+.view:not(.hidden),
+.page-container:not(.hidden) {
+    display: revert !important;
+    width: 100%;
 }
