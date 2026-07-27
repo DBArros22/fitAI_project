@@ -692,8 +692,8 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Força o scroll imediatamente para o topo absoluto
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    // Reseta o scroll imediatamente
+    window.scrollTo(0, 0);
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
@@ -719,12 +719,12 @@ function showView(viewId) {
         return;
     }
 
-    // 3. Exibe o App Shell padrão e oculta Login e Perfil
+    // 3. Exibe o App Shell padrão
     if (viewLogin) viewLogin.classList.add('hidden');
     if (viewPerfil) viewPerfil.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Oculta todas as telas do app-shell
+    // Oculta todas as views de dentro do app-shell
     const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
@@ -747,8 +747,12 @@ function showView(viewId) {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
-    // Reforça o scroll no topo após renderizar
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    // Garante o topo mesmo após renderizar elementos dinâmicos
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, 10);
 }
 
 window.showView = showView;

@@ -614,21 +614,30 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
+/* Força todas as telas dentro do app-shell a ocuparem a mesma posição no topo */
 #app-shell {
-    width: 100%;
     position: relative;
+    width: 100%;
 }
 
-/* Garante que qualquer tela ativa ocupe o espaço correto a partir do topo */
 #app-shell > main:not(.hidden),
 #app-shell > div.page-container:not(.hidden),
 #view-login:not(.hidden),
 #view-perfil:not(.hidden) {
     display: block !important;
-    width: 100%;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    min-height: 100vh;
+    background: var(--bg-dark, #0b0f19);
+    z-index: 10;
+    box-sizing: border-box;
 }
 
-/* Exceção necessária para o Lobby manter o layout em Grid */
+/* Exceção para o Lobby principal voltar a ser grid e ficar na base */
 #view-lobby:not(.hidden) {
+    position: relative !important;
     display: grid !important;
+    z-index: 1;
 }
