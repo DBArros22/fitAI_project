@@ -604,3 +604,31 @@ body:has(#view-login:not(.hidden)) .navbar {
     top: 0;
     left: 0;
 }
+
+html, body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#app-shell {
+    position: relative;
+    width: 100%;
+    display: block;
+}
+
+#app-shell > .view-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+#app-shell > .view-screen:not(.hidden) {
+    position: relative;
+    opacity: 1;
+    pointer-events: auto;
+}
