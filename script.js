@@ -695,27 +695,41 @@ function showView(viewId) {
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
     const appShell = document.getElementById('app-shell');
+    const viewPerfil = document.getElementById('view-perfil');
 
     // 1. Caso Login
     if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         if (appShell) appShell.classList.add('hidden');
+        if (viewPerfil) viewPerfil.classList.add('hidden');
         window.scrollTo(0, 0);
         return;
     }
 
-    // 2. Exibe o App e oculta o Login
+    // 2. Caso Perfil (Tratado separadamente fora do app-shell, igual ao login)
+    if (cleanId === 'perfil') {
+        if (viewLogin) viewLogin.classList.add('hidden');
+        if (appShell) appShell.classList.add('hidden'); // Oculta o app-shell para o perfil não vazar
+        if (viewPerfil) viewPerfil.classList.remove('hidden');
+        
+        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
+        window.scrollTo(0, 0);
+        return;
+    }
+
+    // 3. Exibe o App Shell padrão e oculta Login e Perfil
     if (viewLogin) viewLogin.classList.add('hidden');
+    if (viewPerfil) viewPerfil.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Oculta todas as views sem injetar inline styles
-    const todasViews = document.querySelectorAll('.view-screen, .view, .page-container');
+    // Oculta todas as views de dentro do app-shell
+    const todasViews = document.querySelectorAll('#app-shell .view-screen, #app-shell .view, .page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
         v.style.display = '';
     });
 
-    // Mostra a view solicitada
+    // Mostra a view solicitada dentro do app-shell
     const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
@@ -727,10 +741,8 @@ function showView(viewId) {
     // Callbacks de renderização
     if (cleanId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
-    } else if (cleanId === 'perfil') {
-        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
     } else if (cleanId === 'consulta' || cleanId === 'consulta-geral') {
-        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+        if (typeof renderizarFichasConsulta === 'function') renderizarFiscasConsulta();
     } else if (cleanId === 'calendario') {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
