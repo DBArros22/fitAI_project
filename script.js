@@ -692,8 +692,8 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Força o scroll para o topo ANTES de trocar os elementos para evitar trancos visuais
-    window.scrollTo(0, 0);
+    // Força o reset absoluto da rolagem para o topo antes de trocar de tela
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
@@ -715,7 +715,6 @@ function showView(viewId) {
         if (viewLogin) viewLogin.classList.add('hidden');
         if (appShell) appShell.classList.add('hidden');
         if (viewPerfil) viewPerfil.classList.remove('hidden');
-        
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         return;
     }
@@ -725,18 +724,16 @@ function showView(viewId) {
     if (viewPerfil) viewPerfil.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Oculta todas as views de dentro do app-shell
-    const todasViews = document.querySelectorAll('#app-shell .view-screen, #app-shell .view, .page-container');
+    // Oculta todas as views de dentro e fora do app-shell adicionando .hidden
+    const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container, .view-screen, .view');
     todasViews.forEach(v => {
         v.classList.add('hidden');
-        v.style.display = '';
     });
 
-    // Mostra a view solicitada dentro do app-shell
+    // Mostra a view solicitada
     const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
-        viewAlvo.style.display = '';
     } else {
         console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
     }
@@ -745,12 +742,12 @@ function showView(viewId) {
     if (cleanId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
     } else if (cleanId === 'consulta' || cleanId === 'consulta-geral') {
-        if (typeof renderizarFichasConsulta === 'function') renderizarFiscasConsulta();
+        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
     } else if (cleanId === 'calendario') {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
-    // Segunda chamada de segurança para o scroll no topo após a renderização dos elementos
+    // Segunda chamada de segurança para o topo
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 

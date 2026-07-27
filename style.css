@@ -586,49 +586,26 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* TRAVA ABSOLUTA DE OCULTAÇÃO */
-.hidden {
+#app-shell > main,
+#app-shell > div.page-container,
+#view-login,
+#view-perfil {
     display: none !important;
 }
 
-/* Deixa o layout original de cada view fluir naturalmente (grid, flex ou block) quando a classe hidden for removida */
-#app-shell {
-    position: relative;
-    width: 100%;
-    min-height: calc(100vh - 80px);
-}
-
-/* Garante que as telas ativas fiquem perfeitamente alinhadas no topo */
-#app-shell > .view-screen:not(.hidden),
-#app-shell > .view:not(.hidden) {
-    position: relative;
-    top: 0;
-    left: 0;
-}
-
-html, body {
+#app-shell > main:not(.hidden),
+#app-shell > div.page-container:not(.hidden),
+#view-login:not(.hidden),
+#view-perfil:not(.hidden) {
+    display: block !important;
     width: 100%;
     min-height: 100vh;
-    overflow-x: hidden;
-}
-
-#app-shell {
     position: relative;
-    width: 100%;
-    display: block;
-}
-
-#app-shell > .view-screen {
-    position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
 }
 
-#app-shell > .view-screen:not(.hidden) {
-    position: relative;
-    opacity: 1;
-    pointer-events: auto;
+/* Corrige especificamente o Lobby para manter o Grid original */
+#view-lobby:not(.hidden) {
+    display: grid !important;
 }
