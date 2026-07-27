@@ -692,6 +692,11 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
+    // Força o scroll para o topo ANTES de trocar os elementos para evitar trancos visuais
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
     const appShell = document.getElementById('app-shell');
@@ -702,18 +707,16 @@ function showView(viewId) {
         if (viewLogin) viewLogin.classList.remove('hidden');
         if (appShell) appShell.classList.add('hidden');
         if (viewPerfil) viewPerfil.classList.add('hidden');
-        window.scrollTo(0, 0);
         return;
     }
 
-    // 2. Caso Perfil (Tratado separadamente fora do app-shell, igual ao login)
+    // 2. Caso Perfil
     if (cleanId === 'perfil') {
         if (viewLogin) viewLogin.classList.add('hidden');
-        if (appShell) appShell.classList.add('hidden'); // Oculta o app-shell para o perfil não vazar
+        if (appShell) appShell.classList.add('hidden');
         if (viewPerfil) viewPerfil.classList.remove('hidden');
         
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
-        window.scrollTo(0, 0);
         return;
     }
 
@@ -747,7 +750,8 @@ function showView(viewId) {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
-    window.scrollTo(0, 0);
+    // Segunda chamada de segurança para o scroll no topo após a renderização dos elementos
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
 window.showView = showView;
