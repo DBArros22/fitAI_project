@@ -609,3 +609,26 @@ body:has(#view-login:not(.hidden)) .navbar {
 #view-lobby:not(.hidden) {
     display: grid !important;
 }
+
+.hidden {
+    display: none !important;
+}
+
+#app-shell {
+    width: 100%;
+    position: relative;
+}
+
+/* Garante que qualquer tela ativa ocupe o espaço correto a partir do topo */
+#app-shell > main:not(.hidden),
+#app-shell > div.page-container:not(.hidden),
+#view-login:not(.hidden),
+#view-perfil:not(.hidden) {
+    display: block !important;
+    width: 100%;
+}
+
+/* Exceção necessária para o Lobby manter o layout em Grid */
+#view-lobby:not(.hidden) {
+    display: grid !important;
+}

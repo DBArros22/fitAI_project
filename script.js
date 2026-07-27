@@ -692,7 +692,7 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Força o reset absoluto da rolagem para o topo antes de trocar de tela
+    // Força o scroll imediatamente para o topo absoluto
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -724,8 +724,8 @@ function showView(viewId) {
     if (viewPerfil) viewPerfil.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Oculta todas as views de dentro e fora do app-shell adicionando .hidden
-    const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container, .view-screen, .view');
+    // Oculta todas as telas do app-shell
+    const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
     });
@@ -747,7 +747,7 @@ function showView(viewId) {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
-    // Segunda chamada de segurança para o topo
+    // Reforça o scroll no topo após renderizar
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
