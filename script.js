@@ -1706,6 +1706,380 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
+// Fuynções da pagina cronograma
+
+function renderizarPaginaCronograma() {
+    const container = document.getElementById('view-calendario');
+    if (!container) return;
+
+    const agora = new Date();
+    const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const dataFormatada = `${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
+
+    const modoTimerAtivo = (typeof isCountdownMode !== 'undefined' && isCountdownMode);
+    const estiloLivreBg = !modoTimerAtivo ? '#3b82f6' : 'transparent';
+    const estiloLivreTexto = !modoTimerAtivo ? 'white' : '#3b82f6';
+    const estiloTimerBg = modoTimerAtivo ? '#3b82f6' : 'transparent';
+    const estiloTimerTexto = modoTimerAtivo ? 'white' : '#3b82f6';
+    const classeContainerInput = modoTimerAtivo ? '' : 'hidden';
+
+    container.innerHTML = `
+        <div class="glass-panel" style="padding: 20px; margin-bottom: 20px; min-height: 80vh;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.7rem; font-weight: bold;">← VOLTAR</button>
+                <div style="text-align: right;">
+                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1rem; letter-spacing: 1px;">CRONOGRAMA</h2>
+                    <p style="color: #3b82f6; font-size: 10px; margin: 0; font-weight: bold; text-transform: uppercase;">${dataFormatada}</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid rgba(59,130,246,0.3); margin-bottom: 25px;">
+                <div id="display-timer" style="font-size: 2.8rem; color: white; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 0 0 15px rgba(59,130,246,0.5);">00:00:00<span style="font-size: 1.5rem; color: #3b82f6;">.00</span></div>
+                
+                <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+                    <button onclick="setTimerMode(false)" id="btn-modo-livre" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloLivreBg}; color: ${estiloLivreTexto}; cursor: pointer;">LIVRE</button>
+                    <button onclick="setTimerMode(true)" id="btn-modo-timer" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: ${estiloTimerBg}; color: ${estiloTimerTexto}; cursor: pointer;">TIMER</button>
+                </div>
+
+                <div id="timer-input-container" class="${classeContainerInput}" style="margin-bottom: 15px;">
+                    <p style="color: gray; font-size: 10px; margin-bottom: 5px;">DEFINIR TEMPO (HORAS:MIN:SEG)</p>
+                    <input type="time" id="input-timer-native" step="1" value="00:00:00" 
+                        style="background: #0f172a; border: 1px solid #3b82f6; color: white; padding: 10px; border-radius: 10px; text-align: center; outline: none; font-family: monospace; font-size: 1.2rem; width: 100%; max-width: 200px;">
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="btn-timer-toggle" onclick="toggleTimer()" style="background: #3b82f6; border: none; color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; flex: 2;">INICIAR</button>
+                    <button onclick="resetTimer()" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 12px; border-radius: 12px; cursor: pointer; flex: 1;">ZERAR</button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 25px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 style="color: white; font-size: 12px; margin: 0;" class="italic-bold uppercase">Frequência semanal (Toque para alternar)</h3>
+                    <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
+                </div>
+                <div id="calendario-semanal" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;"></div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08);">
+                <h3 style="color: white; font-size: 12px; margin-bottom: 12px;" class="italic-bold uppercase">Bloco de anotações</h3>
+                <div id="lista-lembretes" style="margin-bottom: 15px; max-height: 220px; overflow-y: auto; padding-right: 5px;"></div>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-lembrete" placeholder="Registrar observação..." style="flex: 1; background: #0f172a; border: 1px solid rgba(59,130,246,0.3); color: white; padding: 12px; border-radius: 10px; font-size: 12px; outline: none;">
+                    <button onclick="adicionarLembrete()" style="background: #3b82f6; border: none; color: white; width: 45px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; font-weight: bold;">+</button>
+                </div>
+            </div>
+        </div>
+        
+        <style>
+            input[type="time"]::-webkit-inner-spin-button,
+            input[type="time"]::-webkit-calendar-picker-indicator {
+                display: none;
+                -webkit-appearance: none;
+            }
+        </style>
+    `;
+    gerarCalendario();
+    renderizarLembretes();
+    atualizarDisplayTimer();
+}
+
+function gerarCalendario() {
+    const calContainer = document.getElementById('calendario-semanal');
+    if (!calContainer) return;
+
+    const diasSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
+    calContainer.innerHTML = "";
+
+    for (let i = 0; i < 7; i++) {
+        const registro = diasTreinados.find(d => d.dia === i);
+        const letraTreino = registro ? registro.treino : ""; 
+        
+        let estiloAtivo = "border: 1px solid rgba(255,255,255,0.1);";
+        if (registro) {
+            if (registro.treino === "★") {
+                estiloAtivo = "border: 2px solid #eab308; background: rgba(234,179,8,0.15); color: #facc15;";
+            } else {
+                estiloAtivo = "border: 2px solid #3b82f6; background: rgba(59,130,246,0.2); color: white;";
+            }
+        }
+
+        calContainer.innerHTML += `
+            <div onclick="alternarTreinoDia(${i})" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                <span style="font-size: 10px; color: gray; font-weight: bold;">${diasSemana[i]}</span>
+                <div id="dia-${i}" style="width: 40px; height: 40px; ${estiloAtivo} border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; transition: all 0.2s;">
+                    ${letraTreino}
+                </div>
+            </div>
+        `;
+    }
+}
+
+function alternarTreinoDia(index) {
+    const ciclos = ["", "A", "B", "C", "D", "E", "F", "G", "★"];
+    
+    let registroIdx = diasTreinados.findIndex(d => d.dia === index);
+    let novaLetra = "";
+
+    if (registroIdx === -1) {
+        novaLetra = "A";
+        diasTreinados.push({ dia: index, treino: novaLetra });
+    } else {
+        let atualLetra = diasTreinados[registroIdx].treino;
+        let proximoIdx = (ciclos.indexOf(atualLetra) + 1) % ciclos.length;
+        novaLetra = ciclos[proximoIdx];
+
+        if (novaLetra === "") {
+            diasTreinados.splice(registroIdx, 1);
+        } else {
+            diasTreinados[registroIdx].treino = novaLetra;
+        }
+    }
+
+    localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+    gerarCalendario();
+}
+
+function limparFrequencia() {
+    const modalExistente = document.getElementById('modal-confirmacao-cronograma');
+    if (modalExistente) modalExistente.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-confirmacao-cronograma';
+    modal.style = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; animation: fadeInModal 0.2s ease-out;
+    `;
+
+    modal.innerHTML = `
+        <div class="glass-panel" style="background: var(--bg-card, #1e293b); border: 1px solid var(--border-color, rgba(59,130,246,0.3)); border-radius: 24px; padding: 25px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);">
+            <h4 class="italic-bold" style="color: white; margin: 0 0 10px 0; font-size: 1rem; letter-spacing: 1px; text-transform: uppercase;">ZERAR SEMANA?</h4>
+            <p style="color: #94a3b8; font-size: 12px; margin: 0 0 20px 0; line-height: 1.5;">Tem certeza que deseja apagar todas as marcações de treino da frequência semanal?</p>
+            
+            <div style="display: flex; gap: 10px;">
+                <button id="btn-modal-cancelar" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CANCELAR</button>
+                <button id="btn-modal-confirmar" style="flex: 1; background: #ef4444; border: none; color: white; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: bold; text-transform: uppercase;">CONFIRMAR</button>
+            </div>
+        </div>
+        <style>
+            @keyframes fadeInModal {
+                from { opacity: 0; transform: scale(0.95); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        </style>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-modal-cancelar').onclick = function() {
+        modal.remove();
+    };
+
+    document.getElementById('btn-modal-confirmar').onclick = function() {
+        diasTreinados = [];
+        localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+        gerarCalendario();
+        modal.remove();
+    };
+}
+
+function toggleDia(dataId) {
+    if (diasTreinados.includes(dataId)) {
+        diasTreinados = diasTreinados.filter(d => d !== dataId);
+    } else {
+        diasTreinados.push(dataId);
+    }
+    localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
+    gerarCalendario();
+}
+
+function adicionarLembrete() {
+    const input = document.getElementById('input-lembrete');
+    if (!input || !input.value.trim()) return;
+
+    const agora = new Date();
+    const dataHora = agora.toLocaleDateString('pt-BR') + " às " + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const novo = {
+        id: Date.now(),
+        texto: input.value,
+        data: dataHora,
+        feito: false
+    };
+
+    lembretes.unshift(novo);
+    input.value = "";
+    localStorage.setItem('fitai_lembretes', JSON.stringify(lembretes));
+    renderizarLembretes();
+}
+
+function renderizarLembretes() {
+    const container = document.getElementById('lista-lembretes');
+    if (!container) return;
+
+    if (lembretes.length === 0) {
+        container.innerHTML = `<p style="color: gray; font-size: 11px; text-align: center; margin-top: 10px;">Vázio. (Ex: A - triceps, B - biceps) é possível "riscar" na lista. </p>`;
+        return;
+    }
+
+    container.innerHTML = lembretes.map(l => `
+        <div style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; margin-bottom: 10px; border-left: 3px solid ${l.feito ? '#10b981' : '#3b82f6'}; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span style="color: #3b82f6; font-size: 9px; font-weight: bold; text-transform: uppercase;">${l.data}</span>
+                <button onclick="removerLembrete(${l.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 12px;">✕</button>
+            </div>
+            <p onclick="toggleLembrete(${l.id})" style="color: ${l.feito ? '#64748b' : 'white'}; font-size: 13px; margin: 0; text-decoration: ${l.feito ? 'line-through' : 'none'}; cursor: pointer; line-height: 1.4;">
+                ${l.texto}
+            </p>
+        </div>
+    `).join('');
+}
+
+function toggleTimer() {
+    const btn = document.getElementById('btn-timer-toggle');
+    if (!isTimerRunning) {
+        if (isCountdownMode && milissegundosTotais === 0) {
+            const timeVal = document.getElementById('input-timer-native').value;
+            
+            if (!timeVal) return mostrarAviso("Defina o tempo!");
+
+            const partes = timeVal.split(':');
+            let segundosIniciais = 0;
+
+            // Tratamento inteligente caso o input retorne 2 ou 3 partes (HH:MM:SS ou MM:SS)
+            if (partes.length === 3) {
+                segundosIniciais = (+partes[0]) * 3600 + (+partes[1]) * 60 + (+partes[2]);
+            } else if (partes.length === 2) {
+                segundosIniciais = (+partes[0]) * 60 + (+partes[1]);
+            }
+
+            if (segundosIniciais <= 0) return mostrarAviso("Tempo inválido!");
+            milissegundosTotais = segundosIniciais * 1000;
+        }
+
+        isTimerRunning = true;
+        btn.innerText = "PAUSAR";
+        btn.style.background = "#ef4444"; // Cor vermelha ao rodar
+        
+        timerInterval = setInterval(() => {
+            if (isCountdownMode) {
+                milissegundosTotais -= 10;
+                if (milissegundosTotais <= 0) finalizarTimer();
+            } else {
+                milissegundosTotais += 10;
+            }
+            atualizarDisplayTimer();
+        }, 10);
+    } else {
+        pausarTimer();
+    }
+}
+
+/**
+ * Função auxiliar de pausa ajustada de forma única (Texto vira RETOMAR)
+ */
+function pausarTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    
+    const btn = document.getElementById('btn-timer-toggle');
+    if (btn) {
+        btn.innerText = "RETOMAR";
+        btn.style.background = "#3b82f6"; // Sua cor azul padrão de destaque
+    }
+}
+
+function resetTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    milissegundosTotais = 0;
+    atualizarDisplayTimer();
+    const btn = document.getElementById('btn-timer-toggle');
+    if (btn) { btn.innerText = "INICIAR"; btn.style.background = "#3b82f6"; }
+}
+
+// funções notificação de tempo esgotado fora da pagina cronograma 
+
+function finalizarTimer() {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    milissegundosTotais = 0;
+    atualizarDisplayTimer();
+    const btn = document.getElementById('btn-timer-toggle');
+    if (btn) { btn.innerText = "INICIAR"; btn.style.background = "#3b82f6"; }
+    if (navigator.vibrate) navigator.vibrate([300, 150, 300]);
+    mostrarAviso(" Timer Cronograma finalizado ❗");
+}
+
+function atualizarDisplayTimer() {
+    const display = document.getElementById('display-timer');
+    if (!display) return;
+    let tempo = Math.max(0, milissegundosTotais);
+    
+    // Extração matemática correta de Horas, Minutos, Segundos e Milissegundos
+    const horas = Math.floor(tempo / 3600000);
+    const min = Math.floor((tempo % 3600000) / 60000);
+    const seg = Math.floor((tempo % 60000) / 1000);
+    const ms = Math.floor((tempo % 1000) / 10);
+    
+    // Injeta o formato HH:MM:SS mantendo os milissegundos isolados no span menor
+    display.innerHTML = `${horas.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}<span style="font-size: 1.5rem; color: #3b82f6;">.${ms.toString().padStart(2, '0')}</span>`;
+}
+
+// Vinculação inteligente corrigida: Redireciona de forma direta sem causar loop
+window.setTimerMode = function(modo) {
+    if (typeof modo === 'string') {
+        if (typeof window.setWodTimerMode === 'function') {
+            window.setWodTimerMode(modo);
+        }
+        return;
+    }
+
+    isCountdownMode = modo;
+    resetTimer();
+    
+    const btnTimer = document.getElementById('btn-modo-timer');
+    const btnLivre = document.getElementById('btn-modo-livre');
+    const inputContainer = document.getElementById('timer-input-container');
+
+    if (btnTimer) {
+        btnTimer.style.background = modo ? "#3b82f6" : "transparent";
+        btnTimer.style.color = modo ? "white" : "#3b82f6";
+    }
+    if (btnLivre) {
+        btnLivre.style.background = !modo ? "#3b82f6" : "transparent";
+        btnLivre.style.color = !modo ? "white" : "#3b82f6";
+    }
+    if (inputContainer) {
+        inputContainer.className = modo ? "" : "hidden";
+    }
+};
+
+function toggleLembrete(id) {
+    const l = lembretes.find(item => item.id === id);
+    if (l) l.feito = !l.feito;
+    localStorage.setItem('fitai_lembretes', JSON.stringify(lembretes));
+    renderizarLembretes();
+}
+
+function removerLembrete(id) {
+    lembretes = lembretes.filter(l => l.id !== id);
+    localStorage.setItem('fitai_lembretes', JSON.stringify(lembretes));
+    renderizarLembretes();
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const session = localStorage.getItem('fitai_session');
+    if (session) showView('lobby'); else showView('login');
+    
+    atualizarListaExercicios(); 
+    gerarCalendario();
+});
+
+
+// Fim da pagina cronograma
 function renderizarLogTreino() {
     const container = document.getElementById('lista-treino');
     const ativa = fichaAtivaNoMomento || fichaAtiva;
@@ -1828,8 +2202,6 @@ function ativarEdicaoInline(id, tipo) {
             </div>`;
 
     }
-
-
 
     // Botões de Confirmação e Cancelamento Inline
 
