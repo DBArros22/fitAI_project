@@ -614,25 +614,21 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
-/* Garante que o container principal gerencie o fluxo vertical sem sobreposições */
-#app-shell {
-    width: 100%;
-    position: relative;
-}
-
-/* Força todas as telas a se comportarem como páginas completas e independentes */
-#app-shell > main:not(.hidden),
-#app-shell > div.page-container:not(.hidden),
-#view-login:not(.hidden),
-#view-perfil:not(.hidden) {
+/* Garante que todas as tags principais e containers se comportem como páginas inteiras e isoladas */
+main:not(.hidden),
+.page-container:not(.hidden) {
     display: block !important;
     width: 100%;
-    min-height: 100vh;
+    min-height: calc(100vh - 80px);
     position: relative;
-    background: var(--bg-dark, #0b0f19);
+    box-sizing: border-box;
 }
 
-/* Exceção específica para o Lobby manter perfeitamente o seu Grid original */
+/* Exceções que utilizam grid estrutural nativo */
 #view-lobby:not(.hidden) {
     display: grid !important;
+}
+
+#view-registro:not(.hidden) {
+    display: grid !important; /* Se o seu registro usar grid, ajuste conforme seu layout original */
 }

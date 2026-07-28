@@ -692,48 +692,33 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Reseta imediatamente a rolagem para o topo
+    // Reseta o scroll imediatamente para o topo
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
-    const appShell = document.getElementById('app-shell');
-    const viewPerfil = document.getElementById('view-perfil');
 
     // 1. Caso Login
     if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        if (appShell) appShell.classList.add('hidden');
-        if (viewPerfil) viewPerfil.classList.add('hidden');
+        document.querySelectorAll('main, .page-container').forEach(el => {
+            if (el.id !== 'view-login') el.classList.add('hidden');
+        });
         return;
     }
 
-    // 2. Oculta Login em qualquer outra navegação
+    // 2. Oculta a tela de login se estiver navegando pelo app
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // 3. Gerenciamento do Perfil como Página Única (Fora do AppShell ou tratada em paralelo)
-    if (cleanId === 'perfil') {
-        if (appShell) appShell.classList.add('hidden'); // Esconde o lobby/app-shell
-        if (viewPerfil) viewPerfil.classList.remove('hidden'); // Mostra a página de perfil inteira
-        
-        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
-        window.scrollTo(0, 0);
-        return;
-    }
-
-    // 4. Se for qualquer outra tela, garante que o Perfil e Login fiquem ocultos e o AppShell apareça
-    if (viewPerfil) viewPerfil.classList.add('hidden');
-    if (appShell) appShell.classList.remove('hidden');
-
-    // Oculta rigorosamente todas as telas de dentro do app-shell
-    const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container');
-    todasViews.forEach(v => {
-        v.classList.add('hidden');
+    // 3. Oculta rigorosamente TODAS as telas (main e page-container)
+    const todasAsTelas = document.querySelectorAll('main, .page-container');
+    todasAsTelas.forEach(tela => {
+        tela.classList.add('hidden');
     });
 
-    // Mostra exclusivamente a view solicitada
+    // 4. Mostra exclusivamente a view alvo solicitada
     const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
@@ -741,16 +726,18 @@ function showView(viewId) {
         console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // Callbacks de renderização de dados
-    if (cleanId === 'lobby') {
-        if (typeof renderizarFichas === 'function') renderizarFichas();
-    } else if (cleanId === 'consulta' || cleanId === 'consulta-geral') {
-        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-    } else if (cleanId === 'calendario') {
-        if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
+    // 5. Callbacks originais de renderização
+    if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
+        renderizarFichasConsulta();
+    } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
+        renderizarPaginaCronograma();
+    } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
+        carregarDadosPerfil();
     }
 
-    // Segundo comando de segurança para fixar o topo
+    // Segundo comando de segurança para garantir o topo
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
