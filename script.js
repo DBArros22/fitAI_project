@@ -692,8 +692,8 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Reseta o scroll imediatamente
-    window.scrollTo(0, 0);
+    // Reseta imediatamente a rolagem para o topo
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
 
@@ -710,27 +710,30 @@ function showView(viewId) {
         return;
     }
 
-    // 2. Caso Perfil
+    // 2. Oculta Login em qualquer outra navegação
+    if (viewLogin) viewLogin.classList.add('hidden');
+
+    // 3. Gerenciamento do Perfil como Página Única (Fora do AppShell ou tratada em paralelo)
     if (cleanId === 'perfil') {
-        if (viewLogin) viewLogin.classList.add('hidden');
-        if (appShell) appShell.classList.add('hidden');
-        if (viewPerfil) viewPerfil.classList.remove('hidden');
+        if (appShell) appShell.classList.add('hidden'); // Esconde o lobby/app-shell
+        if (viewPerfil) viewPerfil.classList.remove('hidden'); // Mostra a página de perfil inteira
+        
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
+        window.scrollTo(0, 0);
         return;
     }
 
-    // 3. Exibe o App Shell padrão
-    if (viewLogin) viewLogin.classList.add('hidden');
+    // 4. Se for qualquer outra tela, garante que o Perfil e Login fiquem ocultos e o AppShell apareça
     if (viewPerfil) viewPerfil.classList.add('hidden');
     if (appShell) appShell.classList.remove('hidden');
 
-    // Oculta todas as views de dentro do app-shell
+    // Oculta rigorosamente todas as telas de dentro do app-shell
     const todasViews = document.querySelectorAll('#app-shell > main, #app-shell > div.page-container');
     todasViews.forEach(v => {
         v.classList.add('hidden');
     });
 
-    // Mostra a view solicitada
+    // Mostra exclusivamente a view solicitada
     const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
@@ -738,7 +741,7 @@ function showView(viewId) {
         console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // Callbacks de renderização
+    // Callbacks de renderização de dados
     if (cleanId === 'lobby') {
         if (typeof renderizarFichas === 'function') renderizarFichas();
     } else if (cleanId === 'consulta' || cleanId === 'consulta-geral') {
@@ -747,12 +750,8 @@ function showView(viewId) {
         if (typeof renderizarPaginaCronograma === 'function') renderizarPaginaCronograma();
     }
 
-    // Garante o topo mesmo após renderizar elementos dinâmicos
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-    }, 10);
+    // Segundo comando de segurança para fixar o topo
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
 window.showView = showView;
