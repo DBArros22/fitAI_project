@@ -2429,7 +2429,9 @@ async function toggleGravacaoAudio() {
 }
 
 function postarNoFeed() {
-    const texto = document.getElementById('post-texto').value;
+    const inputTexto = document.getElementById('texto-evolucao');
+    const texto = inputTexto ? inputTexto.value : '';
+    
     if (!texto && !midiaAnexada) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("O post não pode estar vazio!");
@@ -2447,8 +2449,12 @@ function postarNoFeed() {
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
     
     midiaAnexada = null;
-    document.getElementById('post-texto').value = "";
-    document.getElementById('preview-midia').innerHTML = "";
+    
+    if (inputTexto) inputTexto.value = "";
+    
+    const previewContainer = document.getElementById('preview-container');
+    if (previewContainer) previewContainer.innerHTML = "";
+    
     atualizarFeedUI();
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
