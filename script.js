@@ -689,50 +689,57 @@ function mostrarAviso(mensagem) {
 
 // --- 1. NAVEGAÇÃO ---
 
-function showView(viewName) {
-    // Registra a visualização atual globalmente para o controle do widget
-    window.currentView = viewName;
+function showView(viewId) {
+    if (!viewId) return;
 
-    // Adicionamos os IDs das duas novas páginas ao array para o sistema conseguir escondê-las!
-    const views = [
-        'view-login', 'view-lobby', 'view-registro', 'view-calendario',
-        'view-blog', 'view-planilhas', 'view-consulta', 'view-consulta-geral',
-        'view-aparelho-ocupado', 'view-perfil',
-        'view-crossfit-lobby', 'view-crossfit-timers', 'view-crossfit-strength-calc',
-        'view-crossfit-record-hub', 'view-crossfit-benchmark-hub'
-    ];
+    // Reseta o scroll imediatamente para o topo
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
 
-    views.forEach(v => {
-        const el = document.getElementById(v);
-        if (el) el.classList.add('hidden');
+    const cleanId = viewId.replace('view-', '');
+    const viewLogin = document.getElementById('view-login');
+
+    // 1. Caso Login
+    if (cleanId === 'login') {
+        if (viewLogin) viewLogin.classList.remove('hidden');
+        document.querySelectorAll('main, .page-container').forEach(el => {
+            if (el.id !== 'view-login') el.classList.add('hidden');
+        });
+        return;
+    }
+
+    // 2. Oculta a tela de login se estiver navegando pelo app
+    if (viewLogin) viewLogin.classList.add('hidden');
+
+    // 3. Oculta rigorosamente TODAS as telas (main e page-container)
+    const todasAsTelas = document.querySelectorAll('main, .page-container');
+    todasAsTelas.forEach(tela => {
+        tela.classList.add('hidden');
     });
 
-    const target = document.getElementById('view-' + viewName);
-    if (target) target.classList.remove('hidden');
-
-    const shell = document.getElementById('app-shell');
-    if (viewName === 'login') {
-        if (shell) shell.classList.add('hidden');
+    // 4. Mostra exclusivamente a view alvo solicitada
+    const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
+    if (viewAlvo) {
+        viewAlvo.classList.remove('hidden');
     } else {
-        if (shell) shell.classList.remove('hidden');
+        console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // Gatilhos de renderização
-    if (viewName === 'perfil') carregarDadosPerfil();
-    if (viewName === 'planilhas') renderizarFichas();
-    if (viewName === 'registro') renderizarLogTreino();
-    if (viewName === 'consulta-geral') renderizarFichasConsulta();
-    if (viewName === 'calendario') renderizarPaginaCronograma();
-    if (viewName === 'blog') renderizarBlog();
-
-    // Atualiza imediatamente a visibilidade do mini-timer ao trocar de tela
-    if (typeof atualizarMiniTimerWidget === 'function') {
-        atualizarMiniTimerWidget("");
+    // 5. Callbacks originais de renderização
+    if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
+        renderizarFichasConsulta();
+    } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
+        renderizarPaginaCronograma();
+    } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
+        carregarDadosPerfil();
     }
+
+    // Segundo comando de segurança para garantir o topo
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
-
-
-
 
 window.showView = showView;
 
