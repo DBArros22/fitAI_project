@@ -36,7 +36,7 @@ let lembretes = [];
 let feedEvolucao = [];
 let assisData = null;
 
-let midiaAnexada = null; 
+let midiaAnexada = null; // var global de midias anexadas para postagem no feed 
 let cronometrosAtivos = {}; 
 let tempoMestreAtivo = null;
 let milisegundosAcumulados = 0;
@@ -2549,6 +2549,47 @@ async function toggleGravacao() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Gravação finalizada e anexada.");
     }
+}
+
+function previewMidia(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('preview-container');
+    
+    if (!file) {
+        midiaAnexada = null;
+        if (previewContainer) previewContainer.innerHTML = "";
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        midiaAnexada = e.target.result; // Salva o base64 da mídia
+        
+        if (previewContainer) {
+            if (file.type.startsWith('image/')) {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <img src="${midiaAnexada}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color);">
+                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    </div>`;
+            } else if (file.type.startsWith('video/')) {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <video src="${midiaAnexada}" controls style="width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid var(--border-color);"></video>
+                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    </div>`;
+            }
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removerMidia() {
+    midiaAnexada = null;
+    const previewContainer = document.getElementById('preview-container');
+    const inputMedia = document.getElementById('input-media');
+    if (previewContainer) previewContainer.innerHTML = "";
+    if (inputMedia) inputMedia.value = "";
 }
 
 function excluirPost(id) {
