@@ -614,30 +614,25 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
-/* Força todas as telas dentro do app-shell a ocuparem a mesma posição no topo */
+/* Garante que o container principal gerencie o fluxo vertical sem sobreposições */
 #app-shell {
-    position: relative;
     width: 100%;
+    position: relative;
 }
 
+/* Força todas as telas a se comportarem como páginas completas e independentes */
 #app-shell > main:not(.hidden),
 #app-shell > div.page-container:not(.hidden),
 #view-login:not(.hidden),
 #view-perfil:not(.hidden) {
     display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
+    width: 100%;
     min-height: 100vh;
+    position: relative;
     background: var(--bg-dark, #0b0f19);
-    z-index: 10;
-    box-sizing: border-box;
 }
 
-/* Exceção para o Lobby principal voltar a ser grid e ficar na base */
+/* Exceção específica para o Lobby manter perfeitamente o seu Grid original */
 #view-lobby:not(.hidden) {
-    position: relative !important;
     display: grid !important;
-    z-index: 1;
 }
