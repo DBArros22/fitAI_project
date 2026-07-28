@@ -3195,6 +3195,9 @@ window.iniciarTimerCF = iniciarTimerCF;
 window.pausarTimerCF = pausarTimerCF;
 window.resetarTimerCF = resetarTimerCF;
 
+
+// Páginas benchmarks crossfit
+
 const bibliotecaDeBenchmarks = {
     'girls': [
         { nome: 'FRAN', detalhe: '21-15-9 Repetições por tempo de:<br>• Thrusters (95/65 lbs)<br>• Pull-ups' },
