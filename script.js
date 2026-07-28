@@ -2485,9 +2485,12 @@ function atualizarFeedUI() {
 
             ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
 
-            ${post.midia && post.midia.data ? `
+            ${post.midia ? `
                 <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
-                    <img src="${post.midia.data}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">
+                    ${post.midia.startsWith('data:video') 
+                        ? `<video src="${post.midia}" controls style="width: 100%; max-height: 250px; display: block;"></video>`
+                        : `<img src="${post.midia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">`
+                    }
                 </div>
             ` : ''}
         </div>
