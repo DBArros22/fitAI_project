@@ -2639,6 +2639,7 @@ window.addEventListener('load', () => {
 
 
 
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 if (typeof cfIsPaused === 'undefined') {
