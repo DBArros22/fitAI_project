@@ -184,29 +184,24 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* --- SAGUÃO / LOBBY (CARDS EM GRID HORIZONTAL) --- */
-.content-grid,
-#view-lobby.view-screen {
-    display: grid !important; 
-    grid-template-columns: repeat(3, 1fr) !important; 
-    gap: 30px !important; 
-    padding: 40px 6% !important; 
-    max-width: 1200px !important; 
-    margin: 0 auto !important;
-    width: 100% !important;
+.content-grid {
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px; 
+    padding: 40px 5%; 
+    max-width: 1300px; 
+    margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-    .content-grid, #view-lobby.view-screen { 
-        grid-template-columns: repeat(2, 1fr) !important; 
-        gap: 20px !important;
-        padding: 25px 4% !important; 
-    }
-}
-
-@media (max-width: 480px) {
-    .content-grid, #view-lobby.view-screen { 
-        grid-template-columns: 1fr !important; 
-    }
+/* CROSSFIT GRID ISOLADO */
+.crossfit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 30px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .menu-card {
@@ -435,22 +430,41 @@ body:has(#view-login:not(.hidden)) .navbar {
 .blue-text { color: var(--accent-blue) !important; }
 .uppercase { text-transform: uppercase; }
 
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 600px) {
-    .content-grid, #view-lobby .content-grid { 
-        padding: 20px 4% !important; 
-        grid-template-columns: 1fr !important; 
-    }
-    .navbar { padding: 1rem 4%; }
-    
-    #view-aparelho-ocupado .glass-card-action {
-        padding: 20px;
-    }
-    #view-aparelho-ocupado .input-group {
-        margin-bottom: 16px !important;
-    }
+/* --- TOAST DE NOTIFICAÇÃO --- */
+#toast-notificacao {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.8); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    padding: 16px 28px;
+    border-radius: 20px;
+    z-index: 200000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: white;
+    font-family: 'Inter', sans-serif; 
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+#toast-notificacao.sucesso {
+    border-left: 4px solid #22c55e; 
+}
+
+#toast-notificacao.erro {
+    border-left: 4px solid #ef4444; 
+}
+
+/* --- BOTÕES ESPECIAIS --- */
 .btn-logout-nav {
     background: rgba(239, 68, 68, 0.1); 
     color: #ef4444; 
@@ -552,83 +566,55 @@ body:has(#view-login:not(.hidden)) .navbar {
     transform: scale(1.05);
 }
 
-#toast-notificacao {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(15, 23, 42, 0.8); 
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-    padding: 16px 28px;
-    border-radius: 20px;
-    z-index: 200000;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: white;
-    font-family: 'Inter', sans-serif; 
-    font-size: 11px;
-    font-weight: 900;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* Estilos de input atenuado do perfil */
+.input-perfil-muted {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+    color: #94a3b8 !important;
+    transition: all 0.25s ease-in-out !important;
+}
+.input-perfil-muted:focus {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-color: var(--accent-blue) !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
 }
 
-#toast-notificacao.sucesso {
-    border-left: 4px solid #22c55e; 
-}
+/* --- RESPONSIVIDADE GERAL E CROSSFIT --- */
+@media (max-width: 600px) {
+    .content-grid { 
+        padding: 20px 4% !important; 
+        grid-template-columns: 1fr !important; 
+    }
+    .navbar { padding: 1rem 4%; }
+    
+    .crossfit-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 12px !important;
+        padding: 15px 4% !important;
+    }
+    .crossfit-grid .menu-card {
+        padding: 20px 10px !important;
+        border-radius: 20px !important;
+    }
+    .crossfit-grid .card-icon {
+        width: 50px !important;
+        height: 50px !important;
+        border-radius: 14px !important;
+        margin-bottom: 12px !important;
+    }
+    .crossfit-grid .card-icon svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+    .crossfit-grid h3 {
+        font-size: 0.85rem !important;
+    }
+    .crossfit-grid p {
+        font-size: 0.7rem !important;
+    }
 
-#toast-notificacao.erro {
-    border-left: 4px solid #ef4444; 
-}
-
-/* TRAVA ABSOLUTA DE OCULTAÇÃO */
-#app-shell > main,
-#app-shell > div.page-container,
-#view-login,
-#view-perfil {
-    display: none !important;
-}
-
-#app-shell > main:not(.hidden),
-#app-shell > div.page-container:not(.hidden),
-#view-login:not(.hidden),
-#view-perfil:not(.hidden) {
-    display: block !important;
-    width: 100%;
-    min-height: 100vh;
-    position: relative;
-    top: 0;
-    left: 0;
-}
-
-/* Corrige especificamente o Lobby para manter o Grid original */
-#view-lobby:not(.hidden) {
-    display: grid !important;
-}
-
-.hidden {
-    display: none !important;
-}
-
-/* Garante que todas as tags principais e containers se comportem como páginas inteiras e isoladas */
-main:not(.hidden),
-.page-container:not(.hidden) {
-    display: block !important;
-    width: 100%;
-    min-height: calc(100vh - 80px);
-    position: relative;
-    box-sizing: border-box;
-}
-
-/* Exceções que utilizam grid estrutural nativo */
-#view-lobby:not(.hidden) {
-    display: grid !important;
-}
-
-#view-registro:not(.hidden) {
-    display: grid !important; /* Se o seu registro usar grid, ajuste conforme seu layout original */
+    #view-aparelho-ocupado .glass-card-action {
+        padding: 20px;
+    }
 }
