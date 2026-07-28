@@ -2546,17 +2546,14 @@ async function toggleGravacao() {
 }
 
 function excluirPost(id) {
+    // Força a página a rolar para o topo instantaneamente para receber o modal centralizado
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Remove qualquer modal residual anterior para não acumular no DOM
-    const modalAntigo = document.getElementById('modal-confirmacao-exclusao');
-    if (modalAntigo) modalAntigo.remove();
 
     const modalConfirm = document.createElement('div');
     modalConfirm.id = 'modal-confirmacao-exclusao';
     modalConfirm.style = `
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(2, 6, 23, 0.95); backdrop-filter: blur(10px);
+        background: rgba(2, 6, 23, 0.92); backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         display: flex; align-items: center; justify-content: center;
         z-index: 100000; padding: 20px;
@@ -2577,8 +2574,12 @@ function excluirPost(id) {
         </div>
     `;
 
-    // CORREÇÃO AQUI: Sempre anexar direto ao document.body para isolar do layout do blog
-    document.body.appendChild(modalConfirm);
+    const viewBlog = document.getElementById('view-blog');
+    if (viewBlog) {
+        viewBlog.appendChild(modalConfirm);
+    } else {
+        document.body.appendChild(modalConfirm);
+    }
 
     document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
 
@@ -2635,6 +2636,7 @@ window.addEventListener('load', () => {
         if (checkbox && emailSalvo) checkbox.checked = true;
     }
 });
+
 
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
