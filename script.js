@@ -2430,35 +2430,40 @@ async function toggleGravacaoAudio() {
 
 function postarNoFeed() {
     const inputTexto = document.getElementById('texto-evolucao');
-    const texto = inputTexto ? inputTexto.value : '';
+    const texto = inputTexto ? inputTexto.value.trim() : '';
     
+    // Valida se os dois estão vazios
     if (!texto && !midiaAnexada) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("O post não pode estar vazio!");
         return;
     }
 
+    // Cria o objeto contendo o texto E a mídia juntos
     const novoPost = {
         id: Date.now(),
         data: new Date().toLocaleString('pt-BR'),
         texto: texto,
-        midia: midiaAnexada
+        midia: midiaAnexada // Aqui vai o base64 da imagem/vídeo junto com o texto
     };
 
     feedEvolucao.unshift(novoPost);
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
     
+    // Limpa os campos após a postagem
     midiaAnexada = null;
-    
     if (inputTexto) inputTexto.value = "";
     
     const previewContainer = document.getElementById('preview-container');
     if (previewContainer) previewContainer.innerHTML = "";
     
+    const inputMedia = document.getElementById('input-media');
+    if (inputMedia) inputMedia.value = "";
+
     atualizarFeedUI();
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    mostrarAviso("Postagem realizada!");
+    mostrarAviso("Postagem realizada com sucesso!");
 }
 
 function atualizarFeedUI() {
