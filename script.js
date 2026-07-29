@@ -1030,7 +1030,9 @@ function criarNovaFicha() {
     });
 }
 
-
+function salvarBanco() {
+    localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
+}
 
 function solicitarNomeFichaCustom(callback) {
 
