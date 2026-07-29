@@ -1014,31 +1014,20 @@ function renderizarFichas() {
 }
 
 function criarNovaFicha() {
-
-    // Chamamos o modal moderno em vez do prompt
-
     solicitarNomeFichaCustom((nome) => {
-
-        // Esta parte só executa quando o usuário clica em "CRIAR" no modal
-
         if (nome && !bancoDeDados.fichas[nome]) {
-
             bancoDeDados.fichas[nome] = [];
-
             salvarBanco();
-
-            renderizarFichas();
+            
+            // Atualiza AMBAS as telas para garantir que o treino apareça em qualquer lugar
+            if (typeof renderizarFichas === 'function') renderizarFichas();
+            if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
 
             mostrarAviso(`Treino ${nome} criado com sucesso!`);
-
         } else if (bancoDeDados.fichas[nome]) {
-
             mostrarAviso("Este nome de treino já existe.");
-
         }
-
     });
-
 }
 
 
@@ -1266,42 +1255,20 @@ function renderizarResumoFicha(nome) {
 }
 
 
-
 function excluirFicha(nome) {
-
-    // 1. Remove a ficha do objeto local
-
     if (bancoDeDados.fichas[nome]) {
-
         delete bancoDeDados.fichas[nome];
-
-       
-
-        // 2. CHAMA O NOME CORRETO: salvarBanco (que você já usa em outras partes)
-
         salvarBanco();
-
        
-
-        // 3. Atualiza a tela para a ficha sumir da lista
-
-        renderizarFichas();
-
+        // Atualiza ambas as listagens após excluir
+        if (typeof renderizarFichas === 'function') renderizarFichas();
+        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
        
-
-        // 4. Feedback visual para o usuário
-
         mostrarAviso("Ficha excluída com sucesso!");
-
     } else {
-
         console.error("Ficha não encontrada para exclusão:", nome);
-
     }
-
 }
-
-
 
 // --- 4. SISTEMA DE CONSULTA GERAL ---
 
