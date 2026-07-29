@@ -718,15 +718,15 @@ function showView(viewId) {
         tela.classList.add('hidden');
     });
 
-    // 4. Mostra exclusivamente a view alvo solicitada
-    const viewAlvo = document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
+    // 4. Mostra exclusivamente a view alvo solicitada (Tratando IDs diretos como o do CrossFit)
+    const viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
     } else {
-        console.warn(`A view '${cleanId}' não foi encontrada no HTML.`);
+        console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // 5. Callbacks originais de renderização
+    // 5. Callbacks originais e novos de renderização para CrossFit
     if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
@@ -735,7 +735,13 @@ function showView(viewId) {
         renderizarPaginaCronograma();
     } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
         carregarDadosPerfil();
+    } else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+        atualizarListaRecordsCF();
+    } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
+        atualizarListaBenchmarksCF();
     }
+
+    window.currentView = cleanId;
 
     // Segundo comando de segurança para garantir o topo
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
