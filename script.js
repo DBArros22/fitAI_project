@@ -2811,7 +2811,6 @@ function gerarSugestaoComModal() {
 
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 function calcularCargasCF() {
     const input = document.getElementById('input-1rm');
     const container = document.getElementById('lista-cargas-cf');
@@ -3218,9 +3217,9 @@ window.iniciarTimerCF = iniciarTimerCF;
 window.pausarTimerCF = pausarTimerCF;
 window.resetarTimerCF = resetarTimerCF;
 
+// Funções área cross fit 
 
-// Páginas benchmarks crossfit
-
+// Biblioteca Estática de WODs Históricos e Oficiais
 const bibliotecaDeBenchmarks = {
     'girls': [
         { nome: 'FRAN', detalhe: '21-15-9 Repetições por tempo de:<br>• Thrusters (95/65 lbs)<br>• Pull-ups' },
