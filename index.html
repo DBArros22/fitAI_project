@@ -571,6 +571,68 @@
     </div>
 </div>
 
+HTML
+<div id="crossfit-record-hub" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 id="titulo-cf-record" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Recordes</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Gerencie seus recordes e marcas pessoais.</p>
+        </div>
+
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-cf-valor" placeholder="Marca / Carga (Ex: 100kg ou 02:45)" class="input-field" style="width: 100%; font-weight: 700;">
+                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
+            </div>
+        </div>
+
+        <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;">
+            </div>
+    </div>
+</div>
+
+<div id="crossfit-benchmark-hub" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 id="titulo-cf-benchmark" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Benchmarks</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Histórico de WODs e marcas oficiais.</p>
+        </div>
+
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-bench-marca" placeholder="Marca / Tempo (Ex: 03:15)" class="input-field" style="width: 100%; font-weight: 700;">
+                <input type="text" id="input-bench-atleta" placeholder="Nome do Atleta" class="input-field" style="width: 100%; font-weight: 700;">
+                <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
+            </div>
+        </div>
+
+        <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;">
+            </div>
+    </div>
+</div>
+
 
 <main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
     <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
