@@ -710,6 +710,67 @@
     </div>
 </div>
 
+<!-- script para mover o widgets do timer wods minimizado fora da tela -->
+
+<script>
+// Lógica para permitir arrastar o widget com o mouse ou toque (Touch)
+const widget = document.getElementById('mini-timer-widget');
+window.isDragging = false;
+let startX, startY, initialX, initialY;
+
+widget.addEventListener('pointerdown', (e) => {
+    // Evita arrastar se o usuário clicou diretamente nos botões internos
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    
+    window.isDragging = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    const rect = widget.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+    
+    widget.setPointerCapture(e.pointerId);
+    widget.style.cursor = 'grabbing';
+});
+
+widget.addEventListener('pointermove', (e) => {
+    if (!startX || !startY) return;
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        window.isDragging = true;
+    }
+    
+    if (window.isDragging) {
+        let newX = initialX + dx;
+        let newY = initialY + dy;
+        
+        // Limites da tela para o widget não sumir
+        const maxX = window.innerWidth - widget.offsetWidth;
+        const maxY = window.innerHeight - widget.offsetHeight;
+        
+        newX = Math.max(10, Math.min(newX, maxX - 10));
+        newY = Math.max(10, Math.min(newY, maxY - 10));
+        
+        widget.style.left = `${newX}px`;
+        widget.style.top = `${newY}px`;
+        widget.style.bottom = 'auto';
+        widget.style.right = 'auto';
+    }
+});
+
+widget.addEventListener('pointerup', (e) => {
+    startX = null;
+    startY = null;
+    widget.style.cursor = 'grab';
+    // Pequeno atraso para resetar a flag de arrasto para o clique abrir a tela corretamente
+    setTimeout(() => { window.isDragging = false; }, 50);
+});
+</script>
+
 <main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
     <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
         
