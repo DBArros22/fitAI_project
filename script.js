@@ -3155,6 +3155,71 @@ function pararTimerCF() {
 
 // Script responsavel por mover o mini widegt enquanti minizado da pagina timer wods CROSSFIT
 
+const widget = document.getElementById('mini-timer-widget');
+let hasMoved = false;
+let startX, startY, initialX, initialY;
+
+widget.addEventListener('pointerdown', (e) => {
+    if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+    
+    hasMoved = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    const rect = widget.getBoundingClientRect();
+    initialX = rect.left;
+    initialY = rect.top;
+    
+    widget.setPointerCapture(e.pointerId);
+    widget.style.cursor = 'grabbing';
+});
+
+widget.addEventListener('pointermove', (e) => {
+    if (startX === undefined || startY === undefined) return;
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    // Aumentada a tolerância para evitar falsos positivos ao tentar apenas tocar/clicar
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) {
+        hasMoved = true;
+    }
+    
+    if (hasMoved) {
+        let newX = initialX + dx;
+        let newY = initialY + dy;
+        
+        const maxX = window.innerWidth - widget.offsetWidth;
+        const maxY = window.innerHeight - widget.offsetHeight;
+        
+        newX = Math.max(10, Math.min(newX, maxX - 10));
+        newY = Math.max(10, Math.min(newY, maxY - 10));
+        
+        widget.style.left = `${newX}px`;
+        widget.style.top = `${newY}px`;
+        widget.style.bottom = 'auto';
+        widget.style.right = 'auto';
+    }
+});
+
+widget.addEventListener('pointerup', (e) => {
+    startX = undefined;
+    startY = undefined;
+    widget.style.cursor = 'grab';
+});
+
+// Função dedicada para controlar o clique sem conflito com o arrasto
+function handleWidgetClick(e) {
+    if (hasMoved) {
+        // Se o usuário arrastou, impede que o clique abra a tela
+        e.stopImmediatePropagation();
+        hasMoved = false;
+        return;
+    }
+    // Se foi apenas um toque/clique limpo, abre a tela de timers
+    showView('crossfit-timers');
+}
+
 // --- CONTROLE DA ABA DE NOTIFICAÇÕES DISPOSITIVO MÓVEL (MEDIA SESSION) ---
 function configurarNotificacaoMedia(estado, tempoStr) {
     if ('mediaSession' in navigator) {
