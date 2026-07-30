@@ -691,6 +691,25 @@
     </div>
 </div>
 
+<!-- div do widgets do time do crossfit wods -->
+
+<div id="mini-timer-widget" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px 16px; border-radius: 50px; align-items: center; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); cursor: pointer;" onclick="showView('crossfit-timers')">
+    <div id="mini-timer-text" style="color: white; font-family: monospace; font-weight: 900; font-size: 0.9rem;">
+        AMRAP: 00:00
+    </div>
+    
+    <div style="display: flex; gap: 6px; align-items: center;" onclick="event.stopPropagation();">
+        <button onclick="alternarPlayPauseWidget()" style="background: var(--accent-blue, #00d4ff); border: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: black;">
+            <svg id="mini-icon-pause" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            <svg id="mini-icon-play" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display: none;"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+        </button>
+        
+        <button onclick="resetarTimerCF()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #ef4444;">
+            <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg>
+        </button>
+    </div>
+</div>
+
 <main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
     <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
         
