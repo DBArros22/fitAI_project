@@ -437,7 +437,142 @@
 <div id="view-crossfit-lobby" class="page-container hidden">
     <div class="container-central">
         <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="showView('lobby')" class="btn-voltar-premium" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 15px;">
+            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Zona Crossfit</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Selecione sua ferramenta de treino.</p>
+        </div>
+
+        <div class="crossfit-grid">
+            <div onclick="showView('crossfit-timers')" class="menu-card" style="border-left: 4px solid #00d4ff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #00d4ff; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.9rem; margin-bottom: 5px;">WOD Timers</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">AMRAP, EMOM e Tabata.</p>
+            </div>
+
+            <div onclick="showView('crossfit-strength-calc')" class="menu-card" style="border-left: 4px solid #22c55e; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #22c55e; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z"></path>
+                        <path d="M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2V8z"></path>
+                        <path d="M6 12h12"></path>
+                        <path d="M6 7v10"></path>
+                        <path d="M18 7v10"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Calculadora 1RM</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px; line-height: 1.2;">Descubra as porcentagens do seu PR.</p>
+            </div>
+
+            <div onclick="abrirRecordsHub('barbell')" class="menu-card" style="border-left: 4px solid #a855f7; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #a855f7; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 12h12M6 7v10M18 7v10M3 9h3v6H3zm15 0h3v6h-3z"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Barbell</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Cargas máximas puras.</p>
+            </div>
+
+            <div onclick="abrirRecordsHub('complex')" class="menu-card" style="border-left: 4px solid #ec4899; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #ec4899; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Complex LPO</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Combos de movimentos.</p>
+            </div>
+
+            <div onclick="abrirRecordsHub('gymnastic')" class="menu-card" style="border-left: 4px solid #eab308; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #eab308; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 21a6 6 0 0 0-12 0"></path>
+                        <circle cx="12" cy="10" r="4"></circle>
+                        <path d="M12 2v2"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Gymnastic</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Máximo de repetições.</p>
+            </div>
+
+            <div onclick="abrirRecordsHub('endurance')" class="menu-card" style="border-left: 4px solid #3b82f6; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #3b82f6; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8h4M6 8h4M2 8h4M13 2.5l-3 6.5h5l-4 7.5"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Endurance</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Cardio e tempos.</p>
+            </div>
+
+            <div onclick="abrirBenchmarksHub('girls')" class="menu-card" style="border-left: 4px solid #10b981; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #10b981; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path>
+                        <path d="M12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-6 9.5c0-2.5 3-3.5 6-3.5s6 1 6 3.5V18H6v-2.5z"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Girls WODs</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Treinos históricos.</p>
+            </div>
+
+            <div onclick="abrirBenchmarksHub('heroes')" class="menu-card" style="border-left: 4px solid #ef4444; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #ef4444; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon>
+                        <line x1="12" y1="2" x2="12" y2="22"></line>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">The Heroes</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Desafios militares.</p>
+            </div>
+
+            <div onclick="abrirBenchmarksHub('notables')" class="menu-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #64748b; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Notables</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px;">Treinos de referência.</p>
+            </div>
+
+            <div onclick="abrirBenchmarksHub('open')" class="menu-card" style="border-left: 4px solid #f97316; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+                <div class="card-icon" style="color: #f97316; margin-bottom: 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path>
+                    </svg>
+                </div>
+                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Open WODs</h3>
+                <p style="font-size: 0.7rem; opacity: 0.7;">Histórico Mundial.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="crossfit-record-hub" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
@@ -447,106 +582,54 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 5px; color: var(--accent-blue);">Zona Crossfit</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Selecione sua ferramenta de treino.</p>
+            <h2 id="titulo-cf-record" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Recordes</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Gerencie seus recordes e marcas pessoais.</p>
         </div>
 
-        <div class="crossfit-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-            
-            <div onclick="showView('crossfit-timers')" class="glass-panel" style="border-left: 4px solid #00d4ff; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #00d4ff; margin-bottom: 12px; background: rgba(0,212,255,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 4px; color: white;">WOD Timers</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">AMRAP, EMOM e Tabata.</p>
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-cf-valor" placeholder="Marca / Carga (Ex: 100kg ou 02:45)" class="input-field" style="width: 100%; font-weight: 700;">
+                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
             </div>
-
-            <div onclick="showView('crossfit-strength-calc')" class="glass-panel" style="border-left: 4px solid #22c55e; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #22c55e; margin-bottom: 12px; background: rgba(34,197,94,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M18 8h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z"></path>
-                        <path d="M6 8H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2V8z"></path>
-                        <path d="M6 12h12"></path>
-                    </svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Calculadora 1RM</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Porcentagens do PR.</p>
-            </div>
-
-            <div onclick="abrirRecordsHub('barbell')" class="glass-panel" style="border-left: 4px solid #a855f7; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #a855f7; margin-bottom: 12px; background: rgba(168,85,247,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12h12M6 7v10M18 7v10M3 9h3v6H3zm15 0h3v6h-3z"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Barbell</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Cargas máximas.</p>
-            </div>
-
-            <div onclick="abrirRecordsHub('complex')" class="glass-panel" style="border-left: 4px solid #ec4899; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #ec4899; margin-bottom: 12px; background: rgba(236,72,153,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Complex LPO</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Combos de movimentos.</p>
-            </div>
-
-            <div onclick="abrirRecordsHub('gymnastic')" class="glass-panel" style="border-left: 4px solid #eab308; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #eab308; margin-bottom: 12px; background: rgba(234,179,8,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 21a6 6 0 0 0-12 0"></path><circle cx="12" cy="10" r="4"></circle></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Gymnastic</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Repetições máximas.</p>
-            </div>
-
-            <div onclick="abrirRecordsHub('endurance')" class="glass-panel" style="border-left: 4px solid #3b82f6; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #3b82f6; margin-bottom: 12px; background: rgba(59,130,246,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h4M6 8h4M2 8h4M13 2.5l-3 6.5h5l-4 7.5"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Endurance</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Cardio e tempos.</p>
-            </div>
-
-            <div onclick="abrirBenchmarksHub('girls')" class="glass-panel" style="border-left: 4px solid #10b981; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #10b981; margin-bottom: 12px; background: rgba(16,185,129,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Girls WODs</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Treinos históricos.</p>
-            </div>
-
-            <div onclick="abrirBenchmarksHub('heroes')" class="glass-panel" style="border-left: 4px solid #ef4444; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #ef4444; margin-bottom: 12px; background: rgba(239,68,68,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">The Heroes</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Desafios militares.</p>
-            </div>
-
-            <div onclick="abrirBenchmarksHub('notables')" class="glass-panel" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #64748b; margin-bottom: 12px; background: rgba(100,116,139,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Notables</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Treinos referência.</p>
-            </div>
-
-            <div onclick="abrirBenchmarksHub('open')" class="glass-panel" style="border-left: 4px solid #f97316; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05);">
-                <div class="card-icon" style="color: #f97316; margin-bottom: 12px; background: rgba(249,115,22,0.1); padding: 10px; border-radius: 12px;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.8rem; margin-bottom: 4px; color: white;">Open WODs</h3>
-                <p style="font-size: 0.65rem; color: var(--text-secondary);">Histórico Mundial.</p>
-            </div>
-
         </div>
+
+        <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
+    </div>
+</div>
+
+<div id="crossfit-benchmark-hub" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <h2 id="titulo-cf-benchmark" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Benchmarks</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Histórico de WODs e marcas oficiais.</p>
+        </div>
+
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-bench-marca" placeholder="Marca / Tempo (Ex: 03:15)" class="input-field" style="width: 100%; font-weight: 700;">
+                <input type="text" id="input-bench-atleta" placeholder="Nome do Atleta" class="input-field" style="width: 100%; font-weight: 700;">
+                <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
+            </div>
+        </div>
+
+        <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
 </div>
 
 <div id="crossfit-timers" class="page-container hidden">
     <div class="container-central">
-        
         <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
             <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
                 <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -562,96 +645,35 @@
             <p id="status-timer" style="color: var(--text-secondary); font-size: 0.9rem;">PRONTO</p>
         </div>
 
-        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" class="menu-card" style="flex: 1; padding: 16px; border: 2px solid var(--accent-blue); background: rgba(255,255,255,0.03); border-radius: 16px; color: white; font-weight: 900; cursor: pointer; text-align: center;">AMRAP</button>
-            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" class="menu-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.01); border-radius: 16px; color: white; font-weight: 900; opacity: 0.4; cursor: pointer; text-align: center;">EMOM</button>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 2px solid var(--accent-blue); color: white; border-radius: 12px; font-weight: 900; cursor: pointer;">AMRAP</button>
+            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 12px; font-weight: 900; opacity: 0.3; cursor: pointer;">EMOM</button>
         </div>
 
-        <div class="glass-panel" style="text-align: center; padding: 32px 20px; border-radius: 24px; margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+        <div class="glass-panel" style="text-align: center; padding: 30px; border-radius: 24px; margin-bottom: 20px; background: rgba(0,0,0,0.3);">
             <div id="timer-display" style="font-family: monospace; font-size: 3.5rem; font-weight: 900; color: white; letter-spacing: 2px;">
-                00:00<span style="font-size: 2rem; opacity: 0.75; margin-left: 2px;">:00</span>
+                00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>
             </div>
         </div>
 
-        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 20px; border-radius: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 20px; border-radius: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.03);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <span id="label-tempo-wod" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Duração Total (Minutos)</span>
-                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
+                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem;">
             </div>
             
             <div id="group-seconds" style="display: none; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Segundos do Intervalo</span>
-                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
+                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem;">
             </div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 16px; font-weight: 900; border-radius: 14px; cursor: pointer;">INICIAR WOD</button>
-            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 16px; border-radius: 14px; font-weight: 900; cursor: pointer;">RESET</button>
+            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 15px; font-weight: 900; border-radius: 14px; cursor: pointer;">INICIAR WOD</button>
+            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer;">RESET</button>
         </div>
-
     </div>
 </div>
-
-<div id="crossfit-record-hub" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 id="titulo-cf-record" class="italic-bold uppercase blue-text" style="margin-bottom: 5px; color: var(--accent-blue);">Recordes</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Gerencie seus recordes e marcas pessoais.</p>
-        </div>
-
-        <div class="glass-panel" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700; padding: 12px;">
-                <input type="text" id="input-cf-valor" placeholder="Marca / Carga (Ex: 100kg ou 02:45)" class="input-field" style="width: 100%; font-weight: 700; padding: 12px;">
-                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 14px; font-weight: 900; border-radius: 12px; cursor: pointer; background: var(--accent-blue); color: #020617; border: none;">ADICIONAR RECORDE</button>
-            </div>
-        </div>
-
-        <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
-    </div>
-</div>
-
-<div id="crossfit-benchmark-hub" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px;">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 id="titulo-cf-benchmark" class="italic-bold uppercase blue-text" style="margin-bottom: 5px; color: var(--accent-blue);">Benchmarks</h2>
-            <p style="color: var(--text-secondary); font-size: 0.85rem;">Histórico de WODs e marcas oficiais.</p>
-        </div>
-
-        <div class="glass-panel" style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700; padding: 12px;">
-                <input type="text" id="input-bench-marca" placeholder="Marca / Tempo (Ex: 03:15)" class="input-field" style="width: 100%; font-weight: 700; padding: 12px;">
-                <input type="text" id="input-bench-atleta" placeholder="Nome do Atleta" class="input-field" style="width: 100%; font-weight: 700; padding: 12px;">
-                <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 14px; font-weight: 900; border-radius: 12px; cursor: pointer; background: var(--accent-blue); color: #020617; border: none;">SALVAR BENCHMARK</button>
-            </div>
-        </div>
-
-        <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;"></div>
-    </div>
-</div>
-
 
 <main id="view-perfil" class="hidden" style="padding: 20px 5%; min-height: 100vh; background: var(--bg-dark);">
     <div class="glass-panel fade-in" style="max-width: 500px; margin: 20px auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
