@@ -2895,7 +2895,7 @@ function setWodTimerMode(modo) {
         if (status) status.innerText = "AMRAP (CONTAGEM REGRESSIVA)";
         
         if (groupSec) groupSec.style.display = "none";
-        if (labelTempo) labelTempo.innerText = "Duração Total (Minutos)";
+        if (labelTempo) labelTempo.innerText = "DEFINIR TEMPO (HORAS : MINUTOS : SEGUNDOS)";
     } else {
         if (btnEmom) {
             btnEmom.style.opacity = "1";
@@ -2910,18 +2910,20 @@ function setWodTimerMode(modo) {
         if (status) status.innerText = "EMOM (ALERTA POR INTERVALO)";
         
         if (groupSec) groupSec.style.display = "flex";
-        if (labelTempo) labelTempo.innerText = "Intervalo do Alerta (Min:Seg)";
+        if (labelTempo) labelTempo.innerText = "DEFINIR TEMPO (HORAS : MINUTOS : SEGUNDOS)";
     }
     resetarTimerCF();
 }
 
 function travarControlesTempo(deveTravar) {
-    const botoes = ['btn-min-down', 'btn-min-up', 'btn-sec-down', 'btn-sec-up', 'btn-amrap', 'btn-emom'];
+    // Atualizado com os IDs corretos dos novos inputs (horas, minutos e segundos)
+    const botoes = ['wod-hours', 'wod-minutes', 'wod-seconds', 'wod-interval-seconds', 'btn-amrap', 'btn-emom'];
     botoes.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
             el.disabled = deveTravar;
             el.style.pointerEvents = deveTravar ? "none" : "auto";
+            el.style.opacity = deveTravar ? "0.5" : "1";
         }
     });
     const container = document.getElementById('container-ajuste-tempo');
@@ -2936,7 +2938,6 @@ function iniciarTimerCF() {
         return;
     }
 
-    // Solicita permissão de notificação do sistema caso o usuário ainda não tenha liberado
     if ('Notification' in window && Notification.permission === 'default') {
         Notification.requestPermission();
     }
@@ -2958,7 +2959,6 @@ function iniciarTimerCF() {
 
     const display = document.getElementById('timer-display');
     const status = document.getElementById('status-timer');
-    const minSet = parseInt(document.getElementById('wod-minutes').value) || 0;
     
     if (btnStart) btnStart.innerHTML = "<span>PAUSAR WOD</span>";
     travarControlesTempo(true);
@@ -2970,7 +2970,7 @@ function iniciarTimerCF() {
     cfTimerInterval = setInterval(() => {
         if (prep > 0) {
             tocarBeep(600, 0.1); 
-            if (display) display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+            if (display) display.innerHTML = `00:${prep.toString().padStart(2, '0')}<span style="font-size: 1.5rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
             
             const txtPrep = `PREP ${prep}`;
             atualizarMiniTimerWidget(txtPrep);
@@ -2982,7 +2982,7 @@ function iniciarTimerCF() {
             tocarBeep(880, 0.5); 
             cfTempoDecorridoAcumulado = 0;
             cfStartTime = Date.now();
-            executarWodReal(minSet);
+            executarWodReal();
             
             atualizarAlternadorInterface(false);
             configurarNotificacaoMedia('playing', '00:00');
@@ -3011,6 +3011,11 @@ function pausarTimerCF() {
 
     configurarNotificacaoMedia('paused', 'Pausado');
     atualizarAlternadorInterface(true);
+    
+    // Garante que o widget atualize para o estado pausado mesmo fora da aba
+    const m = Math.floor(cfTempoDecorridoAcumulado / 60);
+    const s = Math.floor(cfTempoDecorridoAcumulado % 60);
+    atualizarMiniTimerWidget(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')} (Pausado)`);
 }
 
 function executarWodReal() {
@@ -3018,9 +3023,11 @@ function executarWodReal() {
     const status = document.getElementById('status-timer');
     const btnStart = document.getElementById('btn-start-wod');
     
+    // Captura Horas, Minutos e Segundos informados pelo usuário
+    const hSet = parseInt(document.getElementById('wod-hours').value) || 0;
     const mSet = parseInt(document.getElementById('wod-minutes').value) || 0;
-    const sSet = parseInt(document.getElementById('wod-seconds')?.value) || 0;
-    const intervaloTotalSegundos = (mSet * 60) + sSet;
+    const sSet = parseInt(document.getElementById('wod-seconds').value) || 0;
+    const intervaloTotalSegundos = (hSet * 3600) + (mSet * 60) + sSet;
 
     if (status) status.innerText = "WORK!";
     if (display) display.style.color = "#22c55e"; 
@@ -3077,14 +3084,19 @@ function executarWodReal() {
             }
         }
 
-        const m = Math.floor(Math.abs(tempoFinal) / 60);
-        const s = Math.floor(Math.abs(tempoFinal) % 60);
-        const ms = Math.floor((Math.abs(tempoFinal) % 1) * 100);
+        const absTempo = Math.abs(tempoFinal);
+        const hh = Math.floor(absTempo / 3600);
+        const mm = Math.floor((absTempo % 3600) / 60);
+        const ss = Math.floor(absTempo % 60);
+        const ms = Math.floor((absTempo % 1) * 100);
         
-        const tempoFormatado = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        let tempoFormatado = `${mm.toString().padStart(2, '0')}:${ss.toString().padStart(2, '0')}`;
+        if (hh > 0) {
+            tempoFormatado = `${hh.toString().padStart(2, '0')}:${tempoFormatado}`;
+        }
         
         if (display) {
-            display.innerHTML = `${tempoFormatado}<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
+            display.innerHTML = `${tempoFormatado}<span style="font-size: 1.5rem; opacity: 0.75; margin-left: 2px;">:${ms.toString().padStart(2, '0')}</span>`;
         }
 
         document.title = `${tempoFormatado} | ${cfModo}`;
@@ -3107,7 +3119,7 @@ function finalizarTudo() {
     const status = document.getElementById('status-timer');
 
     if (display) {
-        display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+        display.innerHTML = `00:00<span style="font-size: 1.5rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
         display.style.color = "#ff4444";
     }
     if (status) status.innerText = "FIM DO TREINO!";
@@ -3129,7 +3141,7 @@ function resetarTimerCF() {
     const status = document.getElementById('status-timer');
 
     if (display) {
-        display.innerHTML = `00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
+        display.innerHTML = `00:00<span style="font-size: 1.5rem; opacity: 0.75; margin-left: 2px;">:00</span>`;
         display.style.color = "white";
     }
     if (status) status.innerText = "PRONTO";
@@ -3174,7 +3186,7 @@ function atualizarMiniTimerWidget(tempoStr) {
     const text = document.getElementById('mini-timer-text');
     if (!widget || !text) return;
 
-    // Se houver uma contagem ativa ou pausada E o usuário não estiver visualizando a página de timers
+    // Se houver contagem ativa/pausada E o usuário sair da tela de timers
     if ((cfTimerInterval || cfIsPaused) && window.currentView !== 'crossfit-timers') {
         widget.style.display = "flex";
         if (tempoStr !== "") {
@@ -3196,14 +3208,14 @@ function alternarPlayPauseWidget() {
 function atualizarAlternadorInterface(estaPausado) {
     const iconPause = document.getElementById('mini-icon-pause');
     const iconPlay = document.getElementById('mini-icon-play');
-    if (!iconPause || !iconPlay) return;
-
-    if (estaPausado) {
-        iconPause.style.display = "none";
-        iconPlay.style.display = "block";
-    } else {
-        iconPause.style.display = "block";
-        iconPlay.style.display = "none";
+    if (iconPause && iconPlay) {
+        if (estaPausado) {
+            iconPause.style.display = "none";
+            iconPlay.style.display = "block";
+        } else {
+            iconPause.style.display = "block";
+            iconPlay.style.display = "none";
+        }
     }
     
     const btnStart = document.getElementById('btn-start-wod');
