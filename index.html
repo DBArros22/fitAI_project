@@ -629,10 +629,10 @@
 </div>
 
 <div id="crossfit-timers" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <div class="container-central" style="max-width: 480px; margin: 0 auto; padding: 15px;">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 8px;">
+            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium" style="padding: 6px 12px; font-size: 0.8rem;">
+                <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
@@ -640,37 +640,37 @@
             </button>
         </div>
 
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">WOD Timers</h2>
-            <p id="status-timer" style="color: var(--text-secondary); font-size: 0.9rem;">PRONTO</p>
+        <div style="text-align: center; margin-bottom: 12px;">
+            <h2 class="italic-bold uppercase blue-text" style="font-size: 1.3rem; margin-bottom: 2px;">WOD Timers</h2>
+            <p id="status-timer" style="color: var(--text-secondary); font-size: 0.8rem;">PRONTO</p>
         </div>
 
-        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
-            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" class="menu-card" style="flex: 1; padding: 16px; border: 2px solid var(--accent-blue); background: rgba(255,255,255,0.03); border-radius: 16px; color: white; font-weight: 900; cursor: pointer; text-align: center;">AMRAP</button>
-            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" class="menu-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.01); border-radius: 16px; color: white; font-weight: 900; opacity: 0.4; cursor: pointer; text-align: center;">EMOM</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" class="menu-card" style="flex: 1; padding: 10px; border: 2px solid var(--accent-blue); background: rgba(255,255,255,0.03); border-radius: 12px; color: white; font-weight: 900; font-size: 0.85rem; cursor: pointer; text-align: center;">AMRAP</button>
+            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" class="menu-card" style="flex: 1; padding: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.01); border-radius: 12px; color: white; font-weight: 900; font-size: 0.85rem; opacity: 0.4; cursor: pointer; text-align: center;">EMOM</button>
         </div>
 
-        <div class="glass-panel" style="text-align: center; padding: 32px 20px; border-radius: 24px; margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
-            <div id="timer-display" style="font-family: monospace; font-size: 3.5rem; font-weight: 900; color: white; letter-spacing: 2px;">
-                00:00<span style="font-size: 2rem; opacity: 0.75; margin-left: 2px;">:00</span>
+        <div class="glass-panel" style="text-align: center; padding: 20px 15px; border-radius: 18px; margin-bottom: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06);">
+            <div id="timer-display" style="font-family: monospace; font-size: 2.8rem; font-weight: 900; color: white; letter-spacing: 2px;">
+                00:00<span style="font-size: 1.6rem; opacity: 0.75; margin-left: 2px;">:00</span>
             </div>
         </div>
 
-        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 20px; border-radius: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <span id="label-tempo-wod" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Duração Total (Minutos)</span>
-                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
+        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 14px 16px; border-radius: 14px; margin-bottom: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span id="label-tempo-wod" style="color: var(--text-secondary); font-size: 0.8rem; font-weight: bold;">Duração Total (Minutos)</span>
+                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 70px; text-align: center; font-weight: 900; font-size: 1rem; padding: 6px;">
             </div>
             
             <div id="group-seconds" style="display: none; justify-content: space-between; align-items: center;">
-                <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Segundos do Intervalo</span>
-                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
+                <span style="color: var(--text-secondary); font-size: 0.8rem; font-weight: bold;">Segundos do Intervalo</span>
+                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 70px; text-align: center; font-weight: 900; font-size: 1rem; padding: 6px;">
             </div>
         </div>
 
-        <div style="display: flex; gap: 12px;">
-            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 16px; font-weight: 900; border-radius: 14px; cursor: pointer;">INICIAR WOD</button>
-            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 16px; border-radius: 14px; font-weight: 900; cursor: pointer;">RESET</button>
+        <div style="display: flex; gap: 8px;">
+            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 12px; font-weight: 900; font-size: 0.9rem; border-radius: 12px; cursor: pointer;">INICIAR WOD</button>
+            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 12px; font-weight: 900; font-size: 0.9rem; border-radius: 12px; cursor: pointer;">RESET</button>
         </div>
     </div>
 </div>
