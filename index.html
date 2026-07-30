@@ -645,32 +645,32 @@
             <p id="status-timer" style="color: var(--text-secondary); font-size: 0.9rem;">PRONTO</p>
         </div>
 
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: 2px solid var(--accent-blue); color: white; border-radius: 12px; font-weight: 900; cursor: pointer;">AMRAP</button>
-            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" style="flex: 1; padding: 12px; background: rgba(255,255,255,0.05); border: none; color: white; border-radius: 12px; font-weight: 900; opacity: 0.3; cursor: pointer;">EMOM</button>
+        <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+            <button id="btn-amrap" onclick="setWodTimerMode('AMRAP')" class="menu-card" style="flex: 1; padding: 16px; border: 2px solid var(--accent-blue); background: rgba(255,255,255,0.03); border-radius: 16px; color: white; font-weight: 900; cursor: pointer; text-align: center;">AMRAP</button>
+            <button id="btn-emom" onclick="setWodTimerMode('EMOM')" class="menu-card" style="flex: 1; padding: 16px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.01); border-radius: 16px; color: white; font-weight: 900; opacity: 0.4; cursor: pointer; text-align: center;">EMOM</button>
         </div>
 
-        <div class="glass-panel" style="text-align: center; padding: 30px; border-radius: 24px; margin-bottom: 20px; background: rgba(0,0,0,0.3);">
+        <div class="glass-panel" style="text-align: center; padding: 32px 20px; border-radius: 24px; margin-bottom: 20px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
             <div id="timer-display" style="font-family: monospace; font-size: 3.5rem; font-weight: 900; color: white; letter-spacing: 2px;">
-                00:00<span style="font-size: 2.2rem; opacity: 0.75; margin-left: 2px;">:00</span>
+                00:00<span style="font-size: 2rem; opacity: 0.75; margin-left: 2px;">:00</span>
             </div>
         </div>
 
-        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 20px; border-radius: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.03);">
+        <div id="container-ajuste-tempo" class="glass-panel" style="padding: 20px; border-radius: 20px; margin-bottom: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                 <span id="label-tempo-wod" style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Duração Total (Minutos)</span>
-                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem;">
+                <input type="number" id="wod-minutes" value="10" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
             </div>
             
             <div id="group-seconds" style="display: none; justify-content: space-between; align-items: center;">
                 <span style="color: var(--text-secondary); font-size: 0.85rem; font-weight: bold;">Segundos do Intervalo</span>
-                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem;">
+                <input type="number" id="wod-seconds" value="0" class="input-field" style="width: 80px; text-align: center; font-weight: 900; font-size: 1.1rem; padding: 8px;">
             </div>
         </div>
 
         <div style="display: flex; gap: 12px;">
-            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 15px; font-weight: 900; border-radius: 14px; cursor: pointer;">INICIAR WOD</button>
-            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 15px; border-radius: 14px; font-weight: 900; cursor: pointer;">RESET</button>
+            <button id="btn-start-wod" onclick="iniciarTimerCF()" class="btn-primary" style="flex: 2; padding: 16px; font-weight: 900; border-radius: 14px; cursor: pointer;">INICIAR WOD</button>
+            <button onclick="resetarTimerCF()" style="flex: 1; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 16px; border-radius: 14px; font-weight: 900; cursor: pointer;">RESET</button>
         </div>
     </div>
 </div>
