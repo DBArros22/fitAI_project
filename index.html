@@ -658,24 +658,29 @@
 
         <div id="container-ajuste-tempo" class="glass-panel" style="padding: 12px 14px; border-radius: 14px; margin-bottom: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
             <div style="display: flex; flex-direction: column; gap: 8px;">
-                <span style="color: var(--text-secondary); font-size: 0.75rem; font-weight: bold; text-align: center;">DEFINIR TEMPO (HORAS : MINUTOS : SEGUNDOS)</span>
+                <span id="label-tempo-wod" style="color: var(--text-secondary); font-size: 0.75rem; font-weight: bold; text-align: center;">DEFINIR TEMPO (HORAS : MINUTOS : SEGUNDOS)</span>
                 
                 <div style="display: flex; justify-content: center; gap: 6px; align-items: center;">
                     <div style="text-align: center;">
-                        <input type="number" id="wod-hours" placeholder="0" value="" min="0" max="23" class="input-field" style="width: 50px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
+                        <input type="number" id="wod-hours" value="" placeholder="0" min="0" max="23" class="input-field" style="width: 48px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
                         <span style="font-size: 0.65rem; color: var(--text-secondary); display: block; margin-top: 2px;">HR</span>
                     </div>
                     <span style="color: var(--text-secondary); font-weight: bold; font-size: 1.1rem; margin-bottom: 12px;">:</span>
                     <div style="text-align: center;">
-                        <input type="number" id="wod-minutes" placeholder="0" value="" min="0" max="59" class="input-field" style="width: 50px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
+                        <input type="number" id="wod-minutes" value="" placeholder="0" min="0" max="59" class="input-field" style="width: 48px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
                         <span style="font-size: 0.65rem; color: var(--text-secondary); display: block; margin-top: 2px;">MIN</span>
                     </div>
                     <span style="color: var(--text-secondary); font-weight: bold; font-size: 1.1rem; margin-bottom: 12px;">:</span>
                     <div style="text-align: center;">
-                        <input type="number" id="wod-seconds" placeholder="0" value="" min="0" max="59" class="input-field" style="width: 50px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
+                        <input type="number" id="wod-seconds" value="" placeholder="0" min="0" max="59" class="input-field" style="width: 48px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
                         <span style="font-size: 0.65rem; color: var(--text-secondary); display: block; margin-top: 2px;">SEG</span>
                     </div>
                 </div>
+            </div>
+
+            <div id="group-seconds" style="display: none; justify-content: space-between; align-items: center; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                <span style="color: var(--text-secondary); font-size: 0.75rem; font-weight: bold;">INTERVALO DO ALERTA (SEG)</span>
+                <input type="number" id="wod-interval-seconds" value="" placeholder="0" min="0" max="59" class="input-field" style="width: 60px; text-align: center; font-weight: 900; font-size: 0.95rem; padding: 6px;">
             </div>
         </div>
 
