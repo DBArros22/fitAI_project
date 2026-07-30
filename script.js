@@ -3153,6 +3153,8 @@ function pararTimerCF() {
     cfTimerInterval = null;
 }
 
+// Script responsavel por mover o mini widegt enquanti minizado da pagina timer wods CROSSFIT
+
 // --- CONTROLE DA ABA DE NOTIFICAÇÕES DISPOSITIVO MÓVEL (MEDIA SESSION) ---
 function configurarNotificacaoMedia(estado, tempoStr) {
     if ('mediaSession' in navigator) {
