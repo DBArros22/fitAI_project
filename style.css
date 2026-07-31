@@ -196,10 +196,10 @@ body:has(#view-login:not(.hidden)) .navbar {
 /* CROSSFIT GRID ISOLADO */
 .crossfit-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 30px 5%;
-    max-width: 1200px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding: 10px 15px;
+    max-width: 480px;
     margin: 0 auto;
     width: 100%;
 }
