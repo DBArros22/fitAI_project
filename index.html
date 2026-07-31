@@ -720,18 +720,17 @@
 
         <div style="text-align: center; margin-bottom: 15px;">
             <h2 class="italic-bold uppercase blue-text" style="font-size: 1.2rem; margin-bottom: 2px;">Calculadora 1RM</h2>
-            <p style="color: var(--text-secondary); font-size: 0.75rem;">Descubra suas porcentagens de carga máxima.</p>
+            <p style="color: var(--text-secondary); font-size: 0.75rem;">Digite sua carga máxima (PR) para ver as porcentagens.</p>
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="number" id="calc-peso" placeholder="Peso Levantado (Ex: 100)" class="input-field" style="width: 100%; font-weight: 700;" min="0" step="0.5">
-                <input type="number" id="calc-reps" placeholder="Repetições Executadas (Ex: 5)" class="input-field" style="width: 100%; font-weight: 700;" min="1" max="30">
-                <button onclick="calcular1RM()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">CALCULAR 1RM</button>
+                <input type="number" id="input-1rm-peso" placeholder="Digite seu PR em KG (Ex: 100)" class="input-field" style="width: 100%; font-weight: 700; text-align: center;" min="0" step="0.5" oninput="calcularPorcentagens1RM(this.value)">
             </div>
         </div>
 
-        <div id="resultado-1rm" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div id="resultado-porcentagens-1rm" style="display: flex; flex-direction: column; gap: 8px;">
+            </div>
     </div>
 </div>
 
