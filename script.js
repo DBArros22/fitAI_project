@@ -3344,11 +3344,19 @@ function abrirRecordsHub(categoria) {
     const tituloEl = document.getElementById('titulo-cf-record');
     if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Recordes';
     
-    // Reseta caixas de texto de forma segura
-    const inputMov = document.getElementById('input-cf-movimento');
+    // Altera o placeholder dinamicamente conforme a categoria (Peso ou Tempo)
     const inputVal = document.getElementById('input-cf-valor');
+    if (inputVal) {
+        inputVal.value = '';
+        if (categoria === 'barbell' || categoria === 'complex') {
+            inputVal.placeholder = 'Valor (Ex: 100)';
+        } else {
+            inputVal.placeholder = 'Tempo (Ex: 03:45)';
+        }
+    }
+    
+    const inputMov = document.getElementById('input-cf-movimento');
     if (inputMov) inputMov.value = '';
-    if (inputVal) inputVal.value = '';
     
     atualizarListaRecordsCF();
     
@@ -3396,15 +3404,28 @@ function atualizarListaRecordsCF() {
 function adicionarRecordeCF() {
     const inputMov = document.getElementById('input-cf-movimento');
     const inputVal = document.getElementById('input-cf-valor');
+    const inputAtleta = document.getElementById('input-cf-atleta'); // Caso esteja usando no HTML ajustado
     
     if (!inputMov || !inputVal) return;
     
     const movimento = inputMov.value.trim();
-    const valor = inputVal.value.trim();
+    let valor = inputVal.value.trim();
     
     if (!movimento || !valor) {
         exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
         return;
+    }
+    
+    // Aplicação automática da unidade baseada na categoria atual
+    const upperValor = valor.toUpperCase();
+    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+        if (!upperValor.includes('KG')) {
+            valor = `${valor} KG`;
+        }
+    } else if (cfCategoriaAtual === 'gymnastic' || cfCategoriaAtual === 'endurance') {
+        if (!upperValor.includes('MIN') && !upperValor.includes('SEC') && !upperValor.includes(':')) {
+            valor = `${valor} REPS`; // Ou formato de tempo se preferir
+        }
     }
     
     bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = valor;
@@ -3414,10 +3435,10 @@ function adicionarRecordeCF() {
     
     inputMov.value = '';
     inputVal.value = '';
+    if (inputAtleta) inputAtleta.value = '';
 }
 
 function removerRecordeCF(movimento) {
-    // Remoção direta sem confirm nativo, atualizando o estado imediatamente
     if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
         delete bancoDeDados.crossfit_records[cfCategoriaAtual][movimento];
         if (typeof salvarBanco === 'function') salvarBanco();
@@ -3506,7 +3527,7 @@ function adicionarBenchmarkCustom() {
     if (!inputNome || !inputMarca || !inputAtleta) return;
     
     const nome = inputNome.value.trim();
-    const marca = inputMarca.value.trim();
+    let marca = inputMarca.value.trim();
     const atleta = inputAtleta.value.trim();
     
     if (!nome || !marca || !atleta) {
@@ -3538,13 +3559,10 @@ function removerBenchmarkCF(index) {
     }
 }
 
-// Auxiliar para substituir os Alerts do navegador por avisos dinâmicos e fluidos
 function exibirAvisoValidacao(mensagem) {
     console.warn(mensagem);
-    // Criação de um feedback visual temporário ou acoplamento com modais customizados do seu tema
 }
 
-// Vinculação de escopo global estável
 window.abrirRecordsHub = abrirRecordsHub;
 window.abrirBenchmarksHub = abrirBenchmarksHub;
 window.adicionarRecordeCF = adicionarRecordeCF;
