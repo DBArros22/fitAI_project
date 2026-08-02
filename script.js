@@ -3347,18 +3347,17 @@ function abrirRecordsHub(categoria) {
     if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Recordes';
     
     const inputMov = document.getElementById('input-cf-movimento');
+    const inputAtleta = document.getElementById('input-cf-atleta');
     const inputVal = document.getElementById('input-cf-valor');
     
     if (inputMov) inputMov.value = '';
+    if (inputAtleta) inputAtleta.value = '';
     if (inputVal) {
         inputVal.value = '';
-        // Altera o placeholder dinamicamente dependendo do tipo de exercício
         if (categoria === 'barbell' || categoria === 'complex') {
-            inputVal.placeholder = 'Digite a carga em KG (Ex: 100)';
-        } else if (categoria === 'gymnastic') {
-            inputVal.placeholder = 'Digite o tempo ou reps (Ex: 02:30 ou 50 REPS)';
+            inputVal.placeholder = 'Carga em KG (Ex: 100)';
         } else {
-            inputVal.placeholder = 'Digite o tempo (Ex: 15:45)';
+            inputVal.placeholder = 'Tempo (Ex: 03:45)';
         }
     }
     
@@ -3371,31 +3370,30 @@ function abrirRecordsHub(categoria) {
 
 function adicionarRecordeCF() {
     const inputMov = document.getElementById('input-cf-movimento');
+    const inputAtleta = document.getElementById('input-cf-atleta');
     const inputVal = document.getElementById('input-cf-valor');
     
-    if (!inputMov || !inputVal) return;
+    if (!inputMov || !inputAtleta || !inputVal) return;
     
-    const movimento = inputMov.value.trim();
-    let valor = inputVal.value.trim();
+    const movimento = inputMov.value.trim().toUpperCase();
+    const atleta = inputAtleta.value.trim();
+    let valorTexto = inputVal.value.trim();
     
-    if (!movimento || !valor) {
+    if (!movimento || !atleta || !valorTexto) {
         exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
         return;
     }
     
-    const valorUpper = valor.toUpperCase();
+    const valorUpper = valorTexto.toUpperCase();
     
-    // Percepção inteligente baseada na categoria do exercício
+    // Atribui unidade de medida automática
     if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
-        // Se for peso e o usuário não colocou KG, adiciona automaticamente
         if (!valorUpper.includes('KG')) {
-            valor = `${valor} KG`;
+            valorTexto = `${valorTexto} KG`;
         }
-    } else if (cfCategoriaAtual === 'gymnastic' || cfCategoriaAtual === 'endurance') {
-        // Se for ginástico/endurance e não tiver unidade de tempo ou reps, valida o formato
-        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes('REPS') && !valorUpper.includes(':')) {
-            // Se for número puro, assume minutos ou segundos dependendo do contexto, ou formata de forma limpa
-            valor = `${valor} MIN`;
+    } else {
+        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':')) {
+            valorTexto = `${valorTexto} MIN`;
         }
     }
     
@@ -3403,12 +3401,21 @@ function adicionarRecordeCF() {
     if (!bancoDeDados.crossfit_records) bancoDeDados.crossfit_records = {};
     if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
 
-    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = valor;
+    // Estrutura os dados por movimento permitindo múltiplos atletas em ranking
+    if (!bancoDeDados.crossfit_records[cfCategoriaAtual][movimento]) {
+        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = [];
+    }
+    
+    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].push({
+        atleta: atleta,
+        valorTexto: valorTexto
+    });
     
     if (typeof salvarBanco === 'function') salvarBanco();
     atualizarListaRecordsCF();
     
     inputMov.value = '';
+    inputAtleta.value = '';
     inputVal.value = '';
 }
 
@@ -3422,30 +3429,75 @@ function atualizarListaRecordsCF() {
     if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
     
     const registros = bancoDeDados.crossfit_records[cfCategoriaAtual];
-    const chaves = Object.keys(registros);
+    const movimentos = Object.keys(registros);
     
-    if (chaves.length === 0) {
+    if (movimentos.length === 0) {
         container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde salvo nesta categoria ainda.</p>';
         return;
     }
     
-    chaves.forEach(movimento => {
-        const valor = registros[movimento];
+    movimentos.forEach(movimento => {
+        let listaAtletas = registros[movimento];
+        
+        // Compatibilidade com registros antigos salvos em formato de objeto único
+        if (!Array.isArray(listaAtletas)) {
+            listaAtletas = [{ atleta: 'Atleta', valorTexto: listaAtletas }];
+            registros[movimento] = listaAtletas;
+        }
+        
+        // Ordenação inteligente baseada no tipo de exercício
+        listaAtletas.sort((a, b) => {
+            const numA = parseFloat(a.valorTexto.replace(/[^0-9.]/g, '')) || 0;
+            const numB = parseFloat(b.valorTexto.replace(/[^0-9.]/g, '')) || 0;
+            
+            if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+                return numB - numA; // Peso: Maior para o menor (Melhor primeiro)
+            } else {
+                return numA - numB; // Tempo: Menor para o maior (Mais rápido primeiro)
+            }
+        });
+        
+        let htmlAtletas = '';
+        listaAtletas.forEach((item, index) => {
+            const posicao = index + 1;
+            let corBadge = 'var(--text-secondary)';
+            if (posicao === 1) corBadge = '#eab308'; // Ouro
+            else if (posicao === 2) corBadge = '#94a3b8'; // Prata
+            else if (posicao === 3) corBadge = '#b45309'; // Bronze
+            
+            htmlAtletas += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.75rem; font-weight: 900; color: ${corBadge}; width: 20px;">#${posicao}</span>
+                        <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="italic-bold" style="color: var(--accent-blue); font-size: 0.95rem;">${item.valorTexto}</span>
+                        <button onclick="removerAtletaRecordeCF('${movimento}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        
         const cardHtml = `
-            <div class="glass-card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 8px;">
-                <div style="text-align: left;">
-                    <div class="italic-bold uppercase" style="color: white; font-size: 0.85rem;">${movimento}</div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <span class="italic-bold" style="color: var(--accent-blue); font-size: 1.1rem;">${valor}</span>
-                    <button onclick="removerRecordeCF('${movimento}')" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.85rem; display: flex; align-items: center;">
-                        🗑️
-                    </button>
-                </div>
+            <div class="glass-card" style="padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px;">
+                <div class="italic-bold uppercase" style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${movimento}</div>
+                <div>${htmlAtletas}</div>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', cardHtml);
     });
+}
+
+function removerAtletaRecordeCF(movimento, index) {
+    if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
+        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].splice(index, 1);
+        if (bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].length === 0) {
+            delete bancoDeDados.crossfit_records[cfCategoriaAtual][movimento];
+        }
+        if (typeof salvarBanco === 'function') salvarBanco();
+        atualizarListaRecordsCF();
+    }
 }
 
 function removerRecordeCF(movimento) {
@@ -3454,9 +3506,6 @@ function removerRecordeCF(movimento) {
         if (typeof salvarBanco === 'function') salvarBanco();
         atualizarListaRecordsCF();
     }
-}
-function exibirAvisoValidacao(mensagem) {
-    console.warn(mensagem);
 }
 
 window.abrirRecordsHub = abrirRecordsHub;
