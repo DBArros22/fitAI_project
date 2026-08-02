@@ -3331,6 +3331,8 @@ const bibliotecaDeBenchmarks = {
 // SEÇÃO DE RECORDE PESSOAL (PRs)
 // ==========================================
 
+let cfCategoriaAtual = '';
+
 function abrirRecordsHub(categoria) {
     cfCategoriaAtual = categoria;
     
@@ -3344,25 +3346,70 @@ function abrirRecordsHub(categoria) {
     const tituloEl = document.getElementById('titulo-cf-record');
     if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Recordes';
     
-    // Altera o placeholder dinamicamente conforme a categoria (Peso ou Tempo)
+    const inputMov = document.getElementById('input-cf-movimento');
     const inputVal = document.getElementById('input-cf-valor');
+    
+    if (inputMov) inputMov.value = '';
     if (inputVal) {
         inputVal.value = '';
+        // Altera o placeholder dinamicamente dependendo do tipo de exercício
         if (categoria === 'barbell' || categoria === 'complex') {
-            inputVal.placeholder = 'Valor (Ex: 100)';
+            inputVal.placeholder = 'Digite a carga em KG (Ex: 100)';
+        } else if (categoria === 'gymnastic') {
+            inputVal.placeholder = 'Digite o tempo ou reps (Ex: 02:30 ou 50 REPS)';
         } else {
-            inputVal.placeholder = 'Tempo (Ex: 03:45)';
+            inputVal.placeholder = 'Digite o tempo (Ex: 15:45)';
         }
     }
-    
-    const inputMov = document.getElementById('input-cf-movimento');
-    if (inputMov) inputMov.value = '';
     
     atualizarListaRecordsCF();
     
     if (typeof showView === 'function') {
         showView('crossfit-record-hub');
     }
+}
+
+function adicionarRecordeCF() {
+    const inputMov = document.getElementById('input-cf-movimento');
+    const inputVal = document.getElementById('input-cf-valor');
+    
+    if (!inputMov || !inputVal) return;
+    
+    const movimento = inputMov.value.trim();
+    let valor = inputVal.value.trim();
+    
+    if (!movimento || !valor) {
+        exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
+        return;
+    }
+    
+    const valorUpper = valor.toUpperCase();
+    
+    // Percepção inteligente baseada na categoria do exercício
+    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+        // Se for peso e o usuário não colocou KG, adiciona automaticamente
+        if (!valorUpper.includes('KG')) {
+            valor = `${valor} KG`;
+        }
+    } else if (cfCategoriaAtual === 'gymnastic' || cfCategoriaAtual === 'endurance') {
+        // Se for ginástico/endurance e não tiver unidade de tempo ou reps, valida o formato
+        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes('REPS') && !valorUpper.includes(':')) {
+            // Se for número puro, assume minutos ou segundos dependendo do contexto, ou formata de forma limpa
+            valor = `${valor} MIN`;
+        }
+    }
+    
+    if (!window.bancoDeDados) window.bancoDeDados = {};
+    if (!bancoDeDados.crossfit_records) bancoDeDados.crossfit_records = {};
+    if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
+
+    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = valor;
+    
+    if (typeof salvarBanco === 'function') salvarBanco();
+    atualizarListaRecordsCF();
+    
+    inputMov.value = '';
+    inputVal.value = '';
 }
 
 function atualizarListaRecordsCF() {
@@ -3401,43 +3448,6 @@ function atualizarListaRecordsCF() {
     });
 }
 
-function adicionarRecordeCF() {
-    const inputMov = document.getElementById('input-cf-movimento');
-    const inputVal = document.getElementById('input-cf-valor');
-    const inputAtleta = document.getElementById('input-cf-atleta'); // Caso esteja usando no HTML ajustado
-    
-    if (!inputMov || !inputVal) return;
-    
-    const movimento = inputMov.value.trim();
-    let valor = inputVal.value.trim();
-    
-    if (!movimento || !valor) {
-        exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
-        return;
-    }
-    
-    // Aplicação automática da unidade baseada na categoria atual
-    const upperValor = valor.toUpperCase();
-    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
-        if (!upperValor.includes('KG')) {
-            valor = `${valor} KG`;
-        }
-    } else if (cfCategoriaAtual === 'gymnastic' || cfCategoriaAtual === 'endurance') {
-        if (!upperValor.includes('MIN') && !upperValor.includes('SEC') && !upperValor.includes(':')) {
-            valor = `${valor} REPS`; // Ou formato de tempo se preferir
-        }
-    }
-    
-    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = valor;
-    
-    if (typeof salvarBanco === 'function') salvarBanco();
-    atualizarListaRecordsCF();
-    
-    inputMov.value = '';
-    inputVal.value = '';
-    if (inputAtleta) inputAtleta.value = '';
-}
-
 function removerRecordeCF(movimento) {
     if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
         delete bancoDeDados.crossfit_records[cfCategoriaAtual][movimento];
@@ -3445,120 +3455,6 @@ function removerRecordeCF(movimento) {
         atualizarListaRecordsCF();
     }
 }
-
-// ==========================================
-// SEÇÃO DE BIBLIOTECA DE BENCHMARKS CUSTOMIZADOS
-// ==========================================
-
-function abrirBenchmarksHub(categoria) {
-    cfCategoriaAtual = categoria;
-    
-    const dicionarioTitulos = {
-        'girls': '👩 The Girls Recordistas',
-        'heroes': '🎖️ Heroes da Box',
-        'notables': '📌 WODs Notáveis',
-        'open': '🔥 Open Leaderboard'
-    };
-    
-    const tituloEl = document.getElementById('titulo-cf-benchmark');
-    if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Benchmarks';
-    
-    const inputNome = document.getElementById('input-bench-nome');
-    const inputMarca = document.getElementById('input-bench-marca');
-    const inputAtleta = document.getElementById('input-bench-atleta');
-    if (inputNome) inputNome.value = '';
-    if (inputMarca) inputMarca.value = '';
-    if (inputAtleta) inputAtleta.value = '';
-    
-    atualizarListaBenchmarksCF();
-    
-    if (typeof showView === 'function') {
-        showView('crossfit-benchmark-hub');
-    }
-}
-
-function atualizarListaBenchmarksCF() {
-    const container = document.getElementById('lista-cf-benchmarks');
-    if (!container) return;
-    container.innerHTML = '';
-    
-    if (!window.bancoDeDados) window.bancoDeDados = {};
-    if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
-    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = [];
-    
-    const treinosSalvos = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
-    
-    if (treinosSalvos.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde cadastrado nesta categoria.</p>';
-        return;
-    }
-    
-    treinosSalvos.forEach((wod, index) => {
-        const cardHtml = `
-            <div class="glass-card" style="padding: 15px; text-align: left; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <div style="flex: 1; padding-right: 15px;">
-                    <h3 class="italic-bold uppercase" style="color: white; font-size: 1rem; margin: 0 0 4px 0; letter-spacing: 0.5px;">${wod.nome}</h3>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                        <span style="font-size: 0.7rem; color: var(--text-secondary);">Atleta:</span>
-                        <span class="italic-bold" style="font-size: 0.75rem; color: #ffffff; opacity: 0.9;">${wod.atleta}</span>
-                    </div>
-                </div>
-                
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div style="text-align: right;">
-                        <span style="font-size: 0.6rem; color: var(--text-secondary); display: block; text-transform: uppercase;">Melhor Marca</span>
-                        <span class="italic-bold" style="font-size: 1.05rem; color: var(--accent-green);">${wod.marca}</span>
-                    </div>
-                    <button onclick="removerBenchmarkCF(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.85rem; display: flex; align-items: center;">
-                        🗑️
-                    </button>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', cardHtml);
-    });
-}
-
-function adicionarBenchmarkCustom() {
-    const inputNome = document.getElementById('input-bench-nome');
-    const inputMarca = document.getElementById('input-bench-marca');
-    const inputAtleta = document.getElementById('input-bench-atleta');
-    
-    if (!inputNome || !inputMarca || !inputAtleta) return;
-    
-    const nome = inputNome.value.trim();
-    let marca = inputMarca.value.trim();
-    const atleta = inputAtleta.value.trim();
-    
-    if (!nome || !marca || !atleta) {
-        exibirAvisoValidacao('Por favor, preencha todos os campos do benchmark.');
-        return;
-    }
-    
-    const novoWod = {
-        nome: nome,
-        marca: marca,
-        atleta: atleta
-    };
-    
-    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].push(novoWod);
-    
-    if (typeof salvarBanco === 'function') salvarBanco();
-    atualizarListaBenchmarksCF();
-    
-    inputNome.value = '';
-    inputMarca.value = '';
-    inputAtleta.value = '';
-}
-
-function removerBenchmarkCF(index) {
-    if (bancoDeDados.crossfit_benchmarks && bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) {
-        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].splice(index, 1);
-        if (typeof salvarBanco === 'function') salvarBanco();
-        atualizarListaBenchmarksCF();
-    }
-}
-
 function exibirAvisoValidacao(mensagem) {
     console.warn(mensagem);
 }
