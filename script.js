@@ -3368,6 +3368,8 @@ function abrirRecordsHub(categoria) {
     }
 }
 
+ abrirBenchmarksHub
+
 function adicionarRecordeCF() {
     const inputMov = document.getElementById('input-cf-movimento');
     const inputAtleta = document.getElementById('input-cf-atleta');
@@ -3506,6 +3508,121 @@ function removerRecordeCF(movimento) {
         if (typeof salvarBanco === 'function') salvarBanco();
         atualizarListaRecordsCF();
     }
+}
+
+function abrirBenchmarksHub(categoria) {
+    cfCategoriaAtual = categoria;
+    
+    const dicionarioTitulos = {
+        'girls': '👩 The Girls Recordistas',
+        'heroes': '🎖️ Heroes da Box',
+        'notables': '📌 WODs Notáveis',
+        'open': '🔥 Open Leaderboard'
+    };
+    
+    const tituloEl = document.getElementById('titulo-cf-benchmark');
+    if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Benchmarks';
+    
+    const inputNome = document.getElementById('input-bench-nome');
+    const inputMarca = document.getElementById('input-bench-marca');
+    const inputAtleta = document.getElementById('input-bench-atleta');
+    if (inputNome) inputNome.value = '';
+    if (inputMarca) inputMarca.value = '';
+    if (inputAtleta) inputAtleta.value = '';
+    
+    atualizarListaBenchmarksCF();
+    
+    if (typeof showView === 'function') {
+        showView('crossfit-benchmark-hub');
+    }
+}
+
+function atualizarListaBenchmarksCF() {
+    const container = document.getElementById('lista-cf-benchmarks');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!window.bancoDeDados) window.bancoDeDados = {};
+    if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
+    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = [];
+    
+    const treinosSalvos = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
+    
+    if (treinosSalvos.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde cadastrado nesta categoria.</p>';
+        return;
+    }
+    
+    treinosSalvos.forEach((wod, index) => {
+        const cardHtml = `
+            <div class="glass-card" style="padding: 15px; text-align: left; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="flex: 1; padding-right: 15px;">
+                    <h3 class="italic-bold uppercase" style="color: white; font-size: 1rem; margin: 0 0 4px 0; letter-spacing: 0.5px;">${wod.nome}</h3>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">Atleta:</span>
+                        <span class="italic-bold" style="font-size: 0.75rem; color: #ffffff; opacity: 0.9;">${wod.atleta}</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.6rem; color: var(--text-secondary); display: block; text-transform: uppercase;">Melhor Marca</span>
+                        <span class="italic-bold" style="font-size: 1.05rem; color: var(--accent-green);">${wod.marca}</span>
+                    </div>
+                    <button onclick="removerBenchmarkCF(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.85rem; display: flex; align-items: center;">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHtml);
+    });
+}
+
+function adicionarBenchmarkCustom() {
+    const inputNome = document.getElementById('input-bench-nome');
+    const inputMarca = document.getElementById('input-bench-marca');
+    const inputAtleta = document.getElementById('input-bench-atleta');
+    
+    if (!inputNome || !inputMarca || !inputAtleta) return;
+    
+    const nome = inputNome.value.trim();
+    const marca = inputMarca.value.trim();
+    const atleta = inputAtleta.value.trim();
+    
+    if (!nome || !marca || !atleta) {
+        exibirAvisoValidacao('Por favor, preencha todos os campos do benchmark.');
+        return;
+    }
+    
+    const novoWod = {
+        nome: nome,
+        marca: marca,
+        atleta: atleta
+    };
+    
+    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].push(novoWod);
+    
+    if (typeof salvarBanco === 'function') salvarBanco();
+    atualizarListaBenchmarksCF();
+    
+    inputNome.value = '';
+    inputMarca.value = '';
+    inputAtleta.value = '';
+}
+
+function removerBenchmarkCF(index) {
+    if (bancoDeDados.crossfit_benchmarks && bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) {
+        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].splice(index, 1);
+        if (typeof salvarBanco === 'function') salvarBanco();
+        atualizarListaBenchmarksCF();
+    }
+}
+
+// Auxiliar para substituir os Alerts do navegador por avisos dinâmicos e fluidos
+function exibirAvisoValidacao(mensagem) {
+    console.warn(mensagem);
+    // Criação de um feedback visual temporário ou acoplamento com modais customizados do seu tema
 }
 
 window.abrirRecordsHub = abrirRecordsHub;
