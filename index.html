@@ -587,21 +587,21 @@
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
-        
-        <div style="display: flex; gap: 8px;">
-            <input type="number" id="input-cf-valor" placeholder="Valor (Ex: 100)" class="input-field" style="flex: 2; font-weight: 700;" min="0" step="0.5">
-            <select id="input-cf-unidade" class="input-field" style="flex: 1; font-weight: 700; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
-                <option value="kg">KG</option>
-                <option value="reps">REPS</option>
-                <option value="min">TEMPO (MIN)</option>
-            </select>
-        </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-cf-valor" placeholder="Valor ou Tempo (Ex: 100 Kg ou 03:45)" class="input-field" style="flex: 2; font-weight: 700;">
+                    <select id="input-cf-unidade" class="input-field" style="flex: 1; font-weight: 700; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
+                        <option value="kg">KG</option>
+                        <option value="reps">REPS</option>
+                        <option value="tempo">TEMPO (MM:SS)</option>
+                    </select>
+                </div>
 
-        <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
-    </div>
-</div>
+                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
+            </div>
+        </div>
 
         <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
@@ -625,17 +625,17 @@
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
-        
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-bench-marca" placeholder="Tempo / Marca (Ex: 03:15)" class="input-field" style="flex: 1; font-weight: 700;">
-            <input type="text" id="input-bench-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
-        </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-bench-atleta" placeholder="Nome do Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                </div>
 
-        <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
-    </div>
-</div>
+                <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
+            </div>
+        </div>
 
         <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
