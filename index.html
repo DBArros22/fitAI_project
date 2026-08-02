@@ -542,7 +542,7 @@
                 <p style="font-size: 0.7rem; opacity: 0.7;">Desafios militares.</p>
             </div>
 
-            <div onclick="abrirBenchmarksHub('notables')" class="menu-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+<div onclick="abrirBenchmarksHub('notables')" class="menu-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
                 <div class="card-icon" style="color: #64748b; margin-bottom: 15px;">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -591,12 +591,8 @@
                 <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
                 
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-cf-valor" placeholder="Valor ou Tempo (Ex: 100 Kg ou 03:45)" class="input-field" style="flex: 2; font-weight: 700;">
-                    <select id="input-cf-unidade" class="input-field" style="flex: 1; font-weight: 700; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px;">
-                        <option value="kg">KG</option>
-                        <option value="reps">REPS</option>
-                        <option value="tempo">TEMPO (MM:SS)</option>
-                    </select>
+                    <input type="text" id="input-cf-valor" placeholder="Valor (Ex: 100 Kg)" class="input-field" style="flex: 2; font-weight: 700;">
+                    <input type="text" id="input-cf-unidade" value="KG" readonly class="input-field" style="flex: 1; font-weight: 700; text-align: center; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; cursor: default;">
                 </div>
 
                 <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
@@ -630,7 +626,7 @@
                 
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
-                    <input type="text" id="input-bench-atleta" placeholder="Nome do Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-bench-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
                 </div>
 
                 <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
