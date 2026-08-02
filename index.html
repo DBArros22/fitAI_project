@@ -543,30 +543,27 @@
             </div>
 
 <div onclick="abrirBenchmarksHub('notables')" class="menu-card" style="border-left: 4px solid #64748b; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
-                <div class="card-icon" style="color: #64748b; margin-bottom: 15px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Notables</h3>
-                <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px;">Treinos de referência.</p>
-            </div>
-
-            <div onclick="abrirBenchmarksHub('open')" class="menu-card" style="border-left: 4px solid #f97316; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
-                <div class="card-icon" style="color: #f97316; margin-bottom: 15px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path>
-                    </svg>
-                </div>
-                <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Open WODs</h3>
-                <p style="font-size: 0.7rem; opacity: 0.7;">Histórico Mundial.</p>
-            </div>
-        </div>
+    <div class="card-icon" style="color: #64748b; margin-bottom: 15px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+        </svg>
     </div>
+    <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Notables</h3>
+    <p style="font-size: 0.7rem; opacity: 0.7; max-width: 120px;">Treinos de referência.</p>
+</div>
+
+<div onclick="abrirBenchmarksHub('open')" class="menu-card" style="border-left: 4px solid #f97316; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 20px 10px; cursor: pointer;">
+    <div class="card-icon" style="color: #f97316; margin-bottom: 15px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path>
+        </svg>
+    </div>
+    <h3 class="italic-bold uppercase" style="font-size: 0.85rem; margin-bottom: 5px; letter-spacing: 0.5px;">Open WODs</h3>
+    <p style="font-size: 0.7rem; opacity: 0.7;">Histórico Mundial.</p>
 </div>
 
 <div id="crossfit-record-hub" class="page-container hidden">
@@ -591,8 +588,8 @@
                 <input type="text" id="input-cf-movimento" placeholder="Nome do Movimento (Ex: Snatch)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
                 
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-cf-valor" placeholder="Valor (Ex: 100 Kg)" class="input-field" style="flex: 2; font-weight: 700;">
-                    <input type="text" id="input-cf-unidade" value="KG" readonly class="input-field" style="flex: 1; font-weight: 700; text-align: center; background: rgba(0,0,0,0.6); color: white; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 10px; cursor: default;">
+                    <input type="text" id="input-cf-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-cf-valor" placeholder="Valor (Ex: 100 KG)" class="input-field" style="flex: 1; font-weight: 700;">
                 </div>
 
                 <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
@@ -625,7 +622,7 @@
                 <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
                 
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-bench-marca" placeholder="Tempo / Marca (Ex: 03:15)" class="input-field" style="flex: 1; font-weight: 700;">
                     <input type="text" id="input-bench-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
                 </div>
 
