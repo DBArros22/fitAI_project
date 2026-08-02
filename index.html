@@ -590,19 +590,59 @@
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-            <div style="display: flex; flex-direction: column; gap: 12px;">
-                <select id="input-cf-movimento" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700; background: rgba(0,0,0,0.6); color: white;">
-                    <option value="" disabled selected>Selecione o Movimento / Exercício</option>
-                </select>
-                
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-cf-atleta" placeholder="Nome do Atleta" class="input-field" style="flex: 1; font-weight: 700;">
-                    <input type="text" id="input-cf-valor" placeholder="Valor ou Tempo" class="input-field" style="flex: 1; font-weight: 700;">
-                </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="text" id="input-cf-movimento" list="lista-movimentos-cf" placeholder="Selecione ou digite o Movimento" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+        
+        <datalist id="lista-movimentos-cf">
+            <option value="SNATCH">
+            <option value="CLEAN & JERK">
+            <option value="CLEAN">
+            <option value="JERK">
+            <option value="BACK SQUAT">
+            <option value="FRONT SQUAT">
+            <option value="OVERHEAD SQUAT">
+            <option value="DEADLIFT">
+            <option value="THRUSTER">
+            <option value="PUSH PRESS">
+            <option value="STRICT PRESS">
+            <option value="SNACTH BALANCE">
+            
+            <option value="COMPLEX: SNATCH + OHS">
+            <option value="COMPLEX: CLEAN & 2 JERKS">
+            <option value="COMPLEX: 3 POSITION CLEAN">
+            <option value="COMPLEX: HANG SNATCH + SNATCH">
 
-                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
-            </div>
+            <option value="PULL UPS">
+            <option value="CHEST TO BAR">
+            <option value="BAR MUSCLE UP">
+            <option value="RING MUSCLE UP">
+            <option value="HANDSTAND PUSH UP">
+            <option value="HANDSTAND WALK">
+            <option value="TOES TO BAR">
+            <option value="DU (DOUBLE UNDERS)">
+            <option value="PISTOL SQUAT">
+            <option value="ROPE CLIMB">
+            <option value="HSU (HANDSTAND PUSH UPS)">
+
+            <option value="ROW 500M">
+            <option value="ROW 1000M">
+            <option value="ROW 2000M">
+            <option value="RUN 400M">
+            <option value="RUN 1KM">
+            <option value="RUN 5KM">
+            <option value="BIKE 10KM">
+            <option value="ASSAULT BIKE CALS">
+            <option value="SKI ERG CALS">
+        </datalist>
+        
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="input-cf-atleta" placeholder="Nome do Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+            <input type="text" id="input-cf-valor" placeholder="Valor ou Tempo" class="input-field" style="flex: 1; font-weight: 700;">
         </div>
+
+        <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
+    </div>
+</div>
 
         <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
