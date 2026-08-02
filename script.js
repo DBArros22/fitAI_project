@@ -227,34 +227,6 @@ async function carregarDadosDoUsuarioDoBanco() {
     }
 }
 
-function atualizarListaExercicios() {
-    const campoGrupo = document.getElementById('select-grupo-sub');
-    if (!campoGrupo) return;
-
-    const grupo = campoGrupo.value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
-
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
-        return;
-    }
-
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
-    } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
-    }
-
-    const lista = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
-
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-}
 
 // 4. FUNÇÕES DO PERFIL
 
@@ -549,6 +521,36 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 }
 
 window.reenviarTokenSeguranca = reenviarTokenSeguranca;
+
+
+function atualizarListaExercicios() {
+    const campoGrupo = document.getElementById('select-grupo-sub');
+    if (!campoGrupo) return;
+
+    const grupo = campoGrupo.value;
+    const selectEx = document.getElementById('select-exercicio');
+    const camposForca = document.getElementById('campos-forca');
+    const camposCardio = document.getElementById('campos-cardio');
+
+    if (!selectEx) return;
+    if (!grupo) {
+        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
+        return;
+    }
+
+    if (grupo === "Cardio & Aeróbico") {
+        if (camposForca) camposForca.classList.add('hidden');
+        if (camposCardio) camposCardio.classList.remove('hidden');
+    } else {
+        if (camposForca) camposForca.classList.remove('hidden');
+        if (camposCardio) camposCardio.classList.add('hidden');
+    }
+
+    const lista = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
+
+    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
+        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
+}
 
 // --- DICIONÁRIO TÉCNICO DE EXERCÍCIOS ---
 const dicionarioExercicios = {
