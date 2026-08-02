@@ -581,6 +581,7 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* --- RESPONSIVIDADE GERAL E CROSSFIT --- */
+
 @media (max-width: 600px) {
     .content-grid { 
         padding: 20px 4% !important; 
@@ -616,5 +617,33 @@ body:has(#view-login:not(.hidden)) .navbar {
 
     #view-aparelho-ocupado .glass-card-action {
         padding: 20px;
+    }
+
+    /* === OTIMIZAÇÃO MOBILE PARA A TELA DE RECORDES E RANKINGS === */
+    #crossfit-record-hub .container-central,
+    #crossfit-benchmark-hub .container-central {
+        padding: 10px 12px !important;
+        max-width: 100% !important;
+    }
+
+    #crossfit-record-hub .glass-panel,
+    #crossfit-benchmark-hub .glass-panel {
+        padding: 14px !important;
+        border-radius: 16px !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* Garante que os campos de input e select fiquem com excelente área de toque */
+    #crossfit-record-hub .input-field,
+    #crossfit-benchmark-hub .input-field {
+        font-size: 0.9rem !important;
+        padding: 10px 12px !important;
+    }
+
+    /* Ajuste de margens nos cards de listagem dos recordes */
+    #lista-cf-records .glass-card,
+    #lista-cf-benchmarks .glass-card {
+        padding: 10px 12px !important;
+        border-radius: 10px !important;
     }
 }
