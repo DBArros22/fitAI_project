@@ -211,21 +211,30 @@ async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Tenta buscar os dados direto do Firestore/Database se houver função global, ou exibe o e-mail do Auth
+    // Preenche o e-mail (que já vem direto do Firebase Auth)
     if (document.getElementById('perfil-email')) {
         document.getElementById('perfil-email').value = user.email || "";
+        document.getElementById('perfil-email').disabled = true; // Bloqueado por padrão até clicar em editar
     }
 
-    // Se você tiver dados salvos no localStorage específicos do UID atual, recupera de forma isolada
+    // Recupera os dados salvos isoladamente por usuário no localStorage
     const dadosSalvos = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     
+    // Se o nome não estiver salvo no objeto local, tenta pegar o displayName do Firebase Auth
+    const nomeFinal = dadosSalvos.nome || user.displayName || "";
+    const telFinal = dadosSalvos.tel || "";
+
     if (document.getElementById('perfil-nome')) {
-        document.getElementById('perfil-nome').value = dadosSalvos.nome || user.displayName || "";
+        document.getElementById('perfil-nome').value = nomeFinal;
+        document.getElementById('perfil-nome').disabled = true; // Bloqueado por padrão
     }
+    
     if (document.getElementById('perfil-tel')) {
-        document.getElementById('perfil-tel').value = dadosSalvos.tel || "";
+        document.getElementById('perfil-tel').value = telFinal;
+        document.getElementById('perfil-tel').disabled = true; // Bloqueado por padrão
     }
 
+    // Carrega a foto se houver
     const foto = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
@@ -269,6 +278,23 @@ function atualizarFotoPerfil(input) {
     }
 }
 
+function habilitarEdicaoCampo(idInput, btnElement) {
+    const input = document.getElementById(idInput);
+    if (!input) return;
+
+    if (input.disabled) {
+        input.disabled = false;
+        input.focus();
+        // Muda visualmente o ícone ou cor para indicar que está editável
+        btnElement.style.opacity = "1";
+        btnElement.style.transform = "scale(1.1)";
+    } else {
+        input.disabled = true;
+        btnElement.style.opacity = "0.7";
+        btnElement.style.transform = "scale(1)";
+    }
+}
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -283,7 +309,7 @@ async function salvarDadosPerfil(event) {
     
     const btn = event.currentTarget;
 
-    // Se o usuário alterou o e-mail, exige o fluxo de confirmação por segurança
+    // Se alterou o e-mail, inicia fluxo de confirmação por segurança
     if (novoEmail !== emailAntigo) {
         const codAntigo = Math.floor(100000 + Math.random() * 900000).toString();
         const codNovo = Math.floor(100000 + Math.random() * 900000).toString();
@@ -304,24 +330,28 @@ async function salvarDadosPerfil(event) {
         if (lblAntigo) lblAntigo.innerText = `Código no E-mail Antigo (${emailAntigo}):`;
         if (lblNovo) lblNovo.innerText = `Código no Novo E-mail (${novoEmail}):`;
 
-        console.log(`[BACKEND MOCK] Código e-mail antigo (${emailAntigo}): ${codAntigo}`);
-        console.log(`[BACKEND MOCK] Código novo e-mail (${novoEmail}): ${codNovo}`);
-
         mostrarAvisoNotificacao("Códigos de segurança enviados!", "sucesso");
         abrirModalEmail();
         return; 
     }
 
-    // Salva dados locais isolados pelo UID do Firebase
+    // Salva os dados atualizados vinculados ao UID atual
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     dadosAtuais.nome = nome;
     dadosAtuais.tel = tel;
     localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
 
+    // Bloqueia os inputs novamente após salvar
+    document.getElementById('perfil-nome').disabled = true;
+    document.getElementById('perfil-tel').disabled = true;
+    document.getElementById('perfil-email').disabled = true;
+
     exibirFeedbackSucessoBotao(btn);
     mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
+
+window.habilitarEdicaoCampo = habilitarEdicaoCampo;
 
 function reenviarTokenSeguranca(tipo) {
     if (!window.fluxoTrocaEmailPendente) return;
