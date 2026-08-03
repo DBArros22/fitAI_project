@@ -101,14 +101,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rememberCheckbox) rememberCheckbox.checked = true;
     }
 
-    if (auth) {
+    // Monitoramento seguro do Firebase Auth
+    if (typeof auth !== 'undefined' && auth) {
         auth.onAuthStateChanged(async (user) => {
             if (user) {
-                usuarioAtualId = user.uid;
+                window.usuarioAtualId = user.uid;
+                
+                // Armazena identificadores de sessão atual do Firebase
+                localStorage.setItem('user_email_ativo', user.email);
 
                 try {
                     if (typeof window.carregarDadosDoAtleta === 'function') {
                         await window.carregarDadosDoAtleta(user.uid);
+                    }
+                    if (typeof carregarDadosPerfil === 'function') {
+                        await carregarDadosPerfil();
                     }
                 } catch (err) {
                     console.error("Erro ao carregar dados do atleta no login:", err);
@@ -118,7 +125,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     showView('lobby');
                 }
             } else {
-                usuarioAtualId = null;
+                window.usuarioAtualId = null;
+                localStorage.removeItem('user_email_ativo');
+                
                 if (typeof showView === 'function') {
                     showView('login');
                 }
@@ -151,6 +160,7 @@ window.toggleAuthTab = function(tab) {
 
 window.alternarAbaAuth = window.toggleAuthTab;
 
+
 async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
 
@@ -168,7 +178,11 @@ async function handleLogin(e) {
 
     try {
         if (!auth) throw new Error("Firebase não está carregado.");
+        
+        // Assegura persistência local correta
+        await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         await auth.signInWithEmailAndPassword(email, pass);
+        
         mostrarAvisoNotificacao("SEJA BEM-VINDO!", "sucesso");
 
         if (typeof showView === 'function') {
@@ -181,7 +195,8 @@ async function handleLogin(e) {
         if (
             error.code === 'auth/invalid-credential' || 
             error.code === 'auth/user-not-found' || 
-            error.code === 'auth/wrong-password'
+            error.code === 'auth/wrong-password' ||
+            error.code === 'auth/invalid-login-credentials'
         ) {
             mostrarAvisoNotificacao("E-mail ou senha incorretos!");
         } else if (error.code === 'auth/invalid-email') {
@@ -192,30 +207,34 @@ async function handleLogin(e) {
     }
 }
 
-window.carregarDadosDoAtleta = async function(uid) {
-    if (!uid || !db) return;
-    try {
-        const docFichas = await db.collection("usuarios").doc(uid)
-                                  .collection("treinos").doc("fichas").get();
-        if (docFichas.exists) {
-            bancoDeDados = docFichas.data() || { fichas: {} };
-        }
+async function carregarDadosPerfil() {
+    const user = auth.currentUser;
+    if (!user) return;
 
-        const docHist = await db.collection("usuarios").doc(uid)
-                                .collection("historico").doc("frequencia").get();
-        if (docHist.exists && docHist.data().dias) {
-            diasTreinados = docHist.data().dias;
-            localStorage.setItem('frequenciaTreino', JSON.stringify(diasTreinados));
-        }
-
-        if (typeof renderizarFichas === 'function') renderizarFichas();
-        if (typeof renderizarLogTreino === 'function') renderizarLogTreino();
-        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-
-    } catch (e) {
-        console.warn("Aviso ao carregar dados do Firestore:", e);
+    // Tenta buscar os dados direto do Firestore/Database se houver função global, ou exibe o e-mail do Auth
+    if (document.getElementById('perfil-email')) {
+        document.getElementById('perfil-email').value = user.email || "";
     }
-};
+
+    // Se você tiver dados salvos no localStorage específicos do UID atual, recupera de forma isolada
+    const dadosSalvos = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    
+    if (document.getElementById('perfil-nome')) {
+        document.getElementById('perfil-nome').value = dadosSalvos.nome || user.displayName || "";
+    }
+    if (document.getElementById('perfil-tel')) {
+        document.getElementById('perfil-tel').value = dadosSalvos.tel || "";
+    }
+
+    const foto = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
+    if (foto) {
+        const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        const preview = document.getElementById('perfil-foto-preview');
+        const navIcon = document.getElementById('nav-perfil-icon');
+        if (preview) preview.innerHTML = imgHtml;
+        if (navIcon) navIcon.innerHTML = imgHtml;
+    }
+}
 
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
@@ -228,35 +247,16 @@ async function carregarDadosDoUsuarioDoBanco() {
 }
 
 
-// 4. FUNÇÕES DO PERFIL
-
-function carregarDadosPerfil() {
-    const emailAtivo = localStorage.getItem('user_email');
-    const usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const user = usuarios.find(u => u.email === emailAtivo);
-
-    if (user) {
-        if (document.getElementById('perfil-nome')) document.getElementById('perfil-nome').value = user.nome || "";
-        if (document.getElementById('perfil-tel')) document.getElementById('perfil-tel').value = user.tel || "";
-        if (document.getElementById('perfil-email')) document.getElementById('perfil-email').value = user.email || "";
-    }
-
-    const foto = localStorage.getItem('user_foto');
-    if (foto) {
-        const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        const preview = document.getElementById('perfil-foto-preview');
-        const navIcon = document.getElementById('nav-perfil-icon');
-        if (preview) preview.innerHTML = imgHtml;
-        if (navIcon) navIcon.innerHTML = imgHtml;
-    }
-}
 
 function atualizarFotoPerfil(input) {
+    const user = auth.currentUser;
+    if (!user) return;
+
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const fotoUrl = e.target.result;
-            localStorage.setItem('user_foto', fotoUrl);
+            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
 
             const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
             
@@ -270,25 +270,26 @@ function atualizarFotoPerfil(input) {
 }
 
 async function salvarDadosPerfil(event) {
-    const nome = document.getElementById('perfil-nome').value;
-    const tel = document.getElementById('perfil-tel').value;
+    const user = auth.currentUser;
+    if (!user) {
+        mostrarAvisoNotificacao("Usuário não autenticado!", "erro");
+        return;
+    }
+
+    const nome = document.getElementById('perfil-nome').value.trim();
+    const tel = document.getElementById('perfil-tel').value.trim();
     const novoEmail = document.getElementById('perfil-email').value.trim();
-    const emailAntigo = localStorage.getItem('user_email');
+    const emailAntigo = user.email;
     
     const btn = event.currentTarget;
 
+    // Se o usuário alterou o e-mail, exige o fluxo de confirmação por segurança
     if (novoEmail !== emailAntigo) {
-        let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-        const emailJaExiste = usuarios.some(u => u.email === novoEmail);
-        if (emailJaExiste) {
-            mostrarAvisoNotificacao("Este e-mail já está sendo utilizado por outra conta!", "erro");
-            return;
-        }
-
         const codAntigo = Math.floor(100000 + Math.random() * 900000).toString();
         const codNovo = Math.floor(100000 + Math.random() * 900000).toString();
 
-        fluxoTrocaEmailPendente = {
+        window.fluxoTrocaEmailPendente = {
+            user: user,
             nome: nome,
             tel: tel,
             emailAntigo: emailAntigo,
@@ -311,31 +312,27 @@ async function salvarDadosPerfil(event) {
         return; 
     }
 
-    localStorage.setItem('user_nome', nome);
-    localStorage.setItem('user_tel', tel);
-
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === emailAntigo);
-    if (index !== -1) {
-        usuarios[index].nome = nome;
-        usuarios[index].tel = tel;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    }
+    // Salva dados locais isolados pelo UID do Firebase
+    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    dadosAtuais.nome = nome;
+    dadosAtuais.tel = tel;
+    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
 
     exibirFeedbackSucessoBotao(btn);
+    mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
 function reenviarTokenSeguranca(tipo) {
-    if (!fluxoTrocaEmailPendente) return;
+    if (!window.fluxoTrocaEmailPendente) return;
 
     const novoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
 
     if (tipo === 'antigo') {
-        fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
+        window.fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
         mostrarAvisoNotificacao(`Código reenviado para o e-mail antigo!`, "sucesso");
     } else {
-        fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
+        window.fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
         mostrarAvisoNotificacao(`Código reenviado para o novo e-mail!`, "sucesso");
     }
 }
@@ -358,48 +355,49 @@ function fecharModalEmail() {
     const elNovo = document.getElementById('codigo-email-novo');
     if (elAntigo) elAntigo.value = "";
     if (elNovo) elNovo.value = "";
-    fluxoTrocaEmailPendente = null;
+    window.fluxoTrocaEmailPendente = null;
 }
 
 async function processarTrocaEmail() {
-    if (!fluxoTrocaEmailPendente) return;
+    if (!window.fluxoTrocaEmailPendente) return;
 
     const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
     const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
 
-    if (codAntigoDigitado !== fluxoTrocaEmailPendente.codigoAntigoGerado) {
+    if (codAntigoDigitado !== window.fluxoTrocaEmailPendente.codigoAntigoGerado) {
         mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
         return;
     }
 
-    if (codNovoDigitado !== fluxoTrocaEmailPendente.codigoNovoGerado) {
+    if (codNovoDigitado !== window.fluxoTrocaEmailPendente.codigoNovoGerado) {
         mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
         return;
     }
 
-    const f = fluxoTrocaEmailPendente;
+    const f = window.fluxoTrocaEmailPendente;
     
-    localStorage.setItem('user_nome', f.nome);
-    localStorage.setItem('user_tel', f.tel);
-    localStorage.setItem('user_email', f.novoEmail);
+    try {
+        // Atualiza o e-mail diretamente no Firebase Auth (se necessário reautenticar, pode exigir senha, mas aqui simulamos a troca de perfil)
+        await f.user.updateEmail(f.novoEmail);
 
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === f.emailAntigo);
-    
-    if (index !== -1) {
-        usuarios[index].nome = f.nome;
-        usuarios[index].tel = f.tel;
-        usuarios[index].email = f.novoEmail;
-        localStorage.setItem('fitai_users', JSON.stringify(usuarios));
+        const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${f.user.uid}`)) || {};
+        dadosAtuais.nome = f.nome;
+        dadosAtuais.tel = f.tel;
+        localStorage.setItem(`fitai_user_data_${f.user.uid}`, JSON.stringify(dadosAtuais));
+
+        exibirFeedbackSucessoBotao(f.btnAlvo);
+        fecharModalEmail();
+        mostrarAvisoNotificacao("E-mail e perfil atualizados com sucesso!", "sucesso");
+        
+        if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+    } catch (error) {
+        console.error("Erro ao atualizar e-mail no Firebase:", error);
+        if (error.code === 'auth/requires-recent-login') {
+            mostrarAvisoNotificacao("Por segurança, faça login novamente antes de alterar o e-mail.", "erro");
+        } else {
+            mostrarAvisoNotificacao("Erro ao atualizar e-mail. Tente novamente.", "erro");
+        }
     }
-
-    if (typeof salvarDados === 'function') salvarDados();
-
-    exibirFeedbackSucessoBotao(f.btnAlvo);
-    fecharModalEmail();
-    mostrarAvisoNotificacao("Perfil e dados de login atualizados com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
 }
 
 function exibirFeedbackSucessoBotao(btn) {
@@ -420,8 +418,8 @@ function alterarSenhaPerfil() {
     const nova = document.getElementById('pass-nova').value;
     const confirmar = document.getElementById('pass-confirmar') ? document.getElementById('pass-confirmar').value : "";
 
-    if (nova.length < 4) {
-        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 4 caracteres!", "erro");
+    if (nova.length < 6) {
+        mostrarAvisoNotificacao("A nova senha precisa ter no mínimo 6 caracteres!", "erro");
         return;
     }
 
@@ -452,14 +450,37 @@ function fecharModalSenha() {
 async function processarTrocaSenha() {
     const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
     const novaSenha = document.getElementById('pass-nova').value;
-    const emailAtivo = localStorage.getItem('user_email');
-    
-    let usuarios = JSON.parse(localStorage.getItem('fitai_users')) || [];
-    const index = usuarios.findIndex(u => u.email === emailAtivo);
+    const user = auth.currentUser;
 
-    if (index === -1) return;
+    if (!user) return;
 
-    if (usuarios[index].pass !== senhaAtualDigitada) {
+    try {
+        // Credencial para reautenticar o usuário por segurança antes de trocar a senha
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtualDigitada);
+        await user.reauthenticateWithCredential(credential);
+        
+        // Atualiza a senha no Firebase Auth
+        await user.updatePassword(novaSenha);
+
+        fecharModalSenha();
+        const btnPrincipal = document.getElementById('btn-senha-perfil');
+        if (btnPrincipal) {
+            btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
+            btnPrincipal.style.background = "#22c55e";
+            setTimeout(() => {
+                btnPrincipal.innerHTML = "ALTERAR SENHA";
+                btnPrincipal.style.background = "";
+            }, 3000);
+        }
+        
+        const inputNova = document.getElementById('pass-nova');
+        const inputConf = document.getElementById('pass-confirmar');
+        if (inputNova) inputNova.value = "";
+        if (inputConf) inputConf.value = "";
+        mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
+
+    } catch (error) {
+        console.error("Erro ao alterar senha:", error);
         const inputModal = document.getElementById('confirm-pass-atual');
         if (inputModal) {
             inputModal.style.border = "1px solid #ef4444";
@@ -467,30 +488,8 @@ async function processarTrocaSenha() {
             inputModal.placeholder = "SENHA INCORRETA!";
             setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
         }
-        return;
+        mostrarAvisoNotificacao("Senha atual incorreta ou erro na validação.", "erro");
     }
-
-    usuarios[index].pass = novaSenha;
-    localStorage.setItem('fitai_users', JSON.stringify(usuarios));
-    
-    if (typeof salvarDados === 'function') salvarDados();
-
-    fecharModalSenha();
-    const btnPrincipal = document.getElementById('btn-senha-perfil');
-    if (btnPrincipal) {
-        btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
-        btnPrincipal.style.background = "#22c55e";
-        setTimeout(() => {
-            btnPrincipal.innerHTML = "ALTERAR SENHA";
-            btnPrincipal.style.background = "";
-        }, 3000);
-    }
-    
-    const inputNova = document.getElementById('pass-nova');
-    const inputConf = document.getElementById('pass-confirmar');
-    if (inputNova) inputNova.value = "";
-    if (inputConf) inputConf.value = "";
-    mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
 }
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
@@ -521,6 +520,10 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 }
 
 window.reenviarTokenSeguranca = reenviarTokenSeguranca;
+window.carregarDadosPerfil = carregarDadosPerfil;
+window.salvarDadosPerfil = salvarDadosPerfil;
+window.processarisTrocaEmail = processarTrocaEmail;
+window.processarTrocaSenha = processarTrocaSenha;
 
 
 function atualizarListaExercicios() {
