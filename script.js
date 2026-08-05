@@ -303,23 +303,33 @@ async function salvarDadosPerfil(event) {
     }
 
     const nome = document.getElementById('perfil-nome').value.trim();
-    const tel = document.getElementById('perfil-tel').value.trim();
+    const novoTel = document.getElementById('perfil-tel').value.trim();
     const novoEmail = document.getElementById('perfil-email').value.trim();
     const emailAntigo = user.email;
     
+    // Recupera o telefone antigo salvo para comparar
+    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    const telAntigo = dadosAtuais.tel || "";
+    
     const btn = event.currentTarget;
 
-    // Se alterou o e-mail, inicia fluxo de confirmação por segurança
-    if (novoEmail !== emailAntigo) {
+    const mudouEmail = novoEmail !== emailAntigo;
+    const mudouTel = novoTel !== telAntigo;
+
+    // Se alterou o e-mail ou o telefone, inicia o fluxo de confirmação por segurança
+    if (mudouEmail || mudouTel) {
         const codAntigo = Math.floor(100000 + Math.random() * 900000).toString();
         const codNovo = Math.floor(100000 + Math.random() * 900000).toString();
 
         window.fluxoTrocaEmailPendente = {
             user: user,
             nome: nome,
-            tel: tel,
+            telAntigo: telAntigo,
+            novoTel: novoTel,
             emailAntigo: emailAntigo,
             novoEmail: novoEmail,
+            mudouEmail: mudouEmail,
+            mudouTel: mudouTel,
             codigoAntigoGerado: codAntigo,
             codigoNovoGerado: codNovo,
             btnAlvo: btn
@@ -327,18 +337,17 @@ async function salvarDadosPerfil(event) {
 
         const lblAntigo = document.getElementById('label-email-antigo');
         const lblNovo = document.getElementById('label-email-novo');
-        if (lblAntigo) lblAntigo.innerText = `Código no E-mail Antigo (${emailAntigo}):`;
-        if (lblNovo) lblNovo.innerText = `Código no Novo E-mail (${novoEmail}):`;
+        
+        if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (Canal Antigo):`;
+        if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo Canal):`;
 
         mostrarAvisoNotificacao("Códigos de segurança enviados!", "sucesso");
         abrirModalEmail();
         return; 
     }
 
-    // Salva os dados atualizados vinculados ao UID atual
-    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    // Se alterou apenas o nome, salva normalmente
     dadosAtuais.nome = nome;
-    dadosAtuais.tel = tel;
     localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
 
     // Bloqueia os inputs novamente após salvar
@@ -349,6 +358,22 @@ async function salvarDadosPerfil(event) {
     exibirFeedbackSucessoBotao(btn);
     mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
     if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+}
+
+window.habilitarEdicaoCampo = habilitarEdicaoCampo;
+
+function reenviarTokenSeguranca(tipo) {
+    if (!window.fluxoTrocaEmailPendente) return;
+
+    const novoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
+
+    if (tipo === 'antigo') {
+        window.fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
+        mostrarAvisoNotificacao(`Código reenviado para o canal antigo!`, "sucesso");
+    } else {
+        window.fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
+        mostrarAvisoNotificacao(`Código reenviado para o novo canal!`, "sucesso");
+    }
 }
 
 window.habilitarEdicaoCampo = habilitarEdicaoCampo;
