@@ -211,30 +211,50 @@ async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Preenche o e-mail (que já vem direto do Firebase Auth)
+    // Preenche o e-mail que já vem direto do Firebase Auth
     if (document.getElementById('perfil-email')) {
         document.getElementById('perfil-email').value = user.email || "";
-        document.getElementById('perfil-email').disabled = true; // Bloqueado por padrão até clicar em editar
+        document.getElementById('perfil-email').disabled = true;
     }
 
-    // Recupera os dados salvos isoladamente por usuário no localStorage
-    const dadosSalvos = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    let nomeFinal = "";
+    let telFinal = "";
+
+    try {
+        // 1. Tenta buscar os dados direto do Firestore (onde o cadastro salvou!)
+        if (typeof db !== 'undefined' && db) {
+            const docRef = await db.collection("usuarios").doc(user.uid).get();
+            if (docRef.exists) {
+                const dadosDoc = docRef.data();
+                nomeFinal = dadosDoc.nome || "";
+                telFinal = dadosDoc.tel || "";
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao buscar dados do perfil no Firestore:", error);
+    }
+
+    // 2. Se por acaso não achar no Firestore, tenta buscar do localStorage como fallback
+    if (!nomeFinal || !telFinal) {
+        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
+        telFinal = telFinal || dadosLocais.tel || "";
+    }
+
+    // Preenche os inputs de nome e telefone e os deixa bloqueados por padrão
+    const inputNome = document.getElementById('perfil-nome');
+    if (inputNome) {
+        inputNome.value = nomeFinal;
+        inputNome.disabled = true;
+    }
     
-    // Se o nome não estiver salvo no objeto local, tenta pegar o displayName do Firebase Auth
-    const nomeFinal = dadosSalvos.nome || user.displayName || "";
-    const telFinal = dadosSalvos.tel || "";
-
-    if (document.getElementById('perfil-nome')) {
-        document.getElementById('perfil-nome').value = nomeFinal;
-        document.getElementById('perfil-nome').disabled = true; // Bloqueado por padrão
-    }
-    
-    if (document.getElementById('perfil-tel')) {
-        document.getElementById('perfil-tel').value = telFinal;
-        document.getElementById('perfil-tel').disabled = true; // Bloqueado por padrão
+    const inputTel = document.getElementById('perfil-tel');
+    if (inputTel) {
+        inputTel.value = telFinal;
+        inputTel.disabled = true;
     }
 
-    // Carrega a foto se houver
+    // Carrega a foto de perfil se houver
     const foto = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
