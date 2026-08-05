@@ -245,6 +245,8 @@ async function carregarDadosPerfil() {
     }
 }
 
+window.carregarDadosPerfil = carregarDadosPerfil;
+
 async function carregarDadosDoUsuarioDoBanco() {
     if (typeof usuarioAtualId !== 'undefined' && usuarioAtualId) {
         await window.carregarDadosDoAtleta(usuarioAtualId);
