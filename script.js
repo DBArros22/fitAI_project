@@ -389,46 +389,69 @@ function fecharModalEmail() {
 }
 
 async function processarTrocaEmail() {
-    if (!window.fluxoTrocaEmailPendente) return;
+    // Verifica se existe um fluxo pendente (seja de e-mail ou telefone)
+    const fluxo = window.fluxoTrocaPendente || window.fluxoTrocaPendente;
+    if (!fluxo) return;
 
     const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
     const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
 
-    if (codAntigoDigitado !== window.fluxoTrocaEmailPendente.codigoAntigoGerado) {
-        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
+    if (codAntigoDigitado !== fluxo.codigoAntigoGerado) {
+        mostrarAvisoNotificacao("Código do canal antigo incorreto!", "erro");
         return;
     }
 
-    if (codNovoDigitado !== window.fluxoTrocaEmailPendente.codigoNovoGerado) {
-        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
+    if (codNovoDigitado !== fluxo.codigoNovoGerado) {
+        mostrarAvisoNotificacao("Código do novo canal incorreto!", "erro");
         return;
     }
-
-    const f = window.fluxoTrocaEmailPendente;
     
     try {
-        // Atualiza o e-mail diretamente no Firebase Auth (se necessário reautenticar, pode exigir senha, mas aqui simulamos a troca de perfil)
-        await f.user.updateEmail(f.novoEmail);
+        // Se houve alteração de e-mail, atualiza no Firebase Auth
+        if (fluxo.novoEmail && fluxo.novoEmail !== fluxo.emailAntigo) {
+            await fluxo.user.updateEmail(fluxo.novoEmail);
+        }
 
-        const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${f.user.uid}`)) || {};
-        dadosAtuais.nome = f.nome;
-        dadosAtuais.tel = f.tel;
-        localStorage.setItem(`fitai_user_data_${f.user.uid}`, JSON.stringify(dadosAtuais));
-
-        exibirFeedbackSucessoBotao(f.btnAlvo);
-        fecharModalEmail();
-        mostrarAvisoNotificacao("E-mail e perfil atualizados com sucesso!", "sucesso");
+        // Atualiza os dados salvos localmente isolados por UID (incluindo nome e o novo telefone)
+        const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${fluxo.user.uid}`)) || {};
+        dadosAtuais.nome = fluxo.nome;
+        dadosAtuais.tel = fluxo.novoTel || fluxo.tel || dadosAtuais.tel;
         
+        localStorage.setItem(`fitai_user_data_${fluxo.user.uid}`, JSON.stringify(dadosAtuais));
+
+        // Sincroniza também com o Firestore caso esteja usando banco em nuvem
+        if (typeof db !== 'undefined' && db) {
+            await db.collection('usuarios').doc(fluxo.user.uid).set({
+                nome: fluxo.nome,
+                telefone: dadosAtuais.tel,
+                email: fluxo.novoEmail || fluxo.emailAntigo
+            }, { merge: true });
+        }
+
+        exibirFeedbackSucessoBotao(fluxo.btnAlvo);
+        fecharModalEmail();
+        mostrarAvisoNotificacao("Perfil e dados de segurança atualizados com sucesso!", "sucesso");
+        
+        // Bloqueia os inputs novamente após o sucesso
+        ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.disabled = true;
+        });
+
         if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        window.fluxoTrocaPendente = null;
+
     } catch (error) {
-        console.error("Erro ao atualizar e-mail no Firebase:", error);
+        console.error("Erro ao atualizar dados críticos:", error);
         if (error.code === 'auth/requires-recent-login') {
-            mostrarAvisoNotificacao("Por segurança, faça login novamente antes de alterar o e-mail.", "erro");
+            mostrarAvisoNotificacao("Por segurança, faça login novamente antes de alterar dados críticos.", "erro");
         } else {
-            mostrarAvisoNotificacao("Erro ao atualizar e-mail. Tente novamente.", "erro");
+            mostrarAvisoNotificacao("Erro ao atualizar os dados. Tente novamente.", "erro");
         }
     }
 }
+
+window.processarTrocaEmail = processarTrocaEmail;
 
 function exibirFeedbackSucessoBotao(btn) {
     if (!btn) return;
