@@ -941,8 +941,6 @@ async function handleCadastro(e) {
     }
 }
 
-window.handleCadastro = handleCadastro;
-
 // Torna a função acessível ao onclick do HTML
 window.handleCadastro = handleCadastro;
 
