@@ -572,7 +572,7 @@
     </div>
 </div>
 
-<div id="crossfit-record-hub" class="page-container hidden">
+<div id="crossfit-benchmark-hub" class="page-container hidden">
     <div class="container-central">
         <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
             <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
@@ -585,66 +585,57 @@
         </div>
 
         <div style="text-align: center; margin-bottom: 20px;">
-            <h2 id="titulo-cf-record" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Recordes</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Gerencie seus recordes e marcas pessoais.</p>
+            <h2 id="titulo-cf-benchmark" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Benchmarks</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Histórico de WODs e marcas oficiais.</p>
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="text" id="input-cf-movimento" list="lista-movimentos-cf" placeholder="Selecione ou digite o Movimento" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
-        
-        <datalist id="lista-movimentos-cf">
-            <option value="SNATCH">
-            <option value="CLEAN & JERK">
-            <option value="CLEAN">
-            <option value="JERK">
-            <option value="BACK SQUAT">
-            <option value="FRONT SQUAT">
-            <option value="OVERHEAD SQUAT">
-            <option value="DEADLIFT">
-            <option value="THRUSTER">
-            <option value="PUSH PRESS">
-            <option value="STRICT PRESS">
-            <option value="SNACTH BALANCE">
-            
-            <option value="COMPLEX: SNATCH + OHS">
-            <option value="COMPLEX: CLEAN & 2 JERKS">
-            <option value="COMPLEX: 3 POSITION CLEAN">
-            <option value="COMPLEX: HANG SNATCH + SNATCH">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-bench-nome" list="lista-wods-benchmark" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                
+                <datalist id="lista-wods-benchmark">
+                    <option value="FRAN">
+                    <option value="DIANNE">
+                    <option value="ELIZABETH">
+                    <option value="KAREN">
+                    <option value="AMANDA">
+                    <option value="NANCY">
+                    <option value="MURPH">
+                    <option value="DT">
+                    <option value="CINDY">
+                    <option value="MARY">
+                    <option value="CHELSEA">
+                    <option value="BARBARA">
+                    <option value="ANGIE">
+                    <option value="HELEN">
+                    <option value="EVA">
+                    <option value="LINDA">
+                    <option value="OPEN 11.1">
+                    <option value="OPEN 12.2">
+                    <option value="OPEN 13.3">
+                    <option value="OPEN 14.5">
+                    <option value="OPEN 15.5">
+                    <option value="OPEN 16.1">
+                    <option value="OPEN 17.1">
+                    <option value="OPEN 18.1">
+                    <option value="OPEN 19.1">
+                    <option value="OPEN 20.1">
+                    <option value="OPEN 21.1">
+                    <option value="OPEN 22.1">
+                    <option value="OPEN 23.1">
+                    <option value="OPEN 24.1">
+                </datalist>
+                
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-bench-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                </div>
 
-            <option value="PULL UPS">
-            <option value="CHEST TO BAR">
-            <option value="BAR MUSCLE UP">
-            <option value="RING MUSCLE UP">
-            <option value="HANDSTAND PUSH UP">
-            <option value="HANDSTAND WALK">
-            <option value="TOES TO BAR">
-            <option value="DU (DOUBLE UNDERS)">
-            <option value="PISTOL SQUAT">
-            <option value="ROPE CLIMB">
-            <option value="HSU (HANDSTAND PUSH UPS)">
-
-            <option value="ROW 500M">
-            <option value="ROW 1000M">
-            <option value="ROW 2000M">
-            <option value="RUN 400M">
-            <option value="RUN 1KM">
-            <option value="RUN 5KM">
-            <option value="BIKE 10KM">
-            <option value="ASSAULT BIKE CALS">
-            <option value="SKI ERG CALS">
-        </datalist>
-        
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-cf-atleta" placeholder="Nome do Atleta" class="input-field" style="flex: 1; font-weight: 700;">
-            <input type="text" id="input-cf-valor" placeholder="Valor ou Tempo" class="input-field" style="flex: 1; font-weight: 700;">
+                <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
+            </div>
         </div>
 
-        <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">ADICIONAR RECORDE</button>
-    </div>
-</div>
-
-        <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
 </div>
 
