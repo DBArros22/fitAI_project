@@ -548,49 +548,68 @@ function fecharModalSenha() {
 }
 
 async function processarTrocaSenha() {
-    const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value;
-    const novaSenha = document.getElementById('pass-nova').value;
-    const user = auth.currentUser;
+    const senhaAtualInput = document.getElementById('confirm-pass-atual');
+    const novaSenhaInput = document.getElementById('pass-nova');
+    const confirmarSenhaInput = document.getElementById('pass-confirmar');
 
-    if (!user) return;
+    const senhaAtual = senhaAtualInput ? senhaAtualInput.value.trim() : "";
+    const novaSenha = novaSenhaInput ? novaSenhaInput.value : "";
+    const confirmarSenha = confirmarSenhaInput ? confirmarSenhaInput.value : "";
+
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+        mostrarAvisoNotificacao("Preencha todos os campos de senha!", "erro");
+        return;
+    }
+
+    if (novaSenha !== confirmarSenha) {
+        mostrarAvisoNotificacao("As novas senhas não coincidem!", "erro");
+        return;
+    }
+
+    if (novaSenha.length < 6) {
+        mostrarAvisoNotificacao("A nova senha deve ter pelo menos 6 caracteres!", "erro");
+        return;
+    }
+
+    const user = auth.currentUser;
+    if (!user || !user.email) {
+        mostrarAvisoNotificacao("Usuário não autenticado!", "erro");
+        return;
+    }
 
     try {
-        // Credencial para reautenticar o usuário por segurança antes de trocar a senha
-        const credential = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtualDigitada);
+        // 1. Cria a credencial com a senha atual digitada
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, senhaAtual);
+
+        // 2. Reautentica o usuário de forma segura antes de trocar a senha
         await user.reauthenticateWithCredential(credential);
-        
-        // Atualiza a senha no Firebase Auth
+
+        // 3. Atualiza para a nova senha no Firebase Auth
         await user.updatePassword(novaSenha);
 
-        fecharModalSenha();
-        const btnPrincipal = document.getElementById('btn-senha-perfil');
-        if (btnPrincipal) {
-            btnPrincipal.innerHTML = "✅ SENHA ATUALIZADA";
-            btnPrincipal.style.background = "#22c55e";
-            setTimeout(() => {
-                btnPrincipal.innerHTML = "ALTERAR SENHA";
-                btnPrincipal.style.background = "";
-            }, 3000);
+        // 4. Limpa os campos de senha
+        if (senhaAtualInput) senhaAtualInput.value = "";
+        if (novaSenhaInput) novaSenhaInput.value = "";
+        if (confirmarSenhaInput) confirmarSenhaInput.value = "";
+
+        // 5. Fecha o modal de senha sem recarregar a página ou mandar para o lobby
+        if (typeof fecharModalSenha === 'function') {
+            fecharModalSenha();
         }
-        
-        const inputNova = document.getElementById('pass-nova');
-        const inputConf = document.getElementById('pass-confirmar');
-        if (inputNova) inputNova.value = "";
-        if (inputConf) inputConf.value = "";
-        mostrarAvisoNotificacao("Senha modificada com sucesso!", "sucesso");
+
+        mostrarAvisoNotificacao("Senha alterada com sucesso!", "sucesso");
 
     } catch (error) {
         console.error("Erro ao alterar senha:", error);
-        const inputModal = document.getElementById('confirm-pass-atual');
-        if (inputModal) {
-            inputModal.style.border = "1px solid #ef4444";
-            inputModal.value = "";
-            inputModal.placeholder = "SENHA INCORRETA!";
-            setTimeout(() => { inputModal.style.border = ""; inputModal.placeholder = "Senha Atual"; }, 2000);
+        if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/wrong-password') {
+            mostrarAvisoNotificacao("A senha atual está incorreta!", "erro");
+        } else {
+            mostrarAvisoNotificacao("Erro ao alterar senha. Tente novamente.", "erro");
         }
-        mostrarAvisoNotificacao("Senha atual incorreta ou erro na validação.", "erro");
     }
 }
+
+window.processarTrocaSenha = processarTrocaSenha;
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
