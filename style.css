@@ -583,67 +583,50 @@ body:has(#view-login:not(.hidden)) .navbar {
 /* --- RESPONSIVIDADE GERAL E CROSSFIT --- */
 
 @media (max-width: 600px) {
-    .content-grid { 
-        padding: 20px 4% !important; 
-        grid-template-columns: 1fr !important; 
-    }
-    .navbar { padding: 1rem 4%; }
-    
-    .crossfit-grid {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 12px !important;
-        padding: 15px 4% !important;
-    }
-    .crossfit-grid .menu-card {
-        padding: 20px 10px !important;
-        border-radius: 20px !important;
-    }
-    .crossfit-grid .card-icon {
-        width: 50px !important;
-        height: 50px !important;
-        border-radius: 14px !important;
-        margin-bottom: 12px !important;
-    }
-    .crossfit-grid .card-icon svg {
-        width: 24px !important;
-        height: 24px !important;
-    }
-    .crossfit-grid h3 {
-        font-size: 0.85rem !important;
-    }
-    .crossfit-grid p {
-        font-size: 0.7rem !important;
-    }
-
-    #view-aparelho-ocupado .glass-card-action {
-        padding: 20px;
-    }
-
-    /* === OTIMIZAÇÃO MOBILE PARA A TELA DE RECORDES E RANKINGS === */
+    /* Centraliza e aperta as margens dos containers principais para aproveitar a tela do celular */
     #crossfit-record-hub .container-central,
     #crossfit-benchmark-hub .container-central {
         padding: 10px 12px !important;
         max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box;
     }
 
+    /* Reduz o painel de inputs (glass-panel) para não ocupar a tela inteira desnecessariamente */
     #crossfit-record-hub .glass-panel,
     #crossfit-benchmark-hub .glass-panel {
-        padding: 14px !important;
-        border-radius: 16px !important;
-        margin-bottom: 12px !important;
+        padding: 16px 12px !important;
+        border-radius: 18px !important;
+        margin-bottom: 16px !important;
+        background: rgba(255, 255, 255, 0.04) !important;
     }
 
-    /* Garante que os campos de input e select fiquem com excelente área de toque */
+    /* Agrupa os inputs menores lado a lado de forma inteligente no mobile */
+    #crossfit-record-hub .glass-panel div[style*="display: flex; gap: 8px;"],
+    #crossfit-benchmark-hub .glass-panel div[style*="display: flex; gap: 8px;"] {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    /* Deixa os campos de input, select e botões com excelente ergonomia para toque no celular */
     #crossfit-record-hub .input-field,
     #crossfit-benchmark-hub .input-field {
         font-size: 0.9rem !important;
-        padding: 10px 12px !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
     }
 
-    /* Ajuste de margens nos cards de listagem dos recordes */
-    #lista-cf-records .glass-card,
-    #lista-cf-benchmarks .glass-card {
-        padding: 10px 12px !important;
-        border-radius: 10px !important;
+    #crossfit-record-hub button.btn-primary,
+    #crossfit-benchmark-hub button.btn-primary {
+        padding: 14px !important;
+        font-size: 0.85rem !important;
+        border-radius: 12px !important;
+    }
+
+    /* Organiza os cards da listagem gerada (ranking/histórico) */
+    #lista-cf-records,
+    #lista-cf-benchmarks {
+        gap: 8px !important;
+        padding-bottom: 30px;
     }
 }
