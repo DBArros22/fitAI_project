@@ -1113,8 +1113,6 @@ async function logout() {
 
 
 // --- 3. GESTÃO TREINOS ---
-let fichaAtivaNoMomento = "";
-let fichaAtiva = null;
 
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
