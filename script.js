@@ -1411,67 +1411,40 @@ function verExerciciosConsulta(nome) {
     if(titulo) titulo.innerText = nome.toUpperCase();
 
     const exercicios = bancoDeDados.fichas[nome] || [];
-    // Recupera o histórico de tempos salvos permanentemente
     const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
+    
     containerDetalhes.innerHTML = exercicios.map(ex => {
-
         const infoEsquerda = ex.tipo === 'tempo'
-
             ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
-
             : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps} <span style="color:gray; font-size:10px;">${ex.carga}KG</span></p>`;
-
-        // Busca o histórico permanentemente para o ID do exercício
 
         const registroSalvo = historicoTempos[ex.id];
         const textoUltimoTempo = registroSalvo
-
             ? `Último tempo: ${registroSalvo.tempo} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${registroSalvo.data} às ${registroSalvo.hora})</span>`
-
             : `Último tempo: --`;
 
         return `
-
         <div class="glass-panel" style="margin-bottom: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
-
             <div style="flex: 1; padding-right: 10px;">
-
                 <h4 style="color:white; margin:0; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">${ex.nome}</h4>
-
                 ${infoEsquerda}
-
                 <small id="last-time-${ex.id}" style="color: #3b82f6; font-size: 10px; font-weight: bold; display: block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
-
                     ${textoUltimoTempo}
                 </small>
             </div>
 
-
-
             <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
-
                 <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 45px; text-align: center; letter-spacing: 0.5px;">0s</span>
-
                
-
                 <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})"
-
                     style="background: transparent; border: none; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;">
-
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6)); transition: transform 0.2s;"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
-
                 </button>
-
             </div>
-
         </div>`;
-
     }).join('') || "<p style='color:gray; text-align:center;'>Vazio.</p>";
 
-
-
     setTimeout(recuperarCronometrosAtivos, 100);
-
 }
 
 // Cronometro página de consulta
