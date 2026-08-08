@@ -1369,29 +1369,22 @@ function renderizarFichasConsulta() {
     containerDetalhes.classList.add('hidden');
 
     if(btnVoltar) btnVoltar.classList.add('hidden');
-
     if(btnSair) btnSair.classList.remove('hidden');
-
     if(titulo) titulo.innerText = "Consultar Treinos";
 
-    // Criamos uma variável para acumular o HTML e evitar múltiplos reflows
     let htmlGerado = "";
 
     Object.keys(bancoDeDados.fichas).forEach(nome => {
-        // Puxa a quantidade exata de exercícios registrados nessa ficha
         const qtdExercicios = bancoDeDados.fichas[nome].length;
 
         htmlGerado += `
             <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
                     <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
                 </div>
-
                 <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
-
             </div>`;
     });
     containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
