@@ -1155,6 +1155,30 @@ function criarNovaFicha() {
     });
 }
 
+// Function carregar os dados do firebase sobre as fichas de treino.
+
+
+async function carregarBancoDoFirebase() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        const docRef = await db.collection('usuarios').doc(user.uid).get();
+        if (docRef.exists) {
+            const dadosDoBanco = docRef.data().bancoDeDados;
+            if (dadosDoBanco) {
+                bancoDeDados = dadosDoBanco;
+                // Atualiza as telas se já estiverem abertas
+                if (typeof renderizarFichas === 'function') renderizarFichas();
+                if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao carregar dados do Firebase:", error);
+    }
+}
+
+
 async function salvarBanco() {
     const user = auth.currentUser;
     if (!user) {
@@ -1329,37 +1353,33 @@ function excluirFicha(nome) {
 
 // --- 4. SISTEMA DE CONSULTA GERAL ---
 
-function renderizarFichasConsulta() {
-    const containerLista = document.getElementById('lista-nomes-treinos');
-    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
-    const btnVoltar = document.getElementById('btn-voltar-consulta');
-    const btnSair = document.getElementById('btn-sair-consulta');
-    const titulo = document.getElementById('cabecalho-consulta');
-
-    if (!containerLista) return;
-    containerLista.classList.remove('hidden');
-    containerDetalhes.classList.add('hidden');
-
-    if(btnVoltar) btnVoltar.classList.add('hidden');
-    if(btnSair) btnSair.classList.remove('hidden');
-    if(titulo) titulo.innerText = "Consultar Treinos";
-
-    let htmlGerado = "";
-
-    Object.keys(bancoDeDados.fichas).forEach(nome => {
-        const qtdExercicios = bancoDeDados.fichas[nome].length;
-
-        htmlGerado += `
-            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
-                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
-                    <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
+function renderizarFichas() {
+    const container = document.getElementById('lista-fichas');
+    if (!container) return;
+    container.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+            <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
+              ← VOLTAR
+            </button>          
+        </div>
+    `;
+    const keys = Object.keys(bancoDeDados.fichas);
+    if (keys.length === 0) {
+        container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
+        return;
+    }
+    keys.forEach(nome => {
+        container.innerHTML += `
+            <div class="ficha-item" onclick="abrirFicha('${nome}')">
+                <div class="treino-info">
+                    <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
+                    <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
                 </div>
-                <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
+                <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
             </div>`;
     });
-    containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
 
 function verExerciciosConsulta(nome) {
