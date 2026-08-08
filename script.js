@@ -1113,6 +1113,9 @@ async function logout() {
 
 
 // --- 3. GESTÃO TREINOS ---
+let fichaAtivaNoMomento = "";
+let fichaAtiva = null;
+
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
     if (!container) return;
@@ -1159,7 +1162,6 @@ async function criarNovaFicha() {
         if (nome && !bancoDeDados.fichas[nome]) {
             bancoDeDados.fichas[nome] = [];
             
-            // Salva de forma assíncrona na nuvem
             await salvarBanco();
             
             if (typeof renderizarFichas === 'function') renderizarFichas();
@@ -1422,7 +1424,6 @@ function verExerciciosConsulta(nome) {
     setTimeout(recuperarCronometrosAtivos, 100);
 }
 
-// Cronometro página de consulta
 function controlarCronometroSet(id) {
     const display = document.getElementById(`timer-set-${id}`);
     const btn = document.getElementById(`btn-timer-set-${id}`);
@@ -1435,7 +1436,6 @@ function controlarCronometroSet(id) {
         btn.style.background = "#ef4444";
 
         cronometrosAtivos[id] = setInterval(() => {
-
             const passados = Date.now() - startTime;
             const h = Math.floor(passados / 3600000);
             const m = Math.floor((passados % 3600000) / 60000);
@@ -1443,7 +1443,6 @@ function controlarCronometroSet(id) {
             const ms = Math.floor((passados % 1000) / 10);
 
             let texto = "";
-
             if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
             texto += (m < 10 ? "0"+m : m) + ":";
             texto += (s < 10 ? "0"+s : s) + ".";
@@ -1454,12 +1453,10 @@ function controlarCronometroSet(id) {
 
     } else {
         const tempoCapturado = display.innerText;
-        // 2. Paramos o relógio
         clearInterval(cronometrosAtivos[id]);
 
         delete cronometrosAtivos[id];
         localStorage.removeItem(`timer_start_${id}`);
-        // 4. Retorna para o formato moderno ampliado com brilho platinado
         btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6));"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>`;
 
         btn.style.background = "transparent";
@@ -1474,7 +1471,6 @@ function controlarCronometroSet(id) {
             const minuto = String(agora.getMinutes()).padStart(2, '0');
             const horaFormatada = `${hora}:${minuto}`;
 
-            // Salva no banco de histórico do LocalStorage
             const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
 
             historicoTempos[id] = {
@@ -1486,12 +1482,11 @@ function controlarCronometroSet(id) {
             localStorage.setItem('assistfit_historico_cronometros', JSON.stringify(historicoTempos));
             if (lastDisplay) {
                 lastDisplay.innerHTML = `Último tempo: ${tempoCapturado} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${dataFormatada} às ${horaFormatada})</span>`;
-
             }
-        } display.innerText = "00:00.00";
+        } 
+        if (display) display.innerText = "00:00.00";
     }
 }
-
 
 function recuperarCronometrosAtivos() {
     Object.keys(localStorage).forEach(key => {
@@ -1503,7 +1498,6 @@ function recuperarCronometrosAtivos() {
 
             if (display && btn) {
                 btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
-
                 btn.style.background = "#ef4444";
 
                 cronometrosAtivos[id] = setInterval(() => {
@@ -1525,8 +1519,6 @@ function recuperarCronometrosAtivos() {
     });
 }
 
-// função auxiliar para exibição do texto na tela xx NAO MEXER ! xx
-
 function executarRelogio(id, startTime) {
     const display = document.getElementById(`timer-set-${id}`);
     cronometrosAtivos[id] = setInterval(() => {
@@ -1536,7 +1528,6 @@ function executarRelogio(id, startTime) {
         const m = Math.floor((passados % 3600000) / 60000);
         const s = Math.floor((passados % 60000) / 1000);
         const ms = Math.floor((passados % 1000) / 10);
-
 
         let texto = "";
         if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
@@ -1548,54 +1539,27 @@ function executarRelogio(id, startTime) {
     }, 40);
 }
 
-
-// xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx---xxx
-
 function verDetalhesTreino(nomeTreino) {
-    // Esconde o botão de voltar ao Lobby e mostra o de voltar à lista
     document.getElementById('btn-sair-consulta').classList.add('hidden');
     document.getElementById('btn-voltar-consulta').classList.remove('hidden');
-
-    // Troca o título para o nome do treino selecionado
-
     document.getElementById('cabecalho-consulta').innerText = nomeTreino;
-
-    // Lógica para esconder a lista e mostrar os detalhes (Ajuste os IDs se necessário)
-
     document.getElementById('lista-nomes-treinos').classList.add('hidden');
-
     document.getElementById('detalhes-treino-consulta').classList.remove('hidden');
-    // Aqui entraria sua lógica existente de preencher os detalhes...
-
 }
 
-
-// 2. SUBSTITUA a sua função atual por esta
-
 function voltarListaConsulta() {
-    // Mostra o botão de voltar ao Lobby e esconde o de voltar à lista
     document.getElementById('btn-sair-consulta').classList.remove('hidden');
     document.getElementById('btn-voltar-consulta').classList.add('hidden');
-
-    // Reseta o título da página
     document.getElementById('cabecalho-consulta').innerText = "Consultar Treinos";
-    // Mostra a lista e esconde os detalhes
     document.getElementById('lista-nomes-treinos').classList.remove('hidden');
     document.getElementById('detalhes-treino-consulta').classList.add('hidden');
-
-    // Chama a renderização das fichas que você já tinha
     renderizarFichasConsulta();
 }
 
-// --- 5. GESTÃO DE EXERCÍCIOS (LOG / REGISTRO) ---
 function atualizarListaExercicios() {
-    // 1. Buscamos o elemento usando o ID REAL do seu HTML ('select-grupo-sub')
     const campoGrupo = document.getElementById('select-grupo-sub');
-    
-    // TRAVA DE SEGURANÇA: Se o campo não existir na tela atual (como no logout), para aqui e não quebra!
     if (!campoGrupo) return;
 
-    // 2. Captura o valor selecionado
     const grupo = campoGrupo.value;
     const selectEx = document.getElementById('select-exercicio');
     const camposForca = document.getElementById('campos-forca');
@@ -1606,7 +1570,7 @@ function atualizarListaExercicios() {
         selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
         return;
     }
-    // Alternar campos entre Peso (Força) e Tempo (Cardio)
+
     if (grupo === "Cardio & Aeróbico") {
         if (camposForca) camposForca.classList.add('hidden');
         if (camposCardio) camposCardio.classList.remove('hidden');
@@ -1619,12 +1583,11 @@ function atualizarListaExercicios() {
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
-
-function adicionarExercicio() {
+// ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
+async function adicionarExercicio() {
     const ativa = fichaAtivaNoMomento || fichaAtiva;
     if (!ativa) return mostrarAviso("Selecione uma ficha!");
 
-    // 1. Busca os elementos usando o ID correto do HTML
     const campoGrupo = document.getElementById('select-grupo-sub');
     const campoExercicio = document.getElementById('select-exercicio');
     const campoSeries = document.getElementById('series-ex');
@@ -1632,14 +1595,11 @@ function adicionarExercicio() {
     const campoCarga = document.getElementById('carga-ex');
     const campoTempo = document.getElementById('tempo-ex');
 
-    // TRAVA DE SEGURANÇA: Se os elementos principais não estiverem na tela, para imediatamente
     if (!campoGrupo || !campoExercicio) return;
 
-    // 2. Captura os valores com segurança
     const grupo = campoGrupo.value;
     const exercicio = campoExercicio.value;
 
-    // Validação básica para não salvar campos vazios
     if (!grupo || !exercicio) {
         mostrarAviso("Por favor, selecione o grupo e o exercício.");
         return;
@@ -1650,14 +1610,12 @@ function adicionarExercicio() {
     const repsValue = campoReps ? campoReps.value : "";
     const tempoValue = campoTempo ? campoTempo.value : "";
 
-    // Validações originais de preenchimento obrigatório baseadas no tipo
     if (isCardio) {
         if (!tempoValue) return mostrarAviso("Informe o tempo do cardio!");
     } else {
         if (!seriesValue || !repsValue) return mostrarAviso("Preencha séries e repetições!");
     }
 
-    // 3. Cria o objeto do novo set com a estrutura exata exigida pelo seu sistema
     const novo = {
         id: Date.now(),
         grupo: grupo,
@@ -1669,31 +1627,29 @@ function adicionarExercicio() {
         tipo: isCardio ? 'tempo' : 'forca'
     };
 
-    // 4. LÓGICA RESTAURADA: Salva diretamente dentro da ficha ativa no Banco de Dados Real
     if (!bancoDeDados.fichas[ativa]) {
         bancoDeDados.fichas[ativa] = [];
     }
     bancoDeDados.fichas[ativa].unshift(novo);
     
-    // 5. Grava as alterações permanentemente
-    salvarBanco();
+    // AGUARDA O SALVAMENTO ANTES DE CONTINUAR
+    await salvarBanco();
     
     console.log("Set estruturado e salvo com sucesso no banco:", novo);
 
-    // 6. Atualiza todas as interfaces de forma síncrona e imediata
-    renderizarLogTreino();
+    if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino();
+    }
     renderizarResumoFicha(ativa);
     if (typeof renderizarFichasConsulta === 'function') {
         renderizarFichasConsulta();
     }
 
-    // 7. Limpa os campos de digitação após salvar com sucesso
     if (campoSeries) campoSeries.value = "";
     if (campoReps) campoReps.value = "";
     if (campoCarga) campoCarga.value = "";
     if (campoTempo) campoTempo.value = "";
 }
-
 
 function formatarTempoParaExibicao(valor) {
     if (!valor) return "00s";
