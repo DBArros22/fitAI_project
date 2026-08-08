@@ -30,7 +30,7 @@ var db = window.db;
 
 // 2. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
-let bancoDeDados = { fichas: {} };
+let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} }; // variável das fichas cadastradas 
 let diasTreinados = [];
 let lembretes = [];
 let feedEvolucao = [];
