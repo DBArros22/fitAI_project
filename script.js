@@ -102,39 +102,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Monitoramento seguro do Firebase Auth
-    if (typeof auth !== 'undefined' && auth) {
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                window.usuarioAtualId = user.uid;
-                
-                // Armazena identificadores de sessão atual do Firebase
-                localStorage.setItem('user_email_ativo', user.email);
+if (typeof auth !== 'undefined' && auth) {
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            window.usuarioAtualId = user.uid;
+            
+            // Armazena identificadores de sessão atual do Firebase
+            localStorage.setItem('user_email_ativo', user.email);
 
-                try {
-                    if (typeof window.carregarDadosDoAtleta === 'function') {
-                        await window.carregarDadosDoAtleta(user.uid);
-                    }
-                    if (typeof carregarDadosPerfil === 'function') {
-                        await carregarDadosPerfil();
-                    }
-                } catch (err) {
-                    console.error("Erro ao carregar dados do atleta no login:", err);
+            try {
+                if (typeof window.carregarDadosDoAtleta === 'function') {
+                    await window.carregarDadosDoAtleta(user.uid);
+                }
+                if (typeof carregarDadosPerfil === 'function') {
+                    await carregarDadosPerfil();
+                }
+                
+                // >>> ADICIONE ESTA LINHA ABAIXO PARA CARREGAR AS FICHAS DO FIREBASE <<<
+                if (typeof carregarBancoDoFirebase === 'function') {
+                    await carregarBancoDoFirebase();
                 }
 
-                if (typeof showView === 'function') {
-                    showView('lobby');
-                }
-            } else {
-                window.usuarioAtualId = null;
-                localStorage.removeItem('user_email_ativo');
-                
-                if (typeof showView === 'function') {
-                    showView('login');
-                }
+            } catch (err) {
+                console.error("Erro ao carregar dados do atleta no login:", err);
             }
-        });
-    }
-});
+
+            if (typeof showView === 'function') {
+                showView('lobby');
+            }
+        } else {
+            window.usuarioAtualId = null;
+            localStorage.removeItem('user_email_ativo');
+            
+            if (typeof showView === 'function') {
+                showView('login');
+            }
+        }
+    });
+}
 
 window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
