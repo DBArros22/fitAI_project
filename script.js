@@ -1115,7 +1115,6 @@ function renderizarFichas() {
     container.innerHTML = `
         <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
             <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-
               ← VOLTAR
             </button>          
         </div>
@@ -1133,9 +1132,7 @@ function renderizarFichas() {
                     <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
                 </div>
                 <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
-
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-
                 </button>
             </div>`;
     });
@@ -1158,8 +1155,22 @@ function criarNovaFicha() {
     });
 }
 
-function salvarBanco() {
-    localStorage.setItem('fitai_pro_data', JSON.stringify(bancoDeDados));
+async function salvarBanco() {
+    const user = auth.currentUser;
+    if (!user) {
+        console.warn("Usuário não autenticado. Impossível salvar no Firebase.");
+        return;
+    }
+
+    try {
+        await db.collection('usuarios').doc(user.uid).set({
+            bancoDeDados: bancoDeDados
+        }, { merge: true });
+        console.log("Banco de dados sincronizado com o Firebase com sucesso!");
+    } catch (error) {
+        console.error("Erro ao salvar no Firebase:", error);
+        mostrarAviso("Erro ao salvar dados na nuvem.");
+    }
 }
 
 function solicitarNomeFichaCustom(callback) {
@@ -1172,84 +1183,44 @@ function solicitarNomeFichaCustom(callback) {
     `;
 
     modalInput.innerHTML = `
-
         <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
-
             <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-
             </div>
-
             <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
-
             <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
 
-
             <div class="form-group" style="margin-bottom: 25px;">
-
                 <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
-
             </div>
 
-
             <div style="display: flex; gap: 12px;">
-
                 <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
-
                 <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
             </div>
         </div>
     `;
 
     document.body.appendChild(modalInput);
-
-   
-
     const inputField = document.getElementById('input-nome-ficha');
-
     inputField.focus();
-
-
-
-    // Fecha ao cancelar
 
     document.getElementById('btn-cancelar-nome').onclick = () => modalInput.remove();
 
-
-
-    // Lógica de confirmação
-
     document.getElementById('btn-confirmar-nome').onclick = () => {
-
         const nome = inputField.value.trim().toUpperCase();
-
         if (nome) {
-
             callback(nome);
-
             modalInput.remove();
-
         } else {
-
             inputField.style.borderColor = "#ef4444";
-
         }
-
     };
-
-
-
-    // Confirmar com a tecla Enter
 
     inputField.onkeydown = (e) => {
-
         if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
-
     };
-
 }
-
 
 function abrirFicha(nome) {
     fichaAtivaNoMomento = nome;
