@@ -1125,7 +1125,6 @@ function renderizarFichas() {
         </div>
     `;
 
-    // Garante que o objeto de fichas existe antes de ler as chaves
     if (!bancoDeDados || !bancoDeDados.fichas) {
         bancoDeDados = { fichas: {} };
     }
@@ -1137,7 +1136,8 @@ function renderizarFichas() {
     }
 
     keys.forEach(nome => {
-        const totalExercicios = Array.isArray(bancoDeDados.fichas[nome]) ? bancoDeDados.fichas[nome].length : 0;
+        const exerciciosDaFicha = bancoDeDados.fichas[nome];
+        const totalExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
         
         container.innerHTML += `
             <div class="ficha-item" onclick="abrirFicha('${nome}')" style="cursor: pointer;">
@@ -1152,22 +1152,21 @@ function renderizarFichas() {
     });
 }
 
-// Tornada assíncrona para garantir que a gravação no Firebase aconteça antes de prosseguir
 async function criarNovaFicha() {
     solicitarNomeFichaCustom(async (nome) => {
-        if (nome && (!bancoDeDados.fichas || !bancoDeDados.fichas[nome])) {
-            if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
-            
+        if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
+
+        if (nome && !bancoDeDados.fichas[nome]) {
             bancoDeDados.fichas[nome] = [];
             
-            // Aguarda o salvamento no Firebase antes de atualizar a interface
+            // Salva de forma assíncrona na nuvem
             await salvarBanco();
             
             if (typeof renderizarFichas === 'function') renderizarFichas();
             if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
 
             mostrarAviso(`Treino ${nome} criado com sucesso!`);
-        } else if (bancoDeDados.fichas && bancoDeDados.fichas[nome]) {
+        } else if (bancoDeDados.fichas[nome]) {
             mostrarAviso("Este nome de treino já existe.");
         }
     });
@@ -1270,56 +1269,29 @@ function abrirFicha(nome) {
     renderizarResumoFicha(nome);
 }
 
-
 function mascaraTempo(input) {
-
-    let v = input.value.replace(/\D/g, ''); // Remove tudo que não é número
-
-    if (v.length > 6) v = v.slice(0, 6); // Limita a 6 dígitos
-
-
+    let v = input.value.replace(/\D/g, ''); 
+    if (v.length > 6) v = v.slice(0, 6); 
 
     if (v.length >= 5) {
-
         v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
-
     } else if (v.length >= 3) {
-
         v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
-
     }
-
     input.value = v;
-
 }
-
-
-
-// Função para formatar a exibição final com siglas (Ex: 01h 20m 30s)
 
 function formatarTempoParaExibicao(valor) {
-
     if (!valor) return "";
-
     const partes = valor.split(':');
-
    
-
     if (partes.length === 3) {
-
         return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
-
     } else if (partes.length === 2) {
-
         return `${partes[0]}m ${partes[1]}s`;
-
     }
-
     return valor + "s";
-
 }
-
-
 
 function renderizarResumoFicha(nome) {
     const container = document.getElementById('lista-exercicios-estaticos');
@@ -1350,11 +1322,10 @@ function renderizarResumoFicha(nome) {
     });
 }
 
-
-function excluirFicha(nome) {
-    if (bancoDeDados.fichas[nome]) {
+async function excluirFicha(nome) {
+    if (bancoDeDados.fichas && bancoDeDados.fichas[nome]) {
         delete bancoDeDados.fichas[nome];
-        salvarBanco();
+        await salvarBanco();
        
         if (typeof renderizarFichas === 'function') renderizarFichas();
         if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
@@ -1365,35 +1336,40 @@ function excluirFicha(nome) {
     }
 }
 
-// --- 4. SISTEMA DE CONSULTA GERAL ---
+function renderizarFichasConsulta() {
+    const containerLista = document.getElementById('lista-nomes-treinos');
+    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
 
-function renderizarFichas() {
-    const container = document.getElementById('lista-fichas');
-    if (!container) return;
-    container.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-            <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-              ← VOLTAR
-            </button>          
-        </div>
-    `;
-    const keys = Object.keys(bancoDeDados.fichas);
-    if (keys.length === 0) {
-        container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
-        return;
-    }
-    keys.forEach(nome => {
-        container.innerHTML += `
-            <div class="ficha-item" onclick="abrirFicha('${nome}')">
-                <div class="treino-info">
-                    <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
-                    <p style="font-size:10px; color:gray;">${bancoDeDados.fichas[nome].length} Exercícios</p>
+    if (!containerLista) return;
+    containerLista.classList.remove('hidden');
+    containerDetalhes.classList.add('hidden');
+
+    if(btnVoltar) btnVoltar.classList.add('hidden');
+    if(btnSair) btnSair.classList.remove('hidden');
+    if(titulo) titulo.innerText = "Consultar Treinos";
+
+    let htmlGerado = "";
+
+    if (!bancoDeDados || !bancoDeDados.fichas) return;
+
+    Object.keys(bancoDeDados.fichas).forEach(nome => {
+        const exerciciosDaFicha = bancoDeDados.fichas[nome];
+        const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
+
+        htmlGerado += `
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
+                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
+                    <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
                 </div>
-                <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
+                <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
             </div>`;
     });
+    containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
 
 function verExerciciosConsulta(nome) {
