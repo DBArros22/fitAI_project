@@ -1163,22 +1163,13 @@ function salvarBanco() {
 }
 
 function solicitarNomeFichaCustom(callback) {
-
     const modalInput = document.createElement('div');
-
     modalInput.style = `
-
         position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-
         background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
-
         display: flex; align-items: center; justify-content: center;
-
         z-index: 100000; padding: 20px;
-
     `;
-
-
 
     modalInput.innerHTML = `
 
@@ -1194,7 +1185,6 @@ function solicitarNomeFichaCustom(callback) {
 
             <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
 
-           
 
             <div class="form-group" style="margin-bottom: 25px;">
 
@@ -1203,20 +1193,14 @@ function solicitarNomeFichaCustom(callback) {
             </div>
 
 
-
             <div style="display: flex; gap: 12px;">
 
                 <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
 
                 <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
-
             </div>
-
         </div>
-
     `;
-
-
 
     document.body.appendChild(modalInput);
 
