@@ -3322,8 +3322,6 @@ const bibliotecaDeBenchmarks = {
 
 let cfCategoriaAtual = '';
 
-
-
 function abrirRecordsHub(categoria) {
     cfCategoriaAtual = categoria;
     
