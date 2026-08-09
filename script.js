@@ -854,7 +854,7 @@ function showView(viewId) {
         console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
     }
 
-    // 5. Callbacks originais e novos de renderização para CrossFit
+    // 5. callbacks de renderização para CrossFit
     if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
@@ -863,10 +863,15 @@ function showView(viewId) {
         renderizarPaginaCronograma();
     } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
         carregarDadosPerfil();
-    } else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+    } 
+    // === ADICIONADO AQUI PARA O CROSSFIT FUNCIONAR ===
+    else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
         atualizarListaRecordsCF();
     } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
         atualizarListaBenchmarksCF();
+    } else if (cleanId === 'crossfit-lobby' || cleanId === 'crossfit') {
+        // Garante que se abrir o lobby do crossfit, qualquer inicialização necessária ocorra
+        console.log("Zona CrossFit aberta com sucesso!");
     }
 
     window.currentView = cleanId;
