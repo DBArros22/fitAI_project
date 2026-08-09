@@ -870,7 +870,7 @@ function showView(viewId) {
     } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
         atualizarListaBenchmarksCF();
     } else if (cleanId === 'crossfit-lobby' || cleanId === 'crossfit') {
-        // Garante que se abrir o lobby do crossfit, qualquer inicialização necessária ocorra
+        // qualquer inicialização necessária ocorrerá
         console.log("Zona CrossFit aberta com sucesso!");
     }
     else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
