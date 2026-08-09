@@ -3322,7 +3322,12 @@ const bibliotecaDeBenchmarks = {
 
 let cfCategoriaAtual = '';
 
-const dicionarioTitulos = {
+
+
+function abrirRecordsHub(categoria) {
+    cfCategoriaAtual = categoria;
+    
+    const dicionarioTitulos = {
     'girls': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-6 9.5c0-2.5 3-3.5 6-3.5s6 1 6 3.5V18H6v-2.5z"></path></svg> The Girls Recordistas',
     
     'heroes': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon><line x1="12" y1="2" x2="12" y2="22"></line></svg> Heroes da Box',
@@ -3331,6 +3336,22 @@ const dicionarioTitulos = {
     
     'open': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg> Open Leaderboard'
 };
+    
+    const tituloEl = document.getElementById('titulo-cf-record');
+    if (tituloEl) tituloEl.innerText = dicionarioTitulos[categoria] || 'Recordes';
+    
+    // Reseta caixas de texto de forma segura
+    const inputMov = document.getElementById('input-cf-movimento');
+    const inputVal = document.getElementById('input-cf-valor');
+    if (inputMov) inputMov.value = '';
+    if (inputVal) inputVal.value = '';
+    
+    atualizarListaRecordsCF();
+    
+    if (typeof showView === 'function') {
+        showView('crossfit-record-hub');
+    }
+}
 
 // Função de exemplo de como deve ser feita a chamada no seu código
 function abrirBenchmarksHub(tipo) {
