@@ -3352,6 +3352,7 @@ function abrirRecordsHub(tipo) {
 
 window.abrirRecordsHub = abrirRecordsHub;
 
+
 // Função de exemplo de como deve ser feita a chamada no seu código
 function abrirBenchmarksHub(tipo) {
     // Mostra a view correspondente
@@ -3543,6 +3544,9 @@ function abrirBenchmarksHub(categoria) {
     }
 }
 
+window.abrirBenchmarksHub = abrirBenchmarksHub;
+
+
 function atualizarListaBenchmarksCF() {
     const container = document.getElementById('lista-cf-benchmarks');
     if (!container) return;
@@ -3631,8 +3635,7 @@ function exibirAvisoValidacao(mensagem) {
     // Criação de um feedback visual temporário ou acoplamento com modais customizados do seu tema
 }
 
-window.abrirRecordsHub = abrirRecordsHub;
-window.abrirBenchmarksHub = abrirBenchmarksHub;
+
 window.adicionarRecordeCF = adicionarRecordeCF;
 window.adicionarBenchmarkCustom = adicionarBenchmarkCustom;
 window.removerRecordeCF = removerRecordeCF;
