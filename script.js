@@ -877,6 +877,7 @@ function showView(viewId) {
 
 window.showView = showView;
 
+
 // Função para alternar as abas de autenticação (Com o cabeçalho correto!)
 window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
