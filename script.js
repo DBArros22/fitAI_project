@@ -877,7 +877,10 @@ function showView(viewId) {
         atualizarListaRecordsCF('gymnastic');
     } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
         atualizarListaRecordsCF('endurance');
+    } else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+        atualizarListaRecordsCF(window.currentRecordType || 'barbell');
     }
+
     window.currentView = cleanId;
 
     // Segundo comando de segurança para garantir o topo
