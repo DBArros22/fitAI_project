@@ -873,7 +873,11 @@ function showView(viewId) {
         // Garante que se abrir o lobby do crossfit, qualquer inicialização necessária ocorra
         console.log("Zona CrossFit aberta com sucesso!");
     }
-
+    else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
+        atualizarListaRecordsCF('gymnastic');
+    } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
+        atualizarListaRecordsCF('endurance');
+    }
     window.currentView = cleanId;
 
     // Segundo comando de segurança para garantir o topo
