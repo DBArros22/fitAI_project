@@ -3447,96 +3447,65 @@ function adicionarRecordeCF() {
     inputVal.value = '';
 }
 
-function atualizarListaRecordsCF() {
-    const container = document.getElementById('lista-cf-records');
-    if (!container) return;
-    container.innerHTML = '';
+function adicionarRecordeCF() {
+    const inputMov = document.getElementById('input-cf-movimento');
+    const inputAtleta = document.getElementById('input-cf-atleta');
+    const inputVal = document.getElementById('input-cf-valor');
+    
+    if (!inputMov || !inputAtleta || !inputVal) return;
+    
+    const movimento = inputMov.value.trim().toUpperCase();
+    const atleta = inputAtleta.value.trim();
+    let valorTexto = inputVal.value.trim();
+    
+    if (!movimento || !atleta || !valorTexto) {
+        if (typeof exibirAvisoValidacao === 'function') {
+            exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
+        }
+        return;
+    }
+    
+    const valorUpper = valorTexto.toUpperCase();
+    
+    // Atribui unidade de medida automática se necessário
+    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+        if (!valorUpper.includes('KG')) {
+            valorTexto = `${valorTexto} KG`;
+        }
+    } else {
+        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':')) {
+            valorTexto = `${valorTexto} MIN`;
+        }
+    }
     
     if (!window.bancoDeDados) window.bancoDeDados = {};
     if (!bancoDeDados.crossfit_records) bancoDeDados.crossfit_records = {};
     if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
-    
-    const registros = bancoDeDados.crossfit_records[cfCategoriaAtual];
-    const movimentos = Object.keys(registros);
-    
-    if (movimentos.length === 0) {
-        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde salvo nesta categoria ainda.</p>';
-        return;
+
+    // Garante que o movimento é um array para acumular múltiplos atletas no ranking
+    if (!Array.isArray(bancoDeDados.crossfit_records[cfCategoriaAtual][movimento])) {
+        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = [];
     }
     
-    movimentos.forEach(movimento => {
-        let listaAtletas = registros[movimento];
-        
-        // Compatibilidade com registros antigos salvos em formato de objeto único
-        if (!Array.isArray(listaAtletas)) {
-            listaAtletas = [{ atleta: 'Atleta', valorTexto: listaAtletas }];
-            registros[movimento] = listaAtletas;
-        }
-        
-        // Função auxiliar robusta para converter marcas (peso ou tempo) em número para ordenação correta
-        const converterParaNumero = (valorStr) => {
-            if (!valorStr) return 0;
-            // Se tiver formato de tempo tipo "19:45", converte para segundos totais
-            if (valorStr.includes(':')) {
-                const partes = valorStr.split(':');
-                const min = parseFloat(partes[0]) || 0;
-                const seg = parseFloat(partes[1]) || 0;
-                return (min * 60) + seg;
-            }
-            // Caso contrário, extrai o primeiro número encontrado (ex: "100 kg" -> 100)
-            const match = valorStr.match(/[0-9.]+/);
-            return match ? parseFloat(match[0]) : 0;
-        };
-
-        // Ordenação inteligente baseada no tipo de exercício
-        listaAtletas.sort((a, b) => {
-            const numA = converterParaNumero(a.valorTexto);
-            const numB = converterParaNumero(b.valorTexto);
-            
-            if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
-                return numB - numA; // Peso: Maior para o menor (Melhor primeiro)
-            } else {
-                return numA - numB; // Tempo: Menor para o maior / Mais rápido primeiro
-            }
-        });
-
-        // SALVA A ORDENAÇÃO DE VOLTA NO BANCO PARA PERSISTIR O INDEX CORRETO
-        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = listaAtletas;
-        if (typeof salvarBanco === 'function') salvarBanco();
-        
-        let htmlAtletas = '';
-        listaAtletas.forEach((item, index) => {
-            const posicao = index + 1; // Garante 1, 2, 3, 4... ordenados perfeitamente
-            let corBadge = 'var(--text-secondary)';
-            if (posicao === 1) corBadge = '#eab308'; // Ouro
-            else if (posicao === 2) corBadge = '#94a3b8'; // Prata
-            else if (posicao === 3) corBadge = '#b45309'; // Bronze
-            
-            htmlAtletas += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.75rem; font-weight: 900; color: ${corBadge}; width: 20px;">#${posicao}</span>
-                        <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="italic-bold" style="color: var(--accent-blue); font-size: 0.95rem;">${item.valorTexto}</span>
-                        <button onclick="removerAtletaRecordeCF('${movimento}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
-                    </div>
-                </div>
-            `;
-        });
-        
-        const cardHtml = `
-            <div class="glass-card" style="padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px;">
-                <div class="italic-bold uppercase" style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${movimento}</div>
-                <div>${htmlAtletas}</div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', cardHtml);
+    // Adiciona o novo atleta na lista do respectivo movimento
+    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].push({
+        atleta: atleta,
+        valorTexto: valorTexto
     });
+    
+    // Salva no banco de dados persistente
+    if (typeof salvarBanco === 'function') salvarBanco();
+    
+    // Atualiza a interface e recalcula o ranking completo
+    atualizarListaRecordsCF();
+    
+    // Limpa os campos após salvar
+    inputMov.value = '';
+    inputAtleta.value = '';
+    inputVal.value = '';
 }
 
-window.atualizarListaRecordsCF = atualizarListaRecordsCF;
+window.adicionarRecordeCF = adicionarRecordeCF;
 
 function removerAtletaRecordeCF(movimento, index) {
     if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
