@@ -3659,7 +3659,14 @@ function exibirAvisoValidacao(mensagem) {
     // Criação de um feedback visual temporário ou acoplamento com modais customizados do seu tema
 }
 
+function adicionarRecordCustom() {
+    adicionarRecordeCF();
+}
 
+
+
+
+window.adicionarRecordCustom = adicionarRecordCustom;
 window.adicionarRecordeCF = adicionarRecordeCF;
 window.adicionarBenchmarkCustom = adicionarBenchmarkCustom;
 window.removerRecordeCF = removerRecordeCF;
