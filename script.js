@@ -3328,7 +3328,7 @@ let cfCategoriaAtual = '';
 
 
 function abrirRecordsHub(tipo) {
-    // Dicionário de títulos para os hubs de recordes
+    // Dicionário de títulos com os SVGs padronizados em branco platinado
     const titulosRecords = {
         'barbell': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M6 12h12M6 7v10M18 7v10M3 9h3v6H3zm15 0h3v6h-3z"></path></svg> Barbell Records',
         'complex': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Complex LPO',
@@ -3336,18 +3336,38 @@ function abrirRecordsHub(tipo) {
         'endurance': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M18 8h4M6 8h4M2 8h4M13 2.5l-3 6.5h5l-4 7.5"></path></svg> Endurance Records'
     };
 
-    // 1. Abre a view correta no HTML
+    // 1. Abre a view padrão de recordes
     if (typeof showView === 'function') {
         showView('crossfit-record-hub');
     }
 
-    // 2. Atualiza o título dinamicamente com innerHTML para o SVG aparecer perfeitamente
+    // 2. Atualiza o título dinamicamente com o SVG
     const tituloEl = document.getElementById('titulo-cf-record');
     if (tituloEl) {
         tituloEl.innerHTML = titulosRecords[tipo] || "Recordes";
     }
 
-    // 3. Atualiza os dados da lista
+    // 3. Ajusta dinamicamente os placeholders dos inputs para combinar com a categoria (Gymnastic vs Endurance)
+    const inputMarca = document.getElementById('input-record-marca');
+    const inputNome = document.getElementById('input-record-nome');
+
+    if (inputMarca && inputNome) {
+        if (tipo === 'gymnastic') {
+            inputNome.placeholder = "Movimento (Ex: PULL-UPS, HSPU)";
+            inputMarca.placeholder = "Marca (Ex: 50 reps unbroken)";
+        } else if (tipo === 'endurance') {
+            inputNome.placeholder = "Exercício / Distância (Ex: 5K RUN, ROW)";
+            inputMarca.placeholder = "Tempo (Ex: 19:45 min)";
+        } else {
+            inputNome.placeholder = "Nome do Movimento / Exercício";
+            inputMarca.placeholder = "Carga / Marca (Ex: 100 kg)";
+        }
+    }
+
+    // 4. Salva o tipo atual globalmente para a função de salvar saber qual categoria processar
+    window.currentRecordType = tipo;
+
+    // 5. Atualiza a lista de registros na tela
     if (typeof atualizarListaRecordsCF === 'function') {
         atualizarListaRecordsCF(tipo);
     }
