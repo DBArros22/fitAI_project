@@ -3473,21 +3473,40 @@ function atualizarListaRecordsCF() {
             registros[movimento] = listaAtletas;
         }
         
+        // Função auxiliar robusta para converter marcas (peso ou tempo) em número para ordenação correta
+        const converterParaNumero = (valorStr) => {
+            if (!valorStr) return 0;
+            // Se tiver formato de tempo tipo "19:45", converte para segundos totais
+            if (valorStr.includes(':')) {
+                const partes = valorStr.split(':');
+                const min = parseFloat(partes[0]) || 0;
+                const seg = parseFloat(partes[1]) || 0;
+                return (min * 60) + seg;
+            }
+            // Caso contrário, extrai o primeiro número encontrado (ex: "100 kg" -> 100)
+            const match = valorStr.match(/[0-9.]+/);
+            return match ? parseFloat(match[0]) : 0;
+        };
+
         // Ordenação inteligente baseada no tipo de exercício
         listaAtletas.sort((a, b) => {
-            const numA = parseFloat(a.valorTexto.replace(/[^0-9.]/g, '')) || 0;
-            const numB = parseFloat(b.valorTexto.replace(/[^0-9.]/g, '')) || 0;
+            const numA = converterParaNumero(a.valorTexto);
+            const numB = converterParaNumero(b.valorTexto);
             
             if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
                 return numB - numA; // Peso: Maior para o menor (Melhor primeiro)
             } else {
-                return numA - numB; // Tempo: Menor para o maior (Mais rápido primeiro)
+                return numA - numB; // Tempo: Menor para o maior / Mais rápido primeiro
             }
         });
+
+        // SALVA A ORDENAÇÃO DE VOLTA NO BANCO PARA PERSISTIR O INDEX CORRETO
+        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = listaAtletas;
+        if (typeof salvarBanco === 'function') salvarBanco();
         
         let htmlAtletas = '';
         listaAtletas.forEach((item, index) => {
-            const posicao = index + 1;
+            const posicao = index + 1; // Garante 1, 2, 3, 4... ordenados perfeitamente
             let corBadge = 'var(--text-secondary)';
             if (posicao === 1) corBadge = '#eab308'; // Ouro
             else if (posicao === 2) corBadge = '#94a3b8'; // Prata
@@ -3516,6 +3535,8 @@ function atualizarListaRecordsCF() {
         container.insertAdjacentHTML('beforeend', cardHtml);
     });
 }
+
+window.atualizarListaRecordsCF = atualizarListaRecordsCF;
 
 function removerAtletaRecordeCF(movimento, index) {
     if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
