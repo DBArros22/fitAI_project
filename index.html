@@ -591,7 +591,7 @@
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="input-record-nome" list="lista-wods-record" placeholder="Nome do Movimento / Exercício" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;" autocomplete="off">
+                <input type="text" id="input-cf-movimento" list="lista-wods-record" placeholder="Nome do Movimento / Exercício" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;" autocomplete="off">
                 
                 <datalist id="lista-wods-record">
                     <option value="PULL-UPS">
@@ -603,15 +603,14 @@
                     <option value="5K RUN">
                     <option value="ROW 2K">
                     <option value="SKI ERG 5K">
-                    <option value="MILE RUN">
                 </datalist>
                 
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="input-record-marca" placeholder="Carga / Marca (Ex: 100 kg)" class="input-field" style="flex: 1; font-weight: 700;">
-                    <input type="text" id="input-record-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-cf-valor" placeholder="Marca / Tempo (Ex: 50 reps / 19:45)" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-cf-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
                 </div>
 
-                <button onclick="adicionarRecordCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR RECORD</button>
+                <button onclick="adicionarRecordeCF()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR RECORD</button>
             </div>
         </div>
 
