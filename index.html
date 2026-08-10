@@ -589,6 +589,19 @@
             <p style="color: var(--text-secondary); font-size: 0.9rem;">Histórico de cargas e marcas máximas.</p>
         </div>
 
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <input type="text" id="input-record-nome" placeholder="Nome do Movimento / Exercício" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="input-record-marca" placeholder="Carga / Marca (Ex: 100 kg)" class="input-field" style="flex: 1; font-weight: 700;">
+                    <input type="text" id="input-record-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
+                </div>
+
+                <button onclick="adicionarRecordCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR RECORD</button>
+            </div>
+        </div>
+
         <div id="lista-cf-records" style="display: flex; flex-direction: column; gap: 8px;"></div>
     </div>
 </div>
