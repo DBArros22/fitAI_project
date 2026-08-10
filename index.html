@@ -591,7 +591,20 @@
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="input-record-nome" placeholder="Nome do Movimento / Exercício" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-record-nome" list="lista-wods-record" placeholder="Nome do Movimento / Exercício" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;" autocomplete="off">
+                
+                <datalist id="lista-wods-record">
+                    <option value="PULL-UPS">
+                    <option value="MUSCLE-UPS">
+                    <option value="HANDSTAND PUSH-UPS">
+                    <option value="TOES TO BAR">
+                    <option value="DU (DOUBLE UNDERS)">
+                    <option value="ROPE CLIMB">
+                    <option value="5K RUN">
+                    <option value="ROW 2K">
+                    <option value="SKI ERG 5K">
+                    <option value="MILE RUN">
+                </datalist>
                 
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="input-record-marca" placeholder="Carga / Marca (Ex: 100 kg)" class="input-field" style="flex: 1; font-weight: 700;">
@@ -624,79 +637,12 @@
         </div>
 
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
-    <div style="display: flex; flex-direction: column; gap: 12px;">
-        <input type="text" id="input-bench-nome" list="lista-wods-benchmark" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;" autocomplete="off">
-        
-        <datalist id="lista-wods-benchmark">
-            <option value="FRAN">
-            <option value="DIANNE">
-            <option value="ELIZABETH">
-            <option value="KAREN">
-            <option value="AMANDA">
-            <option value="NANCY">
-            <option value="HELEN">
-            <option value="EVA">
-            <option value="CINDY">
-            <option value="MARY">
-            <option value="CHELSEA">
-            <option value="BARBARA">
-            <option value="ANGIE">
-            
-            <option value="MURPH">
-            <option value="DT">
-            <option value="JERRY">
-            <option value="BOMBER">
-            <option value="NATE">
-            
-            <option value="OPEN 11.1">
-            <option value="OPEN 12.2">
-            <option value="OPEN 13.3">
-            <option value="OPEN 14.5">
-            <option value="OPEN 15.5">
-            <option value="OPEN 16.1">
-            <option value="OPEN 17.1">
-            <option value="OPEN 18.1">
-            <option value="OPEN 19.1">
-            <option value="OPEN 20.1">
-            <option value="OPEN 21.1">
-            <option value="OPEN 22.1">
-            <option value="OPEN 23.1">
-            <option value="OPEN 24.1">
-        </datalist>
-        
-        <div style="display: flex; gap: 8px;">
-            <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
-            <input type="text" id="input-bench-atleta" placeholder="Atleta" class="input-field" style="flex: 1; font-weight: 700;">
-        </div>
-
-        <button onclick="adicionarBenchmarkCustom()" class="btn-primary" style="width: 100%; padding: 12px; font-weight: 900; border-radius: 12px; cursor: pointer;">SALVAR BENCHMARK</button>
-    </div>
-</div>
-
-        <div id="lista-cf-benchmarks" style="display: flex; flex-direction: column; gap: 8px;"></div>
-    </div>
-</div>
-
-<div id="crossfit-benchmark-hub" class="page-container hidden">
-    <div class="container-central">
-        <div style="width: 100%; display: flex; justify-content: flex-start; padding: 10px 15px; margin-bottom: 10px; box-sizing: border-box;">
-            <button onclick="showView('crossfit-lobby')" class="btn-voltar-premium">
-                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                VOLTAR
-            </button>
-        </div>
-
-        <div style="text-align: center; margin-bottom: 20px;">
-            <h2 id="titulo-cf-benchmark" class="italic-bold uppercase blue-text" style="margin-bottom: 5px;">Benchmarks</h2>
-            <p style="color: var(--text-secondary); font-size: 0.9rem;">Histórico de WODs e marcas oficiais.</p>
-        </div>
-
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px;">
             <div style="display: flex; flex-direction: column; gap: 12px;">
-                <input type="text" id="input-bench-nome" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;">
+                <input type="text" id="input-bench-nome" list="lista-wods-benchmark" placeholder="Nome do WOD (Ex: FRAN)" class="input-field" style="width: 100%; text-transform: uppercase; font-weight: 700;" autocomplete="off">
+                
+                <datalist id="lista-wods-benchmark">
+                    <option value="FRAN"><option value="DIANNE"><option value="ELIZABETH"><option value="KAREN"><option value="AMANDA"><option value="NANCY"><option value="HELEN"><option value="EVA"><option value="CINDY"><option value="MARY"><option value="CHELSEA"><option value="BARBARA"><option value="ANGIE"><option value="MURPH"><option value="DT"><option value="JERRY"><option value="BOMBER"><option value="NATE"><option value="OPEN 11.1"><option value="OPEN 12.2"><option value="OPEN 13.3"><option value="OPEN 14.5"><option value="OPEN 15.5"><option value="OPEN 16.1"><option value="OPEN 17.1"><option value="OPEN 18.1"><option value="OPEN 19.1"><option value="OPEN 20.1"><option value="OPEN 21.1"><option value="OPEN 22.1"><option value="OPEN 23.1"><option value="OPEN 24.1">
+                </datalist>
                 
                 <div style="display: flex; gap: 8px;">
                     <input type="text" id="input-bench-marca" placeholder="Tempo (Ex: 03:15 min)" class="input-field" style="flex: 1; font-weight: 700;">
