@@ -3327,7 +3327,8 @@ let cfCategoriaAtual = '';
 
 
 function abrirRecordsHub(tipo) {
-    // Dicionário de títulos com os SVGs padronizados em branco platinado
+    cfCategoriaAtual = tipo;
+
     const titulosRecords = {
         'barbell': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M6 12h12M6 7v10M18 7v10M3 9h3v6H3zm15 0h3v6h-3z"></path></svg> Barbell Records',
         'complex': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Complex LPO',
@@ -3335,25 +3336,22 @@ function abrirRecordsHub(tipo) {
         'endurance': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M18 8h4M6 8h4M2 8h4M13 2.5l-3 6.5h5l-4 7.5"></path></svg> Endurance Records'
     };
 
-    // 1. Abre a view padrão de recordes
     if (typeof showView === 'function') {
         showView('crossfit-record-hub');
     }
 
-    // 2. Atualiza o título dinamicamente com o SVG
     const tituloEl = document.getElementById('titulo-cf-record');
     if (tituloEl) {
         tituloEl.innerHTML = titulosRecords[tipo] || "Recordes";
     }
 
-    // 3. Ajusta dinamicamente os placeholders dos inputs para combinar com a categoria (Gymnastic vs Endurance)
-    const inputMarca = document.getElementById('input-record-marca');
-    const inputNome = document.getElementById('input-record-nome');
+    const inputMarca = document.getElementById('input-cf-valor');
+    const inputNome = document.getElementById('input-cf-movimento');
 
     if (inputMarca && inputNome) {
         if (tipo === 'gymnastic') {
             inputNome.placeholder = "Movimento (Ex: PULL-UPS, HSPU)";
-            inputMarca.placeholder = "Marca (Ex: 50 reps unbroken)";
+            inputMarca.placeholder = "Marca / Reps (Ex: 50 reps unbroken)";
         } else if (tipo === 'endurance') {
             inputNome.placeholder = "Exercício / Distância (Ex: 5K RUN, ROW)";
             inputMarca.placeholder = "Tempo (Ex: 19:45 min)";
@@ -3363,89 +3361,126 @@ function abrirRecordsHub(tipo) {
         }
     }
 
-    // 4. Salva o tipo atual globalmente para a função de salvar saber qual categoria processar
-    window.currentRecordType = tipo;
-
-    // 5. Atualiza a lista de registros na tela
     if (typeof atualizarListaRecordsCF === 'function') {
-        atualizarListaRecordsCF(tipo);
+        atualizarListaRecordsCF();
     }
 }
 
 window.abrirRecordsHub = abrirRecordsHub;
 
+function abrirBenchmarksHub(categoria) {
+    cfCategoriaAtual = categoria;
+    
+    const dicionarioTitulos = {
+        'girls': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-6 9.5c0-2.5 3-3.5 6-3.5s6 1 6 3.5V18H6v-2.5z"></path></svg> The Girls Recordistas',
+        'heroes': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon><line x1="12" y1="2" x2="12" y2="22"></line></svg> Heroes da Box',
+        'notables': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> WODs Notáveis',
+        'open': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg> Open Leaderboard'
+    };
 
-// Função de exemplo de como deve ser feita a chamada no seu código
-function abrirBenchmarksHub(tipo) {
-    // Mostra a view correspondente
+    const tituloEl = document.getElementById('titulo-cf-benchmark');
+    if (tituloEl) tituloEl.innerHTML = dicionarioTitulos[categoria] || 'Benchmarks';
+    
+    const inputNome = document.getElementById('input-bench-nome');
+    const inputMarca = document.getElementById('input-bench-marca');
+    const inputAtleta = document.getElementById('input-bench-atleta');
+    if (inputNome) inputNome.value = '';
+    if (inputMarca) inputMarca.value = '';
+    if (inputAtleta) inputAtleta.value = '';
+    
+    atualizarListaBenchmarksCF();
+    
     if (typeof showView === 'function') {
         showView('crossfit-benchmark-hub');
     }
-
-    // O elemento HTML do título
-    const tituloEl = document.getElementById('titulo-cf-benchmark');
-    
-    if (tituloEl) {
-        // MUDANÇA CRUCIAL: Usar innerHTML garante que o navegador desenhe o SVG e não mostre texto puro
-        tituloEl.innerHTML = dicionarioTitulos[tipo] || "Benchmarks";
-    }
-
-    // Resto da sua lógica de carregamento dos dados...
-    if (typeof atualizarListaBenchmarksCF === 'function') {
-        atualizarListaBenchmarksCF(tipo);
-    }
 }
 
-function adicionarRecordeCF() {
-    const inputMov = document.getElementById('input-cf-movimento');
-    const inputAtleta = document.getElementById('input-cf-atleta');
-    const inputVal = document.getElementById('input-cf-valor');
-    
-    if (!inputMov || !inputAtleta || !inputVal) return;
-    
-    const movimento = inputMov.value.trim().toUpperCase();
-    const atleta = inputAtleta.value.trim();
-    let valorTexto = inputVal.value.trim();
-    
-    if (!movimento || !atleta || !valorTexto) {
-        exibirAvisoValidacao('Por favor, preencha todos os campos do recorde.');
-        return;
-    }
-    
-    const valorUpper = valorTexto.toUpperCase();
-    
-    // Atribui unidade de medida automática
-    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
-        if (!valorUpper.includes('KG')) {
-            valorTexto = `${valorTexto} KG`;
-        }
-    } else {
-        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':')) {
-            valorTexto = `${valorTexto} MIN`;
-        }
-    }
+window.abrirBenchmarksHub = abrirBenchmarksHub;
+
+function atualizarListaRecordsCF() {
+    const container = document.getElementById('lista-cf-records');
+    if (!container) return;
+    container.innerHTML = '';
     
     if (!window.bancoDeDados) window.bancoDeDados = {};
     if (!bancoDeDados.crossfit_records) bancoDeDados.crossfit_records = {};
     if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
-
-    // Estrutura os dados por movimento permitindo múltiplos atletas em ranking
-    if (!bancoDeDados.crossfit_records[cfCategoriaAtual][movimento]) {
-        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = [];
+    
+    const registros = bancoDeDados.crossfit_records[cfCategoriaAtual];
+    const movimentos = Object.keys(registros);
+    
+    if (movimentos.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde salvo nesta categoria ainda.</p>';
+        return;
     }
     
-    bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].push({
-        atleta: atleta,
-        valorTexto: valorTexto
+    movimentos.forEach(movimento => {
+        let listaAtletas = registros[movimento];
+        
+        if (!Array.isArray(listaAtletas)) {
+            listaAtletas = [{ atleta: 'Atleta', valorTexto: listaAtletas }];
+            registros[movimento] = listaAtletas;
+        }
+        
+        const converterParaNumero = (valorStr) => {
+            if (!valorStr) return 0;
+            if (valorStr.includes(':')) {
+                const partes = valorStr.split(':');
+                const min = parseFloat(partes[0]) || 0;
+                const seg = parseFloat(partes[1]) || 0;
+                return (min * 60) + seg;
+            }
+            const match = valorStr.match(/[0-9.]+/);
+            return match ? parseFloat(match[0]) : 0;
+        };
+
+        listaAtletas.sort((a, b) => {
+            const numA = converterParaNumero(a.valorTexto);
+            const numB = converterParaNumero(b.valorTexto);
+            
+            if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+                return numB - numA; 
+            } else {
+                return numA - numB; 
+            }
+        });
+
+        bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = listaAtletas;
+        if (typeof salvarBanco === 'function') salvarBanco();
+        
+        let htmlAtletas = '';
+        listaAtletas.forEach((item, index) => {
+            const posicao = index + 1;
+            let corBadge = 'var(--text-secondary)';
+            if (posicao === 1) corBadge = '#eab308';
+            else if (posicao === 2) corBadge = '#94a3b8';
+            else if (posicao === 3) corBadge = '#b45309';
+            
+            htmlAtletas += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.75rem; font-weight: 900; color: ${corBadge}; width: 20px;">#${posicao}</span>
+                        <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="italic-bold" style="color: var(--accent-blue); font-size: 0.95rem;">${item.valorTexto}</span>
+                        <button onclick="removerAtletaRecordeCF('${movimento}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        const cardHtml = `
+            <div class="glass-card" style="padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px;">
+                <div class="italic-bold uppercase" style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${movimento}</div>
+                <div>${htmlAtletas}</div>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', cardHtml);
     });
-    
-    if (typeof salvarBanco === 'function') salvarBanco();
-    atualizarListaRecordsCF();
-    
-    inputMov.value = '';
-    inputAtleta.value = '';
-    inputVal.value = '';
 }
+
+window.atualizarListaRecordsCF = atualizarListaRecordsCF;
 
 function adicionarRecordeCF() {
     const inputMov = document.getElementById('input-cf-movimento');
@@ -3467,7 +3502,6 @@ function adicionarRecordeCF() {
     
     const valorUpper = valorTexto.toUpperCase();
     
-    // Atribui unidade de medida automática se necessário
     if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
         if (!valorUpper.includes('KG')) {
             valorTexto = `${valorTexto} KG`;
@@ -3482,24 +3516,18 @@ function adicionarRecordeCF() {
     if (!bancoDeDados.crossfit_records) bancoDeDados.crossfit_records = {};
     if (!bancoDeDados.crossfit_records[cfCategoriaAtual]) bancoDeDados.crossfit_records[cfCategoriaAtual] = {};
 
-    // Garante que o movimento é um array para acumular múltiplos atletas no ranking
     if (!Array.isArray(bancoDeDados.crossfit_records[cfCategoriaAtual][movimento])) {
         bancoDeDados.crossfit_records[cfCategoriaAtual][movimento] = [];
     }
     
-    // Adiciona o novo atleta na lista do respectivo movimento
     bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].push({
         atleta: atleta,
         valorTexto: valorTexto
     });
     
-    // Salva no banco de dados persistente
     if (typeof salvarBanco === 'function') salvarBanco();
-    
-    // Atualiza a interface e recalcula o ranking completo
     atualizarListaRecordsCF();
     
-    // Limpa os campos após salvar
     inputMov.value = '';
     inputAtleta.value = '';
     inputVal.value = '';
@@ -3517,49 +3545,6 @@ function removerAtletaRecordeCF(movimento, index) {
         atualizarListaRecordsCF();
     }
 }
-
-function removerRecordeCF(movimento) {
-    if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
-        delete bancoDeDados.crossfit_records[cfCategoriaAtual][movimento];
-        if (typeof salvarBanco === 'function') salvarBanco();
-        atualizarListaRecordsCF();
-    }
-}
-
-function abrirBenchmarksHub(categoria) {
-    cfCategoriaAtual = categoria;
-    
-const dicionarioTitulos = {
-    'girls': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm-6 9.5c0-2.5 3-3.5 6-3.5s6 1 6 3.5V18H6v-2.5z"></path></svg> The Girls Recordistas',
-    
-    'heroes': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"></polygon><line x1="12" y1="2" x2="12" y2="22"></line></svg> Heroes da Box',
-    
-    'notables': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> WODs Notáveis',
-    
-    'open': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F1F5F9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3.5z"></path></svg> Open Leaderboard'
-};
-
-    
-    // MUDANÇA REALIZADA AQUI DE innerText PARA innerHTML:
-    const tituloEl = document.getElementById('titulo-cf-benchmark');
-    if (tituloEl) tituloEl.innerHTML = dicionarioTitulos[categoria] || 'Benchmarks';
-    
-    const inputNome = document.getElementById('input-bench-nome');
-    const inputMarca = document.getElementById('input-bench-marca');
-    const inputAtleta = document.getElementById('input-bench-atleta');
-    if (inputNome) inputNome.value = '';
-    if (inputMarca) inputMarca.value = '';
-    if (inputAtleta) inputAtleta.value = '';
-    
-    atualizarListaBenchmarksCF();
-    
-    if (typeof showView === 'function') {
-        showView('crossfit-benchmark-hub');
-    }
-}
-
-window.abrirBenchmarksHub = abrirBenchmarksHub;
-
 
 function atualizarListaBenchmarksCF() {
     const container = document.getElementById('lista-cf-benchmarks');
@@ -3615,7 +3600,9 @@ function adicionarBenchmarkCustom() {
     const atleta = inputAtleta.value.trim();
     
     if (!nome || !marca || !atleta) {
-        exibirAvisoValidacao('Por favor, preencha todos os campos do benchmark.');
+        if (typeof exibirAvisoValidacao === 'function') {
+            exibirAvisoValidacao('Por favor, preencha todos os campos do benchmark.');
+        }
         return;
     }
     
@@ -3643,21 +3630,16 @@ function removerBenchmarkCF(index) {
     }
 }
 
-// Auxiliar para substituir os Alerts do navegador por avisos dinâmicos e fluidos
 function exibirAvisoValidacao(mensagem) {
     console.warn(mensagem);
-    // Criação de um feedback visual temporário ou acoplamento com modais customizados do seu tema
 }
 
 function adicionarRecordCustom() {
     adicionarRecordeCF();
 }
 
-
-
- 
 window.adicionarRecordCustom = adicionarRecordCustom;
 window.adicionarRecordeCF = adicionarRecordeCF;
 window.adicionarBenchmarkCustom = adicionarBenchmarkCustom;
-window.removerRecordeCF = removerRecordeCF;
+window.removerAtletaRecordeCF = removerAtletaRecordeCF;
 window.removerBenchmarkCF = removerBenchmarkCF;
