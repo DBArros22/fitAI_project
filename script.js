@@ -3299,23 +3299,29 @@ window.resetarTimerCF = resetarTimerCF;
 // Biblioteca Estática de WODs Históricos e Oficiais
 const bibliotecaDeBenchmarks = {
     'girls': [
-        { nome: 'FRAN', detalhe: '21-15-9 Repetições por tempo de:<br>• Thrusters (95/65 lbs)<br>• Pull-ups' },
-        { nome: 'CINDY', detalhe: 'AMRAP de 20 Minutos de:<br>• 5 Pull-ups<br>• 10 Push-ups<br>• 15 Air Squats' },
-        { nome: 'GRACE', detalhe: '30 Repetições por tempo de:<br>• Clean & Jerk (135/95 lbs)' },
-        { nome: 'HELEN', detalhe: '3 Rounds por tempo de:<br>• 400m Corrida<br>• 21 KB Swings (24/16 kg)<br>• 12 Pull-ups' }
+        { detalhe: '21-15-9 Repetições por tempo de:<br>• Thrusters<br>• Pull-ups<br>• Chest-to-Bar Pull-ups<br>• Bar Muscle-ups' },
+        { detalhe: 'AMRAP de 20 Minutos de:<br>• 5 Pull-ups<br>• 10 Push-ups<br>• 15 Air Squats<br>• 20 Walking Lunges<br>• 25 Double Unders' },
+        { detalhe: '30 Repetições por tempo de:<br>• Clean & Jerk<br>• Power Clean<br>• Squat Clean<br>• Split Jerk' },
+        { detalhe: '3 Rounds por tempo de:<br>• 400m Corrida<br>• 21 KB Swings<br>• 12 Pull-ups<br>• 15 Wall Balls<br>• 30 Double Unders' },
+        { detalhe: '21-15-9 Repetições por tempo de:<br>• Deadlifts<br>• Handstand Push-ups<br>• Strict HSPU<br>• Deficit HSPU' },
+        { detalhe: '150 Repetições por tempo de:<br>• Wall Ball Shots<br>• Target Burpees<br>• Box Jump Overs' }
     ],
     'heroes': [
-        { nome: 'MURPH', detalhe: 'Por tempo (com colete de 20/14 lbs):<br>• 1 Milha de corrida (1.6km)<br>• 100 Pull-ups<br>• 200 Push-ups<br>• 300 Air Squats<br>• 1 Milha de corrida' },
-        { nome: 'DT', detalhe: '5 Rounds por tempo de:<br>• 12 Deadlifts (155/105 lbs)<br>• 9 Hang Power Cleans<br>• 6 Push Jerks' },
-        { nome: 'BADGER', detalhe: '3 Rounds por tempo de:<br>• 30 Squat Cleans (95/65 lbs)<br>• 30 Pull-ups<br>• 800m Corrida' }
+        { detalhe: 'Por tempo (com colete opcional):<br>• 1 Milha de corrida<br>• 100 Pull-ups<br>• 200 Push-ups<br>• 300 Air Squats<br>• 1 Milha de corrida<br>• Chest-to-Bar Pull-ups<br>• Hand Release Push-ups' },
+        { detalhe: '5 Rounds por tempo de:<br>• 12 Deadlifts<br>• 9 Hang Power Cleans<br>• 6 Push Jerks<br>• Clean & Jerk<br>• Power Snatches' },
+        { detalhe: '3 Rounds por tempo de:<br>• 30 Squat Cleans<br>• 30 Pull-ups<br>• 800m Corrida<br>• Overhead Squats<br>• Bar Muscle-ups' },
+        { detalhe: 'Por tempo:<br>• 400m Corrida<br>• 30 Over-the-bar Burpees<br>• 30 Deadlifts<br>• 400m Corrida de Carga' },
+        { detalhe: 'Por tempo:<br>• 800m Corrida<br>• 50 Pull-ups<br>• 100 Push-ups<br>• 150 Air Squats<br>• 800m Corrida' }
     ],
     'notables': [
-        { nome: 'FILTHY 50', detalhe: 'Por tempo (50 repetições de cada):<br>Box Jumps, Jumping Pull-ups, KB Swings, Walking Lunges, Knees-to-Elbows, Push Press, Back Extensions, Wall Balls, Burpees, Double Unders.' },
-        { nome: 'FIGHT GONE BAD', detalhe: '3 Rounds (1 min por estação para repetições máximas):<br>• Wall Balls<br>• Sumo Deadlift High-Pull<br>• Box Jumps<br>• Push Press<br>• Remo (Calorias)' }
+        { detalhe: 'Por tempo (50 repetições de cada):<br>• Box Jumps<br>• Jumping Pull-ups<br>• KB Swings<br>• Walking Lunges<br>• Knees-to-Elbows<br>• Push Press<br>• Back Extensions<br>• Wall Balls<br>• Burpees<br>• Double Unders<br>• Toes-to-Bar<br>• Thrusters' },
+        { detalhe: '3 Rounds (1 min por estação para repetições máximas):<br>• Wall Balls<br>• Sumo Deadlift High-Pull<br>• Box Jumps<br>• Push Press<br>• Remo (Calorias)<br>• Assault Bike (Calorias)' },
+        { detalhe: 'EMOM de 30 Minutos:<br>• 5 Pull-ups<br>• 10 Push-ups<br>• 15 Air Squats<br>• Bar Muscle-ups<br>• Handstand Push-ups' }
     ],
     'open': [
-        { nome: 'OPEN 24.1', detalhe: 'Por tempo (Time Cap 15 Minutos):<br>• 21 Dumbbell Snatches (Braço 1)<br>• 21 Lateral Burpees Over Dumbbell<br>• 21 Dumbbell Snatches (Braço 2)<br>• 21 Lateral Burpees Over Dumbbell<br>Seguido de sequências completas de 15 reps e depois 9 reps.' },
-        { nome: 'OPEN 23.1', detalhe: 'AMRAP de 14 Minutos de:<br>• 60 Calorias de Remo<br>• 50 Toes-to-bars<br>• 40 Wall-ball shots<br>• 30 Cleans (135/95 lbs)<br>• 20 Muscle-ups' }
+        { detalhe: 'Por tempo (Time Cap 15 Minutos):<br>• 21 Dumbbell Snatches<br>• 21 Lateral Burpees Over Dumbbell<br>• 21 Dumbbell Clean and Jerk<br>• 15-9 Sequências de repetições completas' },
+        { detalhe: 'AMRAP de 14 Minutos de:<br>• 60 Calorias de Remo<br>• 50 Toes-to-bars<br>• 40 Wall-ball shots<br>• 30 Cleans<br>• 20 Muscle-ups<br>• Ring Muscle-ups' },
+        { detalhe: 'AMRAP de 15 Minutos de:<br>• 3 Wall Walks<br>• 12 Toes-to-bars<br>• 15 Box Jump Overs' }
     ]
 };
 
