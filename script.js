@@ -3667,20 +3667,33 @@ function adicionarBenchmarkCustom() {
     if (!inputNome || !inputMarca || !inputAtleta) return;
     
     const nome = inputNome.value.trim().toUpperCase();
-    const marca = inputMarca.value.trim();
     const atleta = inputAtleta.value.trim();
+    let marcaTexto = inputMarca.value.trim();
     
-    if (!nome || !marca || !atleta) {
+    if (!nome || !marcaTexto || !atleta) {
         if (typeof exibirAvisoValidacao === 'function') {
             exibirAvisoValidacao('Por favor, preencha todos os campos do benchmark.');
         }
         return;
     }
     
+    // Formata a unidade de medida automaticamente baseada na categoria ativa
+    const marcaUpper = marcaTexto.toUpperCase();
+    if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+        if (!marcaUpper.includes('KG')) {
+            marcaTexto = `${marcaTexto} KG`;
+        }
+    } else {
+        // Para Heroes, Girls, Notables e Open (que são predominantemente WODs de tempo ou repetições)
+        if (!marcaUpper.includes('MIN') && !marcaUpper.includes('SEG') && !marcaUpper.includes(':') && !marcaUpper.includes('REPS') && !marcaUpper.includes('ROUNDS')) {
+            marcaTexto = `${marcaTexto} MIN`;
+        }
+    }
+    
     if (!window.bancoDeDados) window.bancoDeDados = {};
     if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
     
-    // Se a categoria ainda for um array antigo, converte para objeto com segurança
+    // Tratamento de conversão caso o banco estivesse em formato array legado
     if (Array.isArray(bancoDeDados.crossfit_benchmarks[cfCategoriaAtual])) {
         const antigo = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
         bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
@@ -3702,14 +3715,13 @@ function adicionarBenchmarkCustom() {
         bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
     }
     
-    // Garante que o WOD específico seja um array pronto para o push
     if (!Array.isArray(bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome])) {
         bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome] = [];
     }
     
     bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome].push({
         atleta: atleta,
-        marca: marca
+        marca: marcaTexto
     });
     
     if (typeof salvarBanco === 'function') salvarBanco();
