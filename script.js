@@ -12,7 +12,17 @@ const firebaseConfig = {
 // 1. INICIALIZAÇÃO SEGURA DO FIREBASE
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);function aplicarMascaraTempo(e) {
+    let valor = e.target.value.replace(/\D/g, '');
+    if (valor.length > 6) {
+        valor = valor.slice(0, 6);
+    }
+    valor = valor.padStart(6, '0');
+    const horas = valor.slice(0, 2);
+    const minutos = valor.slice(2, 4);
+    const segundos = valor.slice(4, 6);
+    e.target.value = `${horas}:${minutos}:${segundos}`;
+}
     }
     window.auth = firebase.auth();
     window.db = firebase.firestore();
@@ -3583,6 +3593,17 @@ function removerAtletaRecordeCF(movimento, index) {
     }
 }
 
+function aplicarMascaraTempo(e) {
+    let valor = e.target.value.replace(/\D/g, '');
+    if (valor.length > 6) {
+        valor = valor.slice(0, 6);
+    }
+    valor = valor.padStart(6, '0');
+    const horas = valor.slice(0, 2);
+    const minutos = valor.slice(2, 4);
+    const segundos = valor.slice(4, 6);
+    e.target.value = `${horas}:${minutos}:${segundos}`;
+}
 
 function atualizarListaBenchmarksCF() {
     const container = document.getElementById('lista-cf-benchmarks');
