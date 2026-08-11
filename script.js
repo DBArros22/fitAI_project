@@ -3323,7 +3323,7 @@ const bibliotecaDeBenchmarks = {
 // SEÇÃO DE RECORDE PESSOAL (PRs)
 // ==========================================
 
-let cfCategoriaAtual = '';
+let cfCategoriaAtual = typeof cfCategoriaAtual !== 'undefined' ? cfCategoriaAtual : '';
 
 
 function abrirRecordsHub(tipo) {
