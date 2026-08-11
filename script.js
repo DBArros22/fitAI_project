@@ -2817,6 +2817,13 @@ function gerarSugestaoComModal() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const selectGrupoSub = document.getElementById('select-grupo-sub');
+    if (selectGrupoSub) {
+        selectGrupoSub.addEventListener('change', carregarExerciciosSub);
+        selectGrupoSub.addEventListener('input', carregarExerciciosSub);
+    }
+});
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 function calcularCargasCF() {
