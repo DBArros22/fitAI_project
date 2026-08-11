@@ -3354,7 +3354,7 @@ function abrirRecordsHub(tipo) {
         tituloEl.innerHTML = titulosRecords[tipo] || "Recordes";
     }
 
-    // 3. Ajusta dinamicamente os placeholders dos inputs para combinar com a categoria
+    // 3. Ajusta dinamicamente os placeholders e o teclado numérico (inputmode) conforme a categoria
     const inputMarca = document.getElementById('input-cf-valor');
     const inputNome = document.getElementById('input-cf-movimento');
 
@@ -3362,12 +3362,15 @@ function abrirRecordsHub(tipo) {
         if (tipo === 'gymnastic') {
             inputNome.placeholder = "Movimento (Ex: PULL-UPS, HSPU)";
             inputMarca.placeholder = "Marca / Reps (Ex: 50 reps unbroken)";
+            inputMarca.removeAttribute('inputmode');
         } else if (tipo === 'endurance') {
             inputNome.placeholder = "Exercício / Distância (Ex: 5K RUN, ROW)";
-            inputMarca.placeholder = "Tempo (Ex: 19:45 min)";
+            inputMarca.placeholder = "00:00:00";
+            inputMarca.setAttribute('inputmode', 'numeric');
         } else {
             inputNome.placeholder = "Nome do Movimento / Exercício";
             inputMarca.placeholder = "Carga / Marca (Ex: 100 kg)";
+            inputMarca.removeAttribute('inputmode');
         }
     }
 
@@ -3397,7 +3400,12 @@ function abrirBenchmarksHub(categoria) {
     const inputMarca = document.getElementById('input-bench-marca');
     const inputAtleta = document.getElementById('input-bench-atleta');
     if (inputNome) inputNome.value = '';
-    if (inputMarca) inputMarca.value = '';
+    if (inputMarca) {
+        inputMarca.value = '';
+        // Configura o input de benchmarks para o formato de tempo e teclado numérico em celulares
+        inputMarca.placeholder = "00:00:00";
+        inputMarca.setAttribute('inputmode', 'numeric');
+    }
     if (inputAtleta) inputAtleta.value = '';
     
     atualizarListaBenchmarksCF();
@@ -3438,10 +3446,12 @@ function atualizarListaRecordsCF() {
         const converterParaNumero = (valorStr) => {
             if (!valorStr) return 0;
             if (valorStr.includes(':')) {
-                const partes = valorStr.split(':');
-                const min = parseFloat(partes[0]) || 0;
-                const seg = parseFloat(partes[1]) || 0;
-                return (min * 60) + seg;
+                const partes = valorStr.split(':').map(p => parseFloat(p) || 0);
+                if (partes.length === 3) {
+                    return (partes[0] * 3600) + (partes[1] * 60) + partes[2];
+                } else if (partes.length === 2) {
+                    return (partes[0] * 60) + partes[1];
+                }
             }
             const match = valorStr.match(/[0-9.]+/);
             return match ? parseFloat(match[0]) : 0;
@@ -3469,6 +3479,18 @@ function atualizarListaRecordsCF() {
             else if (posicao === 2) corBadge = '#94a3b8';
             else if (posicao === 3) corBadge = '#b45309';
             
+            let valorExibido = item.valorTexto;
+            const valorUpper = valorExibido.toUpperCase();
+            if (cfCategoriaAtual === 'barbell' || cfCategoriaAtual === 'complex') {
+                if (!valorUpper.includes('KG')) {
+                    valorExibido = `${valorExibido} KG`;
+                }
+            } else {
+                if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':') && !valorUpper.includes('REPS') && !valorUpper.includes('ROUNDS')) {
+                    valorExibido = `${valorExibido} MIN`;
+                }
+            }
+            
             htmlAtletas += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -3476,7 +3498,7 @@ function atualizarListaRecordsCF() {
                         <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="italic-bold" style="color: var(--accent-blue); font-size: 0.95rem;">${item.valorTexto}</span>
+                        <span class="italic-bold" style="color: var(--accent-blue); font-size: 0.95rem;">${valorExibido}</span>
                         <button onclick="removerAtletaRecordeCF('${movimento}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
                     </div>
                 </div>
@@ -3521,7 +3543,7 @@ function adicionarRecordeCF() {
             valorTexto = `${valorTexto} KG`;
         }
     } else {
-        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':')) {
+        if (!valorUpper.includes('MIN') && !valorUpper.includes('SEG') && !valorUpper.includes(':') && !valorUpper.includes('REPS') && !valorUpper.includes('ROUNDS')) {
             valorTexto = `${valorTexto} MIN`;
         }
     }
@@ -3600,10 +3622,12 @@ function atualizarListaBenchmarksCF() {
     const converterParaNumero = (valorStr) => {
         if (!valorStr) return 0;
         if (valorStr.includes(':')) {
-            const partes = valorStr.split(':');
-            const min = parseFloat(partes[0]) || 0;
-            const seg = parseFloat(partes[1]) || 0;
-            return (min * 60) + seg;
+            const partes = valorStr.split(':').map(p => parseFloat(p) || 0);
+            if (partes.length === 3) {
+                return (partes[0] * 3600) + (partes[1] * 60) + partes[2];
+            } else if (partes.length === 2) {
+                return (partes[0] * 60) + partes[1];
+            }
         }
         const match = valorStr.match(/[0-9.]+/);
         return match ? parseFloat(match[0]) : 0;
@@ -3635,6 +3659,12 @@ function atualizarListaBenchmarksCF() {
             else if (posicao === 2) corBadge = '#94a3b8';
             else if (posicao === 3) corBadge = '#b45309';
             
+            let marcaExibida = item.marca;
+            const marcaUpper = marcaExibida.toUpperCase();
+            if (!marcaUpper.includes('MIN') && !marcaUpper.includes('SEG') && !marcaUpper.includes('KG') && !marcaUpper.includes('REPS') && !marcaUpper.includes('ROUNDS')) {
+                marcaExibida = `${marcaExibida} MIN`;
+            }
+            
             htmlAtletas += `
                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -3642,7 +3672,7 @@ function atualizarListaBenchmarksCF() {
                         <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="italic-bold" style="color: var(--accent-green); font-size: 0.95rem;">${item.marca}</span>
+                        <span class="italic-bold" style="color: var(--accent-green); font-size: 0.95rem;">${marcaExibida}</span>
                         <button onclick="removerAtletaBenchmarkCF('${nomeWod}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
                     </div>
                 </div>
