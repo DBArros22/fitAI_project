@@ -3666,7 +3666,7 @@ function adicionarBenchmarkCustom() {
     
     if (!inputNome || !inputMarca || !inputAtleta) return;
     
-    const nome = inputNome.value.trim();
+    const nome = inputNome.value.trim().toUpperCase();
     const marca = inputMarca.value.trim();
     const atleta = inputAtleta.value.trim();
     
@@ -3677,13 +3677,40 @@ function adicionarBenchmarkCustom() {
         return;
     }
     
-    const novoWod = {
-        nome: nome,
-        marca: marca,
-        atleta: atleta
-    };
+    if (!window.bancoDeDados) window.bancoDeDados = {};
+    if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
     
-    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].push(novoWod);
+    // Se a categoria ainda for um array antigo, converte para objeto com segurança
+    if (Array.isArray(bancoDeDados.crossfit_benchmarks[cfCategoriaAtual])) {
+        const antigo = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
+        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
+        antigo.forEach(item => {
+            if (item && item.nome) {
+                const w = item.nome.trim().toUpperCase();
+                if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][w]) {
+                    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][w] = [];
+                }
+                bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][w].push({
+                    atleta: item.atleta || 'Atleta',
+                    marca: item.marca || ''
+                });
+            }
+        });
+    }
+    
+    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) {
+        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
+    }
+    
+    // Garante que o WOD específico seja um array pronto para o push
+    if (!Array.isArray(bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome])) {
+        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome] = [];
+    }
+    
+    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome].push({
+        atleta: atleta,
+        marca: marca
+    });
     
     if (typeof salvarBanco === 'function') salvarBanco();
     atualizarListaBenchmarksCF();
