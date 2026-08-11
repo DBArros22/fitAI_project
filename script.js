@@ -3325,9 +3325,14 @@ const bibliotecaDeBenchmarks = {
 
 let cfCategoriaAtual = '';
 
+let cfCategoriaAtual = '';
+
+
 function abrirRecordsHub(tipo) {
+    // ATUALIZA A CATEGORIA GLOBAL AQUI PARA EVITAR MISTURA ENTRE AS PÁGINAS
     cfCategoriaAtual = tipo;
 
+    // Dicionário de títulos com os SVGs padronizados em branco platinado
     const titulosRecords = {
         'barbell': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M6 12h12M6 7v10M18 7v10M3 9h3v6H3zm15 0h3v6h-3z"></path></svg> Barbell Records',
         'complex': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> Complex LPO',
@@ -3335,15 +3340,18 @@ function abrirRecordsHub(tipo) {
         'endurance': '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M18 8h4M6 8h4M2 8h4M13 2.5l-3 6.5h5l-4 7.5"></path></svg> Endurance Records'
     };
 
+    // 1. Abre a view padrão de recordes
     if (typeof showView === 'function') {
         showView('crossfit-record-hub');
     }
 
+    // 2. Atualiza o título dinamicamente com o SVG
     const tituloEl = document.getElementById('titulo-cf-record');
     if (tituloEl) {
         tituloEl.innerHTML = titulosRecords[tipo] || "Recordes";
     }
 
+    // 3. Ajusta dinamicamente os placeholders dos inputs para combinar com a categoria
     const inputMarca = document.getElementById('input-cf-valor');
     const inputNome = document.getElementById('input-cf-movimento');
 
@@ -3360,12 +3368,14 @@ function abrirRecordsHub(tipo) {
         }
     }
 
+    // 4. Atualiza a lista de registros na tela para a categoria correta
     if (typeof atualizarListaRecordsCF === 'function') {
         atualizarListaRecordsCF();
     }
 }
 
 window.abrirRecordsHub = abrirRecordsHub;
+
 
 function abrirBenchmarksHub(categoria) {
     cfCategoriaAtual = categoria;
@@ -3395,6 +3405,7 @@ function abrirBenchmarksHub(categoria) {
 }
 
 window.abrirBenchmarksHub = abrirBenchmarksHub;
+
 
 function atualizarListaRecordsCF() {
     const container = document.getElementById('lista-cf-records');
@@ -3481,6 +3492,7 @@ function atualizarListaRecordsCF() {
 
 window.atualizarListaRecordsCF = atualizarListaRecordsCF;
 
+
 function adicionarRecordeCF() {
     const inputMov = document.getElementById('input-cf-movimento');
     const inputAtleta = document.getElementById('input-cf-atleta');
@@ -3534,6 +3546,7 @@ function adicionarRecordeCF() {
 
 window.adicionarRecordeCF = adicionarRecordeCF;
 
+
 function removerAtletaRecordeCF(movimento, index) {
     if (bancoDeDados.crossfit_records && bancoDeDados.crossfit_records[cfCategoriaAtual]) {
         bancoDeDados.crossfit_records[cfCategoriaAtual][movimento].splice(index, 1);
@@ -3544,6 +3557,7 @@ function removerAtletaRecordeCF(movimento, index) {
         atualizarListaRecordsCF();
     }
 }
+
 
 function atualizarListaBenchmarksCF() {
     const container = document.getElementById('lista-cf-benchmarks');
@@ -3587,6 +3601,7 @@ function atualizarListaBenchmarksCF() {
     });
 }
 
+
 function adicionarBenchmarkCustom() {
     const inputNome = document.getElementById('input-bench-nome');
     const inputMarca = document.getElementById('input-bench-marca');
@@ -3621,6 +3636,7 @@ function adicionarBenchmarkCustom() {
     inputAtleta.value = '';
 }
 
+
 function removerBenchmarkCF(index) {
     if (bancoDeDados.crossfit_benchmarks && bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) {
         bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].splice(index, 1);
@@ -3629,13 +3645,16 @@ function removerBenchmarkCF(index) {
     }
 }
 
+
 function exibirAvisoValidacao(mensagem) {
     console.warn(mensagem);
 }
 
+
 function adicionarRecordCustom() {
     adicionarRecordeCF();
 }
+
 
 window.adicionarRecordCustom = adicionarRecordCustom;
 window.adicionarRecordeCF = adicionarRecordeCF;
