@@ -3323,8 +3323,7 @@ const bibliotecaDeBenchmarks = {
 // SEÇÃO DE RECORDE PESSOAL (PRs)
 // ==========================================
 
-let cfCategoriaAtual = typeof cfCategoriaAtual !== 'undefined' ? cfCategoriaAtual : '';
-
+let cfCategoriaAtual = '';
 
 function abrirRecordsHub(tipo) {
     cfCategoriaAtual = tipo;
@@ -3553,71 +3552,35 @@ function atualizarListaBenchmarksCF() {
     
     if (!window.bancoDeDados) window.bancoDeDados = {};
     if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
-    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
+    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = [];
     
-    const registros = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
-    const nomesWods = Object.keys(registros);
+    const treinosSalvos = bancoDeDados.crossfit_benchmarks[cfCategoriaAtual];
     
-    if (nomesWods.length === 0) {
+    if (treinosSalvos.length === 0) {
         container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; font-size: 0.8rem; padding: 15px 0;">Nenhum recorde cadastrado nesta categoria.</p>';
         return;
     }
     
-    const converterParaNumero = (valorStr) => {
-        if (!valorStr) return 0;
-        if (valorStr.includes(':')) {
-            const partes = valorStr.split(':');
-            const min = parseFloat(partes[0]) || 0;
-            const seg = parseFloat(partes[1]) || 0;
-            return (min * 60) + seg;
-        }
-        const match = valorStr.match(/[0-9.]+/);
-        return match ? parseFloat(match[0]) : 0;
-    };
-
-    nomesWods.forEach(nomeWod => {
-        let listaAtletas = registros[nomeWod];
-        
-        if (!Array.isArray(listaAtletas)) {
-            listaAtletas = [{ atleta: listaAtletas.atleta || 'Atleta', marca: listaAtletas.marca || listaAtletas }];
-            registros[nomeWod] = listaAtletas;
-        }
-        
-        listaAtletas.sort((a, b) => {
-            const numA = converterParaNumero(a.marca);
-            const numB = converterParaNumero(b.marca);
-            return numA - numB;
-        });
-
-        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nomeWod] = listaAtletas;
-        if (typeof salvarBanco === 'function') salvarBanco();
-        
-        let htmlAtletas = '';
-        listaAtletas.forEach((item, index) => {
-            const posicao = index + 1;
-            let corBadge = 'var(--text-secondary)';
-            if (posicao === 1) corBadge = '#eab308';
-            else if (posicao === 2) corBadge = '#94a3b8';
-            else if (posicao === 3) corBadge = '#b45309';
-            
-            htmlAtletas += `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.03);">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.75rem; font-weight: 900; color: ${corBadge}; width: 20px;">#${posicao}</span>
-                        <span style="color: white; font-size: 0.85rem; font-weight: 700;">${item.atleta}</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <span class="italic-bold" style="color: var(--accent-green); font-size: 0.95rem;">${item.marca}</span>
-                        <button onclick="removerAtletaBenchmarkCF('${nomeWod}', ${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.75rem;">🗑️</button>
+    treinosSalvos.forEach((wod, index) => {
+        const cardHtml = `
+            <div class="glass-card" style="padding: 15px; text-align: left; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="flex: 1; padding-right: 15px;">
+                    <h3 class="italic-bold uppercase" style="color: white; font-size: 1rem; margin: 0 0 4px 0; letter-spacing: 0.5px;">${wod.nome}</h3>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.7rem; color: var(--text-secondary);">Atleta:</span>
+                        <span class="italic-bold" style="font-size: 0.75rem; color: #ffffff; opacity: 0.9;">${wod.atleta}</span>
                     </div>
                 </div>
-            `;
-        });
-        
-        const cardHtml = `
-            <div class="glass-card" style="padding: 12px 15px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; margin-bottom: 10px;">
-                <div class="italic-bold uppercase" style="color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">${nomeWod}</div>
-                <div>${htmlAtletas}</div>
+                
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.6rem; color: var(--text-secondary); display: block; text-transform: uppercase;">Melhor Marca</span>
+                        <span class="italic-bold" style="font-size: 1.05rem; color: var(--accent-green);">${wod.marca}</span>
+                    </div>
+                    <button onclick="removerBenchmarkCF(${index})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 0.85rem; display: flex; align-items: center;">
+                        🗑️
+                    </button>
+                </div>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', cardHtml);
@@ -3631,7 +3594,7 @@ function adicionarBenchmarkCustom() {
     
     if (!inputNome || !inputMarca || !inputAtleta) return;
     
-    const nome = inputNome.value.trim().toUpperCase();
+    const nome = inputNome.value.trim();
     const marca = inputMarca.value.trim();
     const atleta = inputAtleta.value.trim();
     
@@ -3642,18 +3605,13 @@ function adicionarBenchmarkCustom() {
         return;
     }
     
-    if (!window.bancoDeDados) window.bancoDeDados = {};
-    if (!bancoDeDados.crossfit_benchmarks) bancoDeDados.crossfit_benchmarks = {};
-    if (!bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) bancoDeDados.crossfit_benchmarks[cfCategoriaAtual] = {};
-
-    if (!Array.isArray(bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome])) {
-        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome] = [];
-    }
+    const novoWod = {
+        nome: nome,
+        marca: marca,
+        atleta: atleta
+    };
     
-    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nome].push({
-        atleta: atleta,
-        marca: marca
-    });
+    bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].push(novoWod);
     
     if (typeof salvarBanco === 'function') salvarBanco();
     atualizarListaBenchmarksCF();
@@ -3663,12 +3621,9 @@ function adicionarBenchmarkCustom() {
     inputAtleta.value = '';
 }
 
-function removerAtletaBenchmarkCF(nomeWod, index) {
+function removerBenchmarkCF(index) {
     if (bancoDeDados.crossfit_benchmarks && bancoDeDados.crossfit_benchmarks[cfCategoriaAtual]) {
-        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nomeWod].splice(index, 1);
-        if (bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nomeWod].length === 0) {
-            delete bancoDeDados.crossfit_benchmarks[cfCategoriaAtual][nomeWod];
-        }
+        bancoDeDados.crossfit_benchmarks[cfCategoriaAtual].splice(index, 1);
         if (typeof salvarBanco === 'function') salvarBanco();
         atualizarListaBenchmarksCF();
     }
@@ -3682,10 +3637,8 @@ function adicionarRecordCustom() {
     adicionarRecordeCF();
 }
 
-
-
 window.adicionarRecordCustom = adicionarRecordCustom;
 window.adicionarRecordeCF = adicionarRecordeCF;
 window.adicionarBenchmarkCustom = adicionarBenchmarkCustom;
 window.removerAtletaRecordeCF = removerAtletaRecordeCF;
-window.removerAtletaBenchmarkCF = removerAtletaBenchmarkCF;
+window.removerBenchmarkCF = removerBenchmarkCF;
