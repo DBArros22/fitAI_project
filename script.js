@@ -3325,9 +3325,6 @@ const bibliotecaDeBenchmarks = {
 
 let cfCategoriaAtual = '';
 
-let cfCategoriaAtual = '';
-
-
 function abrirRecordsHub(tipo) {
     // ATUALIZA A CATEGORIA GLOBAL AQUI PARA EVITAR MISTURA ENTRE AS PÁGINAS
     cfCategoriaAtual = tipo;
