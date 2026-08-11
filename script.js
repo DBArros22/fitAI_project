@@ -3326,8 +3326,6 @@ const bibliotecaDeBenchmarks = {
 let cfCategoriaAtual = '';
 
 
-let cfCategoriaAtual = '';
-
 function abrirRecordsHub(tipo) {
     cfCategoriaAtual = tipo;
 
@@ -3580,13 +3578,11 @@ function atualizarListaBenchmarksCF() {
     nomesWods.forEach(nomeWod => {
         let listaAtletas = registros[nomeWod];
         
-        // Compatibilidade com estruturas antigas salvas como objeto único
         if (!Array.isArray(listaAtletas)) {
             listaAtletas = [{ atleta: listaAtletas.atleta || 'Atleta', marca: listaAtletas.marca || listaAtletas }];
             registros[nomeWod] = listaAtletas;
         }
         
-        // Ordena os tempos do menor para o maior (mais rápido no topo)
         listaAtletas.sort((a, b) => {
             const numA = converterParaNumero(a.marca);
             const numB = converterParaNumero(b.marca);
