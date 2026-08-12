@@ -2769,9 +2769,6 @@ function carregarExerciciosSub() {
 
 const listaDeExercicios = dicionarioExercicios;
 
-/**
- * Correção do bug crítico da variável 'message' inexistente
- */
 function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
@@ -2780,7 +2777,6 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
         modalAviso.classList.remove('hidden');
     }
 }
-
 function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) modalAviso.classList.add('hidden');
