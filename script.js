@@ -2797,7 +2797,12 @@ function gerarSugestaoComModal() {
     gerarSugestao();
 }
 
+
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
+
 function calcularCargasCF() {
     const input = document.getElementById('input-1rm');
     const container = document.getElementById('lista-cargas-cf');
