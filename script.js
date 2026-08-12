@@ -2693,9 +2693,10 @@ function gerarSugestao() {
     let sugestaoEncontrada = "";
 
     // Lógica 1: Equivalências
-    for (let categoria in equivalencias) {
-        if (equivalencias[categoria].includes(exOcupado)) {
-            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
+    const dicEquiv = typeof equivalencias !== 'undefined' ? equivalencias : {};
+    for (let categoria in dicEquiv) {
+        if (dicEquiv[categoria].includes(exOcupado)) {
+            const opcoes = dicEquiv[categoria].filter(ex => ex !== exOcupado);
             if (opcoes.length > 0) {
                 sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
                 break;
@@ -2704,8 +2705,9 @@ function gerarSugestao() {
     }
 
     // Lógica 2: Fallback grupo
-    if (!sugestaoEncontrada) {
-        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
+    const dicEx = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
+    if (!sugestaoEncontrada && dicEx[grupo]) {
+        const listaGrupo = dicEx[grupo].filter(ex => ex !== exOcupado);
         if (listaGrupo.length > 0) {
             sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
         }
@@ -2740,14 +2742,19 @@ function carregarExerciciosSub() {
     
     if (!selectEx || !selectGrupo) return;
 
-    selectEx.innerHTML = '<option value="">Aguardando grupo...</option>';
+    // 1. Primeiro captura o grupo selecionado antes de mexer no HTML
     const grupo = selectGrupo.value;
+    
+    // 2. Reseta o select dependente com o texto base correto
+    selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
     
     if (!grupo) return;
 
     console.log("Buscando exercícios para o grupo:", grupo);
     
-    const exercicios = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
+    // 3. Busca segura no dicionário global com fallback
+    const dicionario = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
+    const exercicios = dicionario[grupo] || [];
     
     if (exercicios.length === 0) {
         console.warn("Nenhum exercício encontrado para o grupo:", grupo);
@@ -2776,61 +2783,26 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
     if (textoModal && modalAviso) {
-        textoModal.innerText = mensagem; // Corrigido aqui (removido o 'message ||')
+        textoModal.innerText = mensagem; 
         modalAviso.classList.remove('hidden');
     }
 }
+
 function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) modalAviso.classList.add('hidden');
 }
 
 function gerarSugestaoComModal() {
-    const grupo = document.getElementById('select-grupo-sub').value;
-    const exOcupado = document.getElementById('select-ex-ocupado').value;
-    const resultadoDiv = document.getElementById('resultado-sugestao');
-    const nomeSugestao = document.getElementById('nome-sugestao');
-
-    if (!grupo || !exOcupado) {
-        mostrarAvisoAparelhoOcupado("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
-        return;
-    }
-
-    let sugestaoEncontrada = "";
-
-    for (let categoria in equivalencias) {
-        if (equivalencias[categoria].includes(exOcupado)) {
-            const opcoes = equivalencias[categoria].filter(ex => ex !== exOcupado);
-            if (opcoes.length > 0) {
-                sugestaoEncontrada = opcoes[Math.floor(Math.random() * opcoes.length)];
-                break;
-            }
-        }
-    }
-
-    if (!sugestaoEncontrada) {
-        const listaGrupo = dicionarioExercicios[grupo].filter(ex => ex !== exOcupado);
-        if (listaGrupo.length > 0) {
-            sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
-        }
-    }
-
-    if (sugestaoEncontrada) {
-        if (nomeSugestao) nomeSugestao.innerText = sugestaoEncontrada;
-        if (resultadoDiv) {
-            resultadoDiv.classList.remove('hidden');
-            resultadoDiv.classList.add('fade-in'); 
-        }
-    } else {
-        mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
-    }
+    gerarSugestao();
 }
-
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 function calcularCargasCF() {
     const input = document.getElementById('input-1rm');
     const container = document.getElementById('lista-cargas-cf');
+    if (!input || !container) return;
+    
     const valorMax = parseFloat(input.value);
 
     if (!valorMax || valorMax <= 0) {
@@ -2841,7 +2813,6 @@ function calcularCargasCF() {
     const porcentagens = [95, 90, 85, 80, 75, 70, 60, 50];
     
     container.innerHTML = porcentagens.map(p => {
-        // Define a cor da tag lateral baseado na zona de intensidade do CrossFit
         let corZona = '#22c55e'; // Verde (50% a 70%)
         if (p >= 75 && p <= 85) corZona = '#ffae00'; // Amarelo (75% a 85%)
         if (p >= 90) corZona = '#ef4444'; // Vermelho (90% a 95%)
