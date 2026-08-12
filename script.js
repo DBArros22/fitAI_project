@@ -2799,6 +2799,7 @@ function gerarSugestaoComModal() {
 
 
 
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
