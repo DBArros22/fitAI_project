@@ -2765,6 +2765,14 @@ function carregarExerciciosSub() {
 
 const listaDeExercicios = dicionarioExercicios;
 
+document.addEventListener('DOMContentLoaded', () => {
+    const selectGrupoSub = document.getElementById('select-grupo-sub');
+    if (selectGrupoSub) {
+        selectGrupoSub.addEventListener('change', carregarExerciciosSub);
+        selectGrupoSub.addEventListener('input', carregarExerciciosSub);
+    }
+});
+
 function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
