@@ -2735,17 +2735,27 @@ function gerarSugestao() {
 }
 
 function carregarExerciciosSub() {
-    const grupo = document.getElementById('select-grupo-sub').value;
+    const selectGrupo = document.getElementById('select-grupo-sub');
     const selectEx = document.getElementById('select-ex-ocupado');
     
-    if (!selectEx) return;
+    if (!selectEx || !selectGrupo) return;
 
+    const grupoSelecionado = selectGrupo.value.trim();
+    
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
-    if (!grupo) return;
+    if (!grupoSelecionado) return;
 
-    const exercicios = dicionarioExercicios[grupo] || [];
-    if (exercicios.length === 0) {
-        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
+    // Busca tolerante a variações para garantir funcionamento total no mobile
+    let exercicios = [];
+    for (let chave in dicionarioExercicios) {
+        if (chave.trim().toLowerCase() === grupoSelecionado.toLowerCase()) {
+            exercicios = dicionarioExercicios[chave];
+            break;
+        }
+    }
+
+    if (!exercicios || exercicios.length === 0) {
+        console.warn("Nenhum exercício encontrado para o grupo:", grupoSelecionado);
         return;
     }
 
@@ -2766,7 +2776,7 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
     if (textoModal && modalAviso) {
-        textoModal.innerText = mensagem; // Corrigido aqui (removido o 'message ||')
+        textoModal.innerText = mensagem;
         modalAviso.classList.remove('hidden');
     }
 }
