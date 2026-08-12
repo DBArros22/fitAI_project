@@ -2735,23 +2735,22 @@ function gerarSugestao() {
 }
 
 function carregarExerciciosSub() {
-    const grupo = document.getElementById('select-grupo-sub').value;
+    const selectGrupo = document.getElementById('select-grupo-sub');
     const selectEx = document.getElementById('select-ex-ocupado');
     
-    if (!selectEx) return;
+    if (!selectEx || !selectGrupo) return;
 
-    // Mantém o texto padrão idêntico ao HTML inicial
     selectEx.innerHTML = '<option value="">Aguardando grupo...</option>';
+    const grupo = selectGrupo.value;
+    
     if (!grupo) return;
 
-    // Log para rastrear se o grupo e o dicionário estão conversando
     console.log("Buscando exercícios para o grupo:", grupo);
     
-    // Certifique-se de que o objeto 'dicionarioExercicios' existe no escopo global
     const exercicios = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
     
     if (exercicios.length === 0) {
-        console.warn("Nenhum exercício encontrado para o grupo ou dicionarioExercicios não foi definido:", grupo);
+        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
         return;
     }
 
@@ -2763,7 +2762,7 @@ function carregarExerciciosSub() {
     });
 }
 
-const listaDeExercicios = dicionarioExercicios;
+const listaDeExercicios = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
 
 document.addEventListener('DOMContentLoaded', () => {
     const selectGrupoSub = document.getElementById('select-grupo-sub');
