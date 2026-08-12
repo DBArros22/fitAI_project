@@ -2735,27 +2735,23 @@ function gerarSugestao() {
 }
 
 function carregarExerciciosSub() {
-    const selectGrupo = document.getElementById('select-grupo-sub');
+    const grupo = document.getElementById('select-grupo-sub').value;
     const selectEx = document.getElementById('select-ex-ocupado');
     
-    if (!selectEx || !selectGrupo) return;
+    if (!selectEx) return;
 
-    const grupoSelecionado = selectGrupo.value.trim();
+    // Mantém o texto padrão idêntico ao HTML inicial
+    selectEx.innerHTML = '<option value="">Aguardando grupo...</option>';
+    if (!grupo) return;
+
+    // Log para rastrear se o grupo e o dicionário estão conversando
+    console.log("Buscando exercícios para o grupo:", grupo);
     
-    selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
-    if (!grupoSelecionado) return;
-
-    // Busca tolerante a variações para garantir funcionamento total no mobile
-    let exercicios = [];
-    for (let chave in dicionarioExercicios) {
-        if (chave.trim().toLowerCase() === grupoSelecionado.toLowerCase()) {
-            exercicios = dicionarioExercicios[chave];
-            break;
-        }
-    }
-
-    if (!exercicios || exercicios.length === 0) {
-        console.warn("Nenhum exercício encontrado para o grupo:", grupoSelecionado);
+    // Certifique-se de que o objeto 'dicionarioExercicios' existe no escopo global
+    const exercicios = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
+    
+    if (exercicios.length === 0) {
+        console.warn("Nenhum exercício encontrado para o grupo ou dicionarioExercicios não foi definido:", grupo);
         return;
     }
 
@@ -2773,7 +2769,7 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
     const modalAviso = document.getElementById('modal-aviso');
     if (textoModal && modalAviso) {
-        textoModal.innerText = mensagem;
+        textoModal.innerText = mensagem; // Corrigido aqui (removido o 'message ||')
         modalAviso.classList.remove('hidden');
     }
 }
@@ -2823,13 +2819,6 @@ function gerarSugestaoComModal() {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const selectGrupoSub = document.getElementById('select-grupo-sub');
-    if (selectGrupoSub) {
-        selectGrupoSub.addEventListener('change', carregarExerciciosSub);
-        selectGrupoSub.addEventListener('input', carregarExerciciosSub);
-    }
-});
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 function calcularCargasCF() {
