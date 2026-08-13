@@ -2744,20 +2744,43 @@ function carregarExerciciosSub() {
 
     // 1. Primeiro captura o grupo selecionado antes de mexer no HTML
     const grupo = selectGrupo.value;
+    function carregarExerciciosSub() {
+    const selectGrupo = document.getElementById('select-grupo-sub');
+    const selectEx = document.getElementById('select-ex-ocupado');
     
-    // 2. Reseta o select dependente com o texto base correto
+    if (!selectEx || !selectGrupo) return;
+
+    const grupo = selectGrupo.value;
+    
+    // Reseta o select dependente
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
     
     if (!grupo) return;
 
-    console.log("Buscando exercícios para o grupo:", grupo);
-    
-    // 3. Busca segura no dicionário global com fallback
+    // Busca segura no dicionário global com suporte a variações de nomes/acentos
     const dicionario = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
-    const exercicios = dicionario[grupo] || [];
     
+    // Tenta encontrar a chave exata ou normalizada sem acentos/maiúsculas caso haja divergência
+    let exercicios = dicionario[grupo];
+    
+    if (!exercicios) {
+        const chaveEncontrada = Object.keys(dicionario).find(k => 
+            k.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === 
+            grupo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+        );
+        if (chaveEncontrada) {
+            exercicios = dicionario[chaveEncontrada];
+        }
+    }
+
+    exercicios = exercicios || [];
+
     if (exercicios.length === 0) {
-        console.warn("Nenhum exercício encontrado para o grupo:", grupo);
+        console.warn("Aviso: Nenhum exercício encontrado para o grupo selecionado:", grupo);
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "Nenhum exercício cadastrado para este grupo";
+        selectEx.appendChild(opt);
         return;
     }
 
