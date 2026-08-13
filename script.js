@@ -2712,9 +2712,8 @@ const dicionarioExercicios = {
 };
 
 // Função robusta que trata acentos, maiúsculas e preenche o select corretamente
-function carregarExerciciosSub(elementoSelect) {
-    // Pega o elemento passado pelo HTML ou busca pelo ID se necessário
-    const selectGrupo = elementoSelect || document.getElementById('select-grupo-sub');
+function carregarExerciciosSubOcupado() {
+    const selectGrupo = document.getElementById('select-grupo-sub-ocupado');
     const selectEx = document.getElementById('select-ex-ocupado');
     
     if (!selectEx || !selectGrupo) return;
@@ -2731,7 +2730,7 @@ function carregarExerciciosSub(elementoSelect) {
         return;
     }
 
-    // Normalizador para evitar erros de acentuação
+    // Normalizador de texto para evitar erros de acentuação ou maiúsculas/minúsculas
     const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const grupoBusca = normalizar(grupoSelecionado);
 
@@ -2746,7 +2745,7 @@ function carregarExerciciosSub(elementoSelect) {
         return;
     }
 
-    // Preenche o select do Plano B perfeitamente
+    // Preenche o select de exercícios do Plano B perfeitamente
     exercicios.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex;
