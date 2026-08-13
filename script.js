@@ -2744,13 +2744,6 @@ function carregarExerciciosSub() {
 
     // 1. Primeiro captura o grupo selecionado antes de mexer no HTML
     const grupo = selectGrupo.value;
-    function carregarExerciciosSub() {
-    const selectGrupo = document.getElementById('select-grupo-sub');
-    const selectEx = document.getElementById('select-ex-ocupado');
-    
-    if (!selectEx || !selectGrupo) return;
-
-    const grupo = selectGrupo.value;
     
     // Reseta o select dependente
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
@@ -2791,7 +2784,6 @@ function carregarExerciciosSub() {
         selectEx.appendChild(opt);
     });
 }
-
 const listaDeExercicios = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
 
 document.addEventListener('DOMContentLoaded', () => {
