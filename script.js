@@ -2744,41 +2744,35 @@ function carregarExerciciosSub() {
     
     if (!selectEx || !selectGrupo) return;
 
-    // 1. Primeiro captura o grupo selecionado antes de mexer no HTML
-    const grupo = selectGrupo.value;
+    const grupoSelecionado = selectGrupo.value.trim();
     
     // Reseta o select dependente
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
     
-    if (!grupo) return;
+    if (!grupoSelecionado) return;
 
-    // Busca segura no dicionário global com suporte a variações de nomes/acentos
+    // Se o dicionarioExercicios ainda vier undefined por falha no arquivo, criamos um objeto vazio de segurança para não travar
     const dicionario = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
-    
-    // Tenta encontrar a chave exata ou normalizada sem acentos/maiúsculas caso haja divergência
-    let exercicios = dicionario[grupo];
-    
-    if (!exercicios) {
-        const chaveEncontrada = Object.keys(dicionario).find(k => 
-            k.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase() === 
-            grupo.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
-        );
-        if (chaveEncontrada) {
-            exercicios = dicionario[chaveEncontrada];
-        }
-    }
 
-    exercicios = exercicios || [];
+    // Normaliza a string selecionada (tira acentos e deixa minúscula)
+    const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const grupoBusca = normalizar(grupoSelecionado);
+
+    // Procura no dicionário a chave correspondente ignorando acentos
+    const chaveEncontrada = Object.keys(dicionario).find(k => normalizar(k) === grupoBusca);
+
+    const exercicios = chaveEncontrada ? dicionario[chaveEncontrada] : [];
 
     if (exercicios.length === 0) {
-        console.warn("Aviso: Nenhum exercício encontrado para o grupo selecionado:", grupo);
+        console.warn("Grupo não encontrado no dicionário:", grupoSelecionado);
         const opt = document.createElement('option');
         opt.value = "";
-        opt.textContent = "Nenhum exercício cadastrado para este grupo";
+        opt.textContent = "Nenhum exercício encontrado";
         selectEx.appendChild(opt);
         return;
     }
 
+    // Preenche o select com os exercícios encontrados
     exercicios.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex;
