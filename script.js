@@ -660,34 +660,8 @@ window.processarisTrocaEmail = processarTrocaEmail;
 window.processarTrocaSenha = processarTrocaSenha;
 
 
-function atualizarListaExercicios() {
-    const campoGrupo = document.getElementById('select-grupo-sub');
-    if (!campoGrupo) return;
 
-    const grupo = campoGrupo.value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
 
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
-        return;
-    }
-
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
-    } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
-    }
-
-    const lista = typeof dicionarioExercicios !== 'undefined' ? (dicionarioExercicios[grupo] || []) : [];
-
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
-}
 
 
 // --- NOVO SISTEMA DE NOTIFICAÇÃO (MODAL) ---
@@ -2738,41 +2712,31 @@ const dicionarioExercicios = {
 };
 
 // Função robusta que trata acentos, maiúsculas e preenche o select corretamente
-function carregarExerciciosSub() {
-    // Alerta visual imediato para provar que a função foi acionada ao mudar o select
-    alert("A função carregarExerciciosSub foi chamada!");
-
-    const selectGrupo = document.getElementById('select-grupo-sub');
+function carregarExerciciosSub(elementoSelect) {
+    // Pega o elemento passado pelo HTML ou busca pelo ID se necessário
+    const selectGrupo = elementoSelect || document.getElementById('select-grupo-sub');
     const selectEx = document.getElementById('select-ex-ocupado');
     
-    if (!selectEx) {
-        alert("Erro: O elemento 'select-ex-ocupado' não foi encontrado no HTML!");
-        return;
-    }
-    if (!selectGrupo) {
-        alert("Erro: O elemento 'select-grupo-sub' não foi encontrado no HTML!");
-        return;
-    }
+    if (!selectEx || !selectGrupo) return;
 
-    const grupoSelecionado = selectGrupo.value.trim();
-    alert("Grupo selecionado foi: " + grupoSelecionado);
+    const grupoSelecionado = selectGrupo.value ? selectGrupo.value.trim() : "";
     
+    // Reseta o select dependente
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
     
     if (!grupoSelecionado) return;
 
     if (typeof dicionarioExercicios === 'undefined') {
-        alert("Erro crítico: O dicionarioExercicios está indefinido!");
+        console.error("Dicionário de exercícios não encontrado.");
         return;
     }
 
+    // Normalizador para evitar erros de acentuação
     const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const grupoBusca = normalizar(grupoSelecionado);
 
     const chaveEncontrada = Object.keys(dicionarioExercicios).find(k => normalizar(k) === grupoBusca);
     const exercicios = chaveEncontrada ? dicionarioExercicios[chaveEncontrada] : [];
-
-    alert("Quantidade de exercícios encontrados: " + exercicios.length);
 
     if (exercicios.length === 0) {
         const opt = document.createElement('option');
@@ -2782,6 +2746,7 @@ function carregarExerciciosSub() {
         return;
     }
 
+    // Preenche o select do Plano B perfeitamente
     exercicios.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex;
