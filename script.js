@@ -2540,8 +2540,13 @@ if (typeof cfIsPaused === 'undefined') {
 }
 
 function gerarSugestao() {
-    const grupo = document.getElementById('select-grupo-sub').value;
-    const exOcupado = document.getElementById('select-ex-ocupado').value;
+    // ATUALIZADO PARA O NOVO ID CORRETO DA PÁGINA DE APARELHO OCUPADO
+    const grupoSelect = document.getElementById('select-grupo-sub-ocupado');
+    const exOcupadoSelect = document.getElementById('select-ex-ocupado');
+    
+    const grupo = grupoSelect ? grupoSelect.value : "";
+    const exOcupado = exOcupadoSelect ? exOcupadoSelect.value : "";
+    
     const resultadoDiv = document.getElementById('resultado-sugestao');
     const loader = document.getElementById('loader-sugestao');
     const conteudo = document.getElementById('conteudo-sugestao');
@@ -2566,10 +2571,14 @@ function gerarSugestao() {
         }
     }
 
-    // Lógica 2: Fallback grupo
+    // Lógica 2: Fallback grupo (com suporte a normalização de acentos)
     const dicEx = typeof dicionarioExercicios !== 'undefined' ? dicionarioExercicios : {};
-    if (!sugestaoEncontrada && dicEx[grupo]) {
-        const listaGrupo = dicEx[grupo].filter(ex => ex !== exOcupado);
+    if (!sugestaoEncontrada) {
+        const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const grupoBusca = normalizar(grupo);
+        const chaveEncontrada = Object.keys(dicEx).find(k => normalizar(k) === grupoBusca);
+        const listaGrupo = chaveEncontrada ? dicEx[chaveEncontrada].filter(ex => ex !== exOcupado) : [];
+        
         if (listaGrupo.length > 0) {
             sugestaoEncontrada = listaGrupo[Math.floor(Math.random() * listaGrupo.length)];
         }
@@ -2754,15 +2763,13 @@ function carregarExerciciosSubOcupado() {
     });
 }
 
-// Garante que o evento de escuta funcione mesmo em aplicações de página única (SPA)
+// Garante que o evento de escuta funcione com o novo ID exclusivo
 document.addEventListener('DOMContentLoaded', () => {
-    const selectGrupoSub = document.getElementById('select-grupo-sub');
-    if (selectGrupoSub) {
-        selectGrupoSub.addEventListener('change', carregarExerciciosSub);
+    const selectGrupoSubOcupado = document.getElementById('select-grupo-sub-ocupado');
+    if (selectGrupoSubOcupado) {
+        selectGrupoSubOcupado.addEventListener('change', carregarExerciciosSubOcupado);
     }
 });
-
-
 
 function mostrarAvisoAparelhoOcupado(mensagem) {
     const textoModal = document.getElementById('texto-modal-aviso');
@@ -2781,8 +2788,6 @@ function fecharModalAviso() {
 function gerarSugestaoComModal() {
     gerarSugestao();
 }
-
-
 
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
