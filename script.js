@@ -119,7 +119,7 @@ const equivalencias = {
 if (typeof auth !== 'undefined' && auth) {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            window.usuarioAtualId = user.uid;
+            window.usuarioAtualId = user.uid;        
             localStorage.setItem('user_email_ativo', user.email);
             try {
                 // Baixa as fichas e treinos do Firebase ao logar/recarregar a página
@@ -134,10 +134,11 @@ if (typeof auth !== 'undefined' && auth) {
                     await carregarDadosPerfil();
                 }
 
-                // Carrega a foto de perfil e o feed de evoluções do banco de dados
+                // ADICIONADO AQUI: Carrega a foto de perfil e o feed de evoluções do banco de dados
                 if (typeof carregarDadosIniciais === 'function') {
                     await carregarDadosIniciais();
                 }
+
             } catch (err) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
             }
@@ -149,13 +150,14 @@ if (typeof auth !== 'undefined' && auth) {
             window.usuarioAtualId = null;
             localStorage.removeItem('user_email_ativo');
             bancoDeDados = { fichas: {} }; // Limpa os dados se deslogar
-            
             if (typeof showView === 'function') {
                 showView('login');
             }
         }
     });
 }
+
+
 
 
 
