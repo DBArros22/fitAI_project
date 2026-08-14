@@ -2455,7 +2455,13 @@ async function toggleGravacaoAudio() {
 
 
 
-function postarNoFeed() {
+async function postarNoFeed() {
+    const user = auth.currentUser;
+    if (!user) {
+        mostrarAviso("Você precisa estar logado para postar!");
+        return;
+    }
+
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : '';
     
@@ -2466,29 +2472,39 @@ function postarNoFeed() {
     }
 
     const novoPost = {
-        id: Date.now(),
-        data: new Date().toLocaleString('pt-BR'),
+        uid: user.uid,
+        nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
+        data: new Date().toISOString(), // Usar formato ISO facilita a ordenação no banco
         texto: texto,
-        midia: midiaAnexada
+        midia: midiaAnexada || null,
+        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    feedEvolucao.unshift(novoPost);
-    localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-    
-    midiaAnexada = null;
-    if (inputTexto) inputTexto.value = "";
-    
-    const previewContainer = document.getElementById('preview-container');
-    if (previewContainer) previewContainer.innerHTML = "";
-    
-    const inputMedia = document.getElementById('input-media');
-    if (inputMedia) inputMedia.value = "";
+    try {
+        // Salva diretamente na coleção do Firestore
+        await db.collection('feed').add(novoPost);
+        
+        // Limpa os campos após a postagem
+        midiaAnexada = null;
+        if (inputTexto) inputTexto.value = "";
+        
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) previewContainer.innerHTML = "";
+        
+        const inputMedia = document.getElementById('input-media');
+        if (inputMedia) inputMedia.value = "";
 
-    atualizarFeedUI();
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    mostrarAviso("Postagem realizada com sucesso!");
+        // Recarrega o feed direto do banco
+        await carregarFeedDoBanco();
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        mostrarAviso("Postagem realizada com sucesso!");
+    } catch (error) {
+        console.error("Erro ao publicar no feed:", error);
+        mostrarAviso("Erro ao salvar a postagem.");
+    }
 }
+
 
 function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
