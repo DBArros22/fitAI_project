@@ -112,47 +112,42 @@ document.addEventListener('DOMContentLoaded', () => {
         if (rememberCheckbox) rememberCheckbox.checked = true;
     }
 
+
     // Monitoramento seguro do Firebase Auth
-if (typeof auth !== 'undefined' && auth) {
-    auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            window.usuarioAtualId = user.uid;        
-            localStorage.setItem('user_email_ativo', user.email);
-            try {
-                // Baixa as fichas e treinos do Firebase ao logar/recarregar a página
+
+        if (typeof auth !== 'undefined' && auth) {
+                auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                window.usuarioAtualId = user.uid;
+                localStorage.setItem('user_email_ativo', user.email);
+                try {
+// ADICIONADO AQUI: Baixa as fichas e treinos do Firebase ao logar/recarregar a página
                 if (typeof carregarBancoDoFirebase === 'function') {
-                    await carregarBancoDoFirebase();
+                await carregarBancoDoFirebase();
                 }
 
                 if (typeof window.carregarDadosDoAtleta === 'function') {
-                    await window.carregarDadosDoAtleta(user.uid);
+                await window.carregarDadosDoAtleta(user.uid);
                 }
                 if (typeof carregarDadosPerfil === 'function') {
-                    await carregarDadosPerfil();
+                await carregarDadosPerfil();
                 }
-
-                // ADICIONADO AQUI: Carrega a foto de perfil e o feed de evoluções do banco de dados
-                if (typeof carregarDadosIniciais === 'function') {
-                    await carregarDadosIniciais();
-                }
-
-            } catch (err) {
+                } catch (err) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
-            }
-            
-            if (typeof showView === 'function') {
+                }
+                if (typeof showView === 'function') {
                 showView('lobby');
-            }
-        } else {
-            window.usuarioAtualId = null;
-            localStorage.removeItem('user_email_ativo');
-            bancoDeDados = { fichas: {} }; // Limpa os dados se deslogar
-            if (typeof showView === 'function') {
-                showView('login');
-            }
-        }
-    });
-}
+                }
+                } else {
+                window.usuarioAtualId = null;
+                localStorage.removeItem('user_email_ativo');
+                bancoDeDados = { fichas: {} }; // Limpa os dados se deslogar
+                if (typeof showView === 'function') {
+                showView('login');}
+                });
+         }
+   }); 
+
 
 
 window.toggleAuthTab = function(tab) {
