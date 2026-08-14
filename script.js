@@ -155,7 +155,6 @@ if (typeof auth !== 'undefined' && auth) {
 }
 
 
-
 window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
     const formCadastro = document.getElementById('form-cadastro');
