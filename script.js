@@ -479,6 +479,34 @@ function fecharModalEmail() {
     window.fluxoTrocaEmailPendente = null;
 }
 
+// Alterar foto do perfil
+
+function atualizarFotoPerfil(input) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fotoUrl = e.target.result;
+            
+            // Salva na chave específica do usuário logado
+            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
+            
+            // Também salva em uma chave genérica para compatibilidade imediata
+            localStorage.setItem('user_foto', fotoUrl);
+
+            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            
+            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
+            
+            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 async function processarTrocaEmail() {
     // Verifica se existe um fluxo pendente (seja de e-mail ou telefone)
     const fluxo = window.fluxoTrocaPendente || window.fluxoTrocaPendente;
@@ -2425,31 +2453,7 @@ async function toggleGravacaoAudio() {
     }
 }
 
-function atualizarFotoPerfil(input) {
-    const user = auth.currentUser;
-    if (!user) return;
 
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fotoUrl = e.target.result;
-            
-            // Salva na chave específica do usuário logado
-            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
-            
-            // Também salva em uma chave genérica para compatibilidade imediata
-            localStorage.setItem('user_foto', fotoUrl);
-
-            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
-            
-            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
-            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
-            
-            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
 
 function postarNoFeed() {
     const inputTexto = document.getElementById('texto-evolucao');
@@ -2491,7 +2495,10 @@ function atualizarFeedUI() {
     if (!container) return;
 
     const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
-    const fotoAtleta = localStorage.getItem('user_foto');
+    
+    // Sincronizado perfeitamente com o UID do usuário salvo na função de cima
+    const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
+    const fotoAtleta = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
 
     container.innerHTML = feedEvolucao.map(post => `
         <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
