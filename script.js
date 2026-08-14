@@ -292,7 +292,17 @@ async function carregarDadosDoUsuarioDoBanco() {
     }
 }
 
+// -- ** Esqueceu a senha ** -- 
 
+function handleRecuperar(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (typeof abrirModalEsqueceuSenha === 'function') {
+        abrirModalEsqueceuSenha();
+    } else {
+        console.error("A função abrirModalEsqueceuSenha não foi encontrada.");
+    }
+}
+window.handleRecuperar = handleRecuperar;
 
 function atualizarFotoPerfil(input) {
     const user = auth.currentUser;
