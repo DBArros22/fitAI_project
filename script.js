@@ -86,9 +86,9 @@ const equivalencias = {
 
 
 // 3. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
-document.addEventListener('DOMContentLoaded', () => {
-    const btnTabLogin = document.getElementById('btn-tab-login');
-    const btnTabCadastro = document.getElementById('btn-tab-cadastro');
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnTabLogin = document.getElementById('btn-tab-login');
+        const btnTabCadastro = document.getElementById('btn-tab-cadastro');
      });
 
     if (btnTabLogin) {
