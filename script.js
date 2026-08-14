@@ -86,10 +86,10 @@ const equivalencias = {
 
 
 // 3. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
-    document.addEventListener('DOMContentLoaded', () => {
-        const btnTabLogin = document.getElementById('btn-tab-login');
-        const btnTabCadastro = document.getElementById('btn-tab-cadastro');
-     });
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Configuração das abas de Login e Cadastro
+    const btnTabLogin = document.getElementById('btn-tab-login');
+    const btnTabCadastro = document.getElementById('btn-tab-cadastro');
 
     if (btnTabLogin) {
         btnTabLogin.addEventListener('click', () => toggleAuthTab('login'));
@@ -99,11 +99,13 @@ const equivalencias = {
         btnTabCadastro.addEventListener('click', () => toggleAuthTab('cadastro'));
     }
 
+    // 2. Botão de submissão do login
     const btnLogin = document.getElementById('btn-login-submit');
     if (btnLogin) {
         btnLogin.onclick = handleLogin;
     }
 
+    // 3. Recuperação de e-mail salvo
     const savedEmail = localStorage.getItem('fitai_remember_email');
     const inputLoginEmail = document.getElementById('login-email');
     const rememberCheckbox = document.getElementById('remember-me');
@@ -112,10 +114,10 @@ const equivalencias = {
         inputLoginEmail.value = savedEmail;
         if (rememberCheckbox) rememberCheckbox.checked = true;
     }
+});
 
 
-    // Monitoramento seguro do Firebase Auth
-
+// 4. Monitoramento seguro do Firebase Auth (Fica fora do DOMContentLoaded pois gerencia o estado do Firebase)
 if (typeof auth !== 'undefined' && auth) {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
@@ -134,7 +136,7 @@ if (typeof auth !== 'undefined' && auth) {
                     await carregarDadosPerfil();
                 }
 
-                // ADICIONADO AQUI: Carrega a foto de perfil e o feed de evoluções do banco de dados
+                // Carrega a foto de perfil e o feed de evoluções do banco de dados
                 if (typeof carregarDadosIniciais === 'function') {
                     await carregarDadosIniciais();
                 }
@@ -150,6 +152,7 @@ if (typeof auth !== 'undefined' && auth) {
             window.usuarioAtualId = null;
             localStorage.removeItem('user_email_ativo');
             bancoDeDados = { fichas: {} }; // Limpa os dados se deslogar
+            
             if (typeof showView === 'function') {
                 showView('login');
             }
