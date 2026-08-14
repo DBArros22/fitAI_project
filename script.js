@@ -304,26 +304,45 @@ function handleRecuperar(e) {
 }
 window.handleRecuperar = handleRecuperar;
 
-function atualizarFotoPerfil(input) {
-    const user = auth.currentUser;
-    if (!user) return;
+function atualizarFeedUI() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
 
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const fotoUrl = e.target.result;
-            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
+    const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
+    
+    // Sincronizado perfeitamente com o UID do usuário salvo na função de cima
+    const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
+    const fotoAtleta = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
 
-            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
-            
-            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
-            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
-            
-            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+    container.innerHTML = feedEvolucao.map(post => `
+        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+                    </div>
+                    <div>
+                        <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
+                        <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
+                    </div>
+                </div>
+                <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
+            </div>
+
+            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
+
+            ${post.midia ? `
+                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
+                    ${post.midia.startsWith('data:video') 
+                        ? `<video src="${post.midia}" controls style="width: 100%; max-height: 250px; display: block;"></video>`
+                        : `<img src="${post.midia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">`
+                    }
+                </div>
+            ` : ''}
+        </div>
+    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
+
 
 function habilitarEdicaoCampo(idInput, btnElement) {
     const input = document.getElementById(idInput);
@@ -2406,29 +2425,52 @@ async function toggleGravacaoAudio() {
     }
 }
 
+function atualizarFotoPerfil(input) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fotoUrl = e.target.result;
+            
+            // Salva na chave específica do usuário logado
+            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
+            
+            // Também salva em uma chave genérica para compatibilidade imediata
+            localStorage.setItem('user_foto', fotoUrl);
+
+            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            
+            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
+            
+            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
 function postarNoFeed() {
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : '';
     
-    // Valida se os dois estão vazios
     if (!texto && !midiaAnexada) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("O post não pode estar vazio!");
         return;
     }
 
-    // Cria o objeto contendo o texto E a mídia juntos
     const novoPost = {
         id: Date.now(),
         data: new Date().toLocaleString('pt-BR'),
         texto: texto,
-        midia: midiaAnexada // Aqui vai o base64 da imagem/vídeo junto com o texto
+        midia: midiaAnexada
     };
 
     feedEvolucao.unshift(novoPost);
     localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
     
-    // Limpa os campos após a postagem
     midiaAnexada = null;
     if (inputTexto) inputTexto.value = "";
     
