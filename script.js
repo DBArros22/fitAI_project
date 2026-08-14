@@ -89,6 +89,7 @@ const equivalencias = {
 document.addEventListener('DOMContentLoaded', () => {
     const btnTabLogin = document.getElementById('btn-tab-login');
     const btnTabCadastro = document.getElementById('btn-tab-cadastro');
+     });
 
     if (btnTabLogin) {
         btnTabLogin.addEventListener('click', () => toggleAuthTab('login'));
