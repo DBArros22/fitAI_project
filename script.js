@@ -2388,8 +2388,7 @@ function renderizarBlog() {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 5px; vertical-align: middle;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
                 </button>
                 <div style="text-align: right;">
-                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">Meu Feed
-                    </h2>
+                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">Meu Feed</h2>
                     <p style="color: #3b82f6; font-size: 9px; margin: 0; font-weight: 900; letter-spacing: 1px;">EVOLUÇÃO PRO</p>
                 </div>
             </div>
@@ -2399,10 +2398,10 @@ function renderizarBlog() {
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
                     <div style="display: flex; gap: 12px;">
                         <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
-                            <input type="file" accept="image/*" onchange="anexarMidia(this)" style="display: none;">
+                            <input type="file" id="input-media" accept="image/*,video/*" onchange="previewMidia(event)" style="display: none;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         </label>
-                        <button id="btn-mic" onclick="toggleGravacaoAudio()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                        <button id="btn-mic" onclick="toggleGravacao()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                     </div>
@@ -2415,83 +2414,48 @@ function renderizarBlog() {
     atualizarFeedUI();
 }
 
-function anexarMidia(input) {
-    const file = input.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            midiaAnexada = { tipo: 'foto', data: e.target.result };
-            document.getElementById('preview-midia').innerHTML = `
-                <div style="position: relative; display: inline-block;">
-                    <img src="${e.target.result}" style="width: 90px; height: 90px; object-fit: cover; border-radius: 10px; border: 2px solid #3b82f6;">
-                    <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 11px; font-weight: bold;">X</button>
-                </div>`;
-        };
-        reader.readAsDataURL(file);
+function previewMidia(event) {
+    const file = event.target.files[0];
+    const previewContainer = document.getElementById('preview-midia');
+    
+    if (!file) {
+        midiaAnexada = null;
+        if (previewContainer) previewContainer.innerHTML = "";
+        return;
     }
-}
 
-// function adicionada para manter post no feed 
-
-async function carregarDadosIniciais() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    try {
-        // 1. Carrega a foto de perfil do banco do usuário
-        const docUser = await db.collection('usuarios').doc(user.uid).get();
-        if (docUser.exists) {
-            const dados = docUser.data();
-            if (dados.fotoPerfil) {
-                const imgHtml = `<img src="${dados.fotoPerfil}" style="width:100%; height:100%; object-fit:cover;">`;
-                if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
-                if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const base64Data = e.target.result;
+        const tipoMidia = file.type.startsWith('video/') ? 'video' : 'foto';
+        midiaAnexada = { tipo: tipoMidia, data: base64Data };
+        
+        if (previewContainer) {
+            if (tipoMidia === 'foto') {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <img src="${base64Data}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    </div>`;
+            } else {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <video src="${base64Data}" controls style="width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"></video>
+                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    </div>`;
             }
         }
-
-        // 2. Busca e carrega o feed de evoluções diretamente da nuvem
-        if (typeof carregarFeedDoBanco === 'function') {
-            await carregarFeedDoBanco();
-        }
-
-        console.log("Dados e feed sincronizados com a nuvem com sucesso!");
-    } catch (error) {
-        console.error("Erro ao carregar dados iniciais do banco:", error);
-    }
+    };
+    reader.readAsDataURL(file);
 }
 
-async function toggleGravacaoAudio() {
-    const btn = document.getElementById('btn-mic');
-    if (!gravando) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                midiaAnexada = { tipo: 'audio', data: e.target.result };
-                document.getElementById('preview-midia').innerHTML = `
-                    <div style="background: #1e293b; padding: 10px; border-radius: 10px; color: #3b82f6; display: flex; align-items: center; gap: 10px; font-size: 13px;">
-                        🎙️ Áudio Gravado <button onclick="midiaAnexada = null; document.getElementById('preview-midia').innerHTML = ''" style="color: #ef4444; border: none; background: none; cursor: pointer; font-weight: bold; margin-left: 5px;">Remover</button>
-                    </div>`;
-            };
-            reader.readAsDataURL(audioBlob);
-        };
-        mediaRecorder.start();
-        gravando = true;
-        btn.style.background = "#ef4444";
-        btn.innerHTML = "⏹️";
-    } else {
-        mediaRecorder.stop();
-        gravando = false;
-        btn.style.background = "rgba(59,130,246,0.1)";
-        btn.innerHTML = "🎙️";
-    }
+function removerMidia() {
+    midiaAnexada = null;
+    const previewContainer = document.getElementById('preview-midia');
+    const inputMedia = document.getElementById('input-media');
+    if (previewContainer) previewContainer.innerHTML = "";
+    if (inputMedia) inputMedia.value = "";
 }
-
-
 
 async function postarNoFeed() {
     const user = auth.currentUser;
@@ -2500,7 +2464,7 @@ async function postarNoFeed() {
         return;
     }
 
-    const inputTexto = document.getElementById('texto-evolucao');
+    const inputTexto = document.getElementById('post-texto');
     const texto = inputTexto ? inputTexto.value.trim() : '';
     
     if (!texto && !midiaAnexada) {
@@ -2512,27 +2476,23 @@ async function postarNoFeed() {
     const novoPost = {
         uid: user.uid,
         nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
-        data: new Date().toISOString(), // Usar formato ISO facilita a ordenação no banco
         texto: texto,
         midia: midiaAnexada || null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
-        // Salva diretamente na coleção do Firestore
         await db.collection('feed').add(novoPost);
         
-        // Limpa os campos após a postagem
         midiaAnexada = null;
         if (inputTexto) inputTexto.value = "";
         
-        const previewContainer = document.getElementById('preview-container');
+        const previewContainer = document.getElementById('preview-midia');
         if (previewContainer) previewContainer.innerHTML = "";
         
         const inputMedia = document.getElementById('input-media');
         if (inputMedia) inputMedia.value = "";
 
-        // Recarrega o feed direto do banco
         await carregarFeedDoBanco();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2543,12 +2503,8 @@ async function postarNoFeed() {
     }
 }
 
-
-// carregamento que mantem o feed salvo
-
 async function carregarFeedDoBanco() {
     try {
-        // Tenta buscar ordenado por data
         const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
         feedEvolucao = [];
         
@@ -2569,9 +2525,7 @@ async function carregarFeedDoBanco() {
         atualizarFeedUI();
     } catch (error) {
         console.error("Erro ao buscar feed ordenado, tentando busca simples:", error);
-        
         try {
-            // Fallback caso dê erro de índice: busca sem ordenação estrita no banco
             const snapshotFallback = await db.collection('feed').get();
             feedEvolucao = [];
             
@@ -2596,140 +2550,59 @@ function atualizarFeedUI() {
     if (!container) return;
 
     const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
-    
-    // Sincronizado perfeitamente com o UID do usuário salvo na função de cima
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     const fotoAtleta = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
 
-    container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+    container.innerHTML = feedEvolucao.map(post => {
+        let midiaHTML = '';
+        if (post.midia) {
+            const tipo = typeof post.midia === 'object' ? post.midia.tipo : (post.midia.startsWith('data:video') ? 'video' : (post.midia.startsWith('data:audio') ? 'audio' : 'foto'));
+            const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
+
+            if (tipo === 'foto') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
+                        <img src="${urlMidia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">
+                        <a href="${urlMidia}" download="evolucao-foto.jpg" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Foto</a>
+                    </div>`;
+            } else if (tipo === 'video') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
+                        <video src="${urlMidia}" controls style="width: 100%; max-height: 250px; display: block;"></video>
+                        <a href="${urlMidia}" download="evolucao-video.mp4" style="position: absolute; bottom: 15px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Vídeo</a>
+                    </div>`;
+            } else if (tipo === 'audio') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <audio src="${urlMidia}" controls style="width: 100%;"></audio>
+                        <a href="${urlMidia}" download="evolucao-audio.webm" style="align-self: flex-end; color: #3b82f6; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Áudio 📥</a>
+                    </div>`;
+            }
+        }
+
+        return `
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
+                            <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
-                        <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
-                    </div>
+                    <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
                 </div>
-                <button onclick="excluirPost(${post.id})" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
+
+                ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
+                ${midiaHTML}
             </div>
-
-            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
-
-            ${post.midia ? `
-                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
-                    ${post.midia.startsWith('data:video') 
-                        ? `<video src="${post.midia}" controls style="width: 100%; max-height: 250px; display: block;"></video>`
-                        : `<img src="${post.midia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">`
-                    }
-                </div>
-            ` : ''}
-        </div>
-    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
-}
-
-async function toggleGravacao() {
-    const btn = document.getElementById('btn-mic');
-    const timer = document.getElementById('timer-gravacao');
-
-    if (!gravando) {
-        try {
-            audioChunks = []; 
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            
-            mediaRecorder.ondataavailable = e => {
-                if (e.data.size > 0) audioChunks.push(e.data);
-            };
-
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    midiaAnexada = { tipo: 'audio', data: reader.result };
-                    if (typeof atualizarPreviewMidia === 'function') atualizarPreviewMidia(); 
-                };
-                reader.readAsDataURL(audioBlob);
-                stream.getTracks().forEach(track => track.stop());
-            };
-
-            mediaRecorder.start();
-            gravando = true;
-            
-            btn.style.background = "#ef4444"; 
-            btn.classList.add('mic-gravando');
-            if(timer) timer.classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            mostrarAviso("Gravando áudio...");
-
-        } catch (err) {
-            console.error("Erro ao capturar áudio:", err);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                mostrarAviso("Nenhum microfone foi detectado no seu dispositivo.");
-            } else {
-                mostrarAviso("Erro ao acessar microfone. Verifique as permissões.");
-            }
-        }
-    } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            mediaRecorder.stop();
-        }
-        gravando = false;
-        
-        btn.style.background = "rgba(255,255,255,0.05)"; 
-        btn.classList.remove('mic-gravando');
-        if(timer) timer.classList.add('hidden');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("Gravação finalizada e anexada.");
-    }
-}
-
-function previewMidia(event) {
-    const file = event.target.files[0];
-    const previewContainer = document.getElementById('preview-container');
-    
-    if (!file) {
-        midiaAnexada = null;
-        if (previewContainer) previewContainer.innerHTML = "";
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        midiaAnexada = e.target.result; // Salva o base64 da mídia
-        
-        if (previewContainer) {
-            if (file.type.startsWith('image/')) {
-                previewContainer.innerHTML = `
-                    <div style="position: relative; display: inline-block; width: 100%;">
-                        <img src="${midiaAnexada}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid var(--border-color);">
-                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
-                    </div>`;
-            } else if (file.type.startsWith('video/')) {
-                previewContainer.innerHTML = `
-                    <div style="position: relative; display: inline-block; width: 100%;">
-                        <video src="${midiaAnexada}" controls style="width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid var(--border-color);"></video>
-                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
-                    </div>`;
-            }
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-function removerMidia() {
-    midiaAnexada = null;
-    const previewContainer = document.getElementById('preview-container');
-    const inputMedia = document.getElementById('input-media');
-    if (previewContainer) previewContainer.innerHTML = "";
-    if (inputMedia) inputMedia.value = "";
+        `;
+    }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
 
 function excluirPost(id) {
-    // Força a página a rolar para o topo instantaneamente para receber o modal centralizado
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     const modalConfirm = document.createElement('div');
@@ -2764,24 +2637,16 @@ function excluirPost(id) {
         document.body.appendChild(modalConfirm);
     }
 
-    // Ação do botão Cancelar
     document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
 
-    // Ação do botão Confirmar (Agora conectada à Nuvem/Firestore)
     document.getElementById('btn-confirmar-exclusao').onclick = async () => {
         try {
-            // 1. Apaga do banco de dados na nuvem
             await db.collection('feed').doc(id).delete();
-            
-            // 2. Remove da lista local para atualizar a tela
             feedEvolucao = feedEvolucao.filter(p => p.id !== id);
-            
-            // 3. Fecha o modal e atualiza a interface
             modalConfirm.remove();
             atualizarFeedUI(); 
             window.scrollTo({ top: 0, behavior: 'smooth' });
             mostrarAviso("Post removido com sucesso.");
-            
         } catch (error) {
             console.error("Erro ao excluir post no banco:", error);
             modalConfirm.remove();
