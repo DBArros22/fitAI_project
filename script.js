@@ -124,7 +124,6 @@ if (typeof auth !== 'undefined' && auth) {
             window.usuarioAtualId = user.uid;        
             localStorage.setItem('user_email_ativo', user.email);
             try {
-                // Baixa as fichas e treinos do Firebase ao logar/recarregar a página
                 if (typeof carregarBancoDoFirebase === 'function') {
                     await carregarBancoDoFirebase();
                 }
@@ -136,9 +135,9 @@ if (typeof auth !== 'undefined' && auth) {
                     await carregarDadosPerfil();
                 }
 
-                // Carrega a foto de perfil e o feed de evoluções do banco de dados
-                if (typeof carregarDadosIniciais === 'function') {
-                    await carregarDadosIniciais();
+                // CHAMA DIRETAMENTE A SUA FUNÇÃO QUE JÁ EXISTE:
+                if (typeof carregarFeedDoBanco === 'function') {
+                    await carregarFeedDoBanco();
                 }
 
             } catch (err) {
@@ -151,7 +150,7 @@ if (typeof auth !== 'undefined' && auth) {
         } else {
             window.usuarioAtualId = null;
             localStorage.removeItem('user_email_ativo');
-            bancoDeDados = { fichas: {} }; // Limpa os dados se deslogar
+            bancoDeDados = { fichas: {} }; 
             
             if (typeof showView === 'function') {
                 showView('login');
