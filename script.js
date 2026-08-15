@@ -2736,15 +2736,29 @@ function excluirPost(id) {
         document.body.appendChild(modalConfirm);
     }
 
+    // Ação do botão Cancelar
     document.getElementById('btn-cancelar-exclusao').onclick = () => modalConfirm.remove();
 
-    document.getElementById('btn-confirmar-exclusao').onclick = () => {
-        feedEvolucao = feedEvolucao.filter(p => p.id !== id);
-        localStorage.setItem('fitai_feed', JSON.stringify(feedEvolucao));
-        modalConfirm.remove();
-        atualizarFeedUI(); 
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("Post removido com sucesso.");
+    // Ação do botão Confirmar (Agora conectada à Nuvem/Firestore)
+    document.getElementById('btn-confirmar-exclusao').onclick = async () => {
+        try {
+            // 1. Apaga do banco de dados na nuvem
+            await db.collection('feed').doc(id).delete();
+            
+            // 2. Remove da lista local para atualizar a tela
+            feedEvolucao = feedEvolucao.filter(p => p.id !== id);
+            
+            // 3. Fecha o modal e atualiza a interface
+            modalConfirm.remove();
+            atualizarFeedUI(); 
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            mostrarAviso("Post removido com sucesso.");
+            
+        } catch (error) {
+            console.error("Erro ao excluir post no banco:", error);
+            modalConfirm.remove();
+            mostrarAviso("Erro ao excluir. Verifique sua conexão.");
+        }
     };
 }
 
