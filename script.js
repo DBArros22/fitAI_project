@@ -2431,6 +2431,35 @@ function anexarMidia(input) {
     }
 }
 
+// function adicionada para manter post no feed 
+
+async function carregarDadosIniciais() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        // 1. Carrega a foto de perfil do banco do usuário
+        const docUser = await db.collection('usuarios').doc(user.uid).get();
+        if (docUser.exists) {
+            const dados = docUser.data();
+            if (dados.fotoPerfil) {
+                const imgHtml = `<img src="${dados.fotoPerfil}" style="width:100%; height:100%; object-fit:cover;">`;
+                if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+                if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
+            }
+        }
+
+        // 2. Busca e carrega o feed de evoluções diretamente da nuvem
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
+        }
+
+        console.log("Dados e feed sincronizados com a nuvem com sucesso!");
+    } catch (error) {
+        console.error("Erro ao carregar dados iniciais do banco:", error);
+    }
+}
+
 async function toggleGravacaoAudio() {
     const btn = document.getElementById('btn-mic');
     if (!gravando) {
