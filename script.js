@@ -2520,12 +2520,12 @@ async function postarNoFeed() {
 
 async function carregarFeedDoBanco() {
     try {
+        // Tenta buscar ordenado por data
         const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
         feedEvolucao = [];
         
         snapshot.forEach(doc => {
             const postData = doc.data();
-            // Formata a data para exibição correta
             let dataFormatada = "Recentemente";
             if (postData.criadoEm && postData.criadoEm.toDate) {
                 dataFormatada = postData.criadoEm.toDate().toLocaleString('pt-BR');
@@ -2540,7 +2540,26 @@ async function carregarFeedDoBanco() {
 
         atualizarFeedUI();
     } catch (error) {
-        console.error("Erro ao buscar feed:", error);
+        console.error("Erro ao buscar feed ordenado, tentando busca simples:", error);
+        
+        try {
+            // Fallback caso dê erro de índice: busca sem ordenação estrita no banco
+            const snapshotFallback = await db.collection('feed').get();
+            feedEvolucao = [];
+            
+            snapshotFallback.forEach(doc => {
+                const postData = doc.data();
+                feedEvolucao.push({
+                    id: doc.id,
+                    ...postData,
+                    data: "Recentemente"
+                });
+            });
+
+            atualizarFeedUI();
+        } catch (errFallback) {
+            console.error("Erro crítico ao carregar feed:", errFallback);
+        }
     }
 }
 
