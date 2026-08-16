@@ -2479,7 +2479,7 @@ async function postarNoFeed() {
         return;
     }
 
-    // CORREÇÃO CRUCIAL: Apontando para o ID correto do seu HTML ('texto-evolucao')
+    // Captura o texto do elemento HTML correto ('texto-evolucao')
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
@@ -2492,9 +2492,24 @@ async function postarNoFeed() {
         return;
     }
 
+    // Busca o nome real do atleta diretamente do Firestore (Fonte da verdade)
+    let nomeAtletaFinal = "ATLETA";
+    try {
+        const docPerfil = await db.collection('usuarios').doc(user.uid).get();
+        if (docPerfil.exists && docPerfil.data().nome) {
+            // Pega apenas o primeiro nome do usuário cadastrado no banco
+            const nomeCompleto = docPerfil.data().nome.trim();
+            nomeAtletaFinal = nomeCompleto.split(" ")[0].toUpperCase();
+        } else if (user.displayName) {
+            nomeAtletaFinal = user.displayName.trim().split(" ")[0].toUpperCase();
+        }
+    } catch (e) {
+        console.warn("Não foi possível buscar o nome no Firestore, usando padrão.", e);
+    }
+
     const novoPost = {
         uid: user.uid,
-        nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
+        nomeAtleta: nomeAtletaFinal,
         texto: texto,
         midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -2503,7 +2518,7 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpa o campo de texto correto e a mídia após o sucesso
+        // Limpa perfeitamente os campos após o envio com sucesso
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
