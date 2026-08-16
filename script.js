@@ -2482,6 +2482,10 @@ async function postarNoFeed() {
     const inputTexto = document.getElementById('post-texto');
     const texto = inputTexto ? inputTexto.value.trim() : '';
     
+    // Verificação de segurança detalhada no console para debug
+    console.log("Texto capturado:", texto);
+    console.log("Mídia anexada:", midiaAnexada);
+
     if (!texto && !midiaAnexada) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("O post não pode estar vazio!");
@@ -2499,7 +2503,7 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpeza cirúrgica: limpa tanto o texto quanto o preview e o arquivo anexado
+        // Limpeza dos campos após o sucesso
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
