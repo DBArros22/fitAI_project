@@ -2479,17 +2479,16 @@ async function postarNoFeed() {
         return;
     }
 
-    // Captura o elemento diretamente e valida o valor atual na tela
-    const inputTexto = document.getElementById('post-texto');
+    // CORREÇÃO CRUCIAL: Apontando para o ID correto do seu HTML ('texto-evolucao')
+    const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
-    // Validação flexível: permite postar se houver texto OU mídia anexada
     const temTexto = texto.length > 0;
     const temMidia = midiaAnexada !== null && midiaAnexada !== undefined;
 
     if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("Escreva algo ou adicione uma mídia para postar!");
+        mostrarAviso("O post não pode estar vazio!");
         return;
     }
 
@@ -2504,7 +2503,7 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpa os campos após o envio bem-sucedido
+        // Limpa o campo de texto correto e a mídia após o sucesso
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
