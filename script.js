@@ -2476,7 +2476,7 @@ async function postarNoFeed() {
     }
 
     const novoPost = {
-        uid: user.uid, // Garante que o post pertence ao usuário logado
+        uid: user.uid,
         nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
         texto: texto,
         midia: midiaAnexada || null,
@@ -2486,16 +2486,21 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
+        // CORREÇÃO: Limpa explicitamente a caixa de texto após o envio bem-sucedido
+        if (inputTexto) {
+            inputTexto.value = "";
+        }
+
+        // Reseta a mídia anexada e os elementos visuais de preview
         midiaAnexada = null;
-        if (inputTexto) inputTexto.value = "";
         
-        const previewContainer = document.getElementById('preview-midia');
+        const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
         if (previewContainer) previewContainer.innerHTML = "";
         
         const inputMedia = document.getElementById('input-media');
         if (inputMedia) inputMedia.value = "";
 
-        await carregarFeedDoBanco(); // Recarrega apenas o feed do usuário atual
+        await carregarFeedDoBanco();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Postagem realizada com sucesso!");
