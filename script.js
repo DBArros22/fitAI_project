@@ -2474,7 +2474,7 @@ async function postarNoFeed() {
     }
 
     const novoPost = {
-        uid: user.uid,
+        uid: user.uid, // Garante que o post pertence ao usuário logado
         nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
         texto: texto,
         midia: midiaAnexada || null,
@@ -2493,7 +2493,7 @@ async function postarNoFeed() {
         const inputMedia = document.getElementById('input-media');
         if (inputMedia) inputMedia.value = "";
 
-        await carregarFeedDoBanco();
+        await carregarFeedDoBanco(); // Recarrega apenas o feed do usuário atual
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("Postagem realizada com sucesso!");
@@ -2504,8 +2504,16 @@ async function postarNoFeed() {
 }
 
 async function carregarFeedDoBanco() {
+    const user = auth.currentUser;
+    if (!user) return; // Se não houver usuário, não tenta buscar feed
+
     try {
-        const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
+        // Filtra pelo UID do usuário logado para isolar o feed
+        const snapshot = await db.collection('feed')
+            .where('uid', '==', user.uid)
+            .orderBy('criadoEm', 'desc')
+            .get();
+        
         feedEvolucao = [];
         
         snapshot.forEach(doc => {
@@ -2524,9 +2532,11 @@ async function carregarFeedDoBanco() {
 
         atualizarFeedUI();
     } catch (error) {
-        console.error("Erro ao buscar feed ordenado, tentando busca simples:", error);
+        console.error("Erro ao buscar feed isolado, tentando busca simples:", error);
+        // O Firestore exige um índice composto para o 'where' combinado com 'orderBy'.
+        // Se este erro ocorrer, verifique o link no console do Firebase para criar o índice.
         try {
-            const snapshotFallback = await db.collection('feed').get();
+            const snapshotFallback = await db.collection('feed').where('uid', '==', user.uid).get();
             feedEvolucao = [];
             
             snapshotFallback.forEach(doc => {
