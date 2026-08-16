@@ -2479,7 +2479,6 @@ async function postarNoFeed() {
         return;
     }
 
-    // Captura o texto do elemento HTML correto ('texto-evolucao')
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
@@ -2492,24 +2491,9 @@ async function postarNoFeed() {
         return;
     }
 
-    // Busca o nome real do atleta diretamente do Firestore (Fonte da verdade)
-    let nomeAtletaFinal = "ATLETA";
-    try {
-        const docPerfil = await db.collection('usuarios').doc(user.uid).get();
-        if (docPerfil.exists && docPerfil.data().nome) {
-            // Pega apenas o primeiro nome do usuário cadastrado no banco
-            const nomeCompleto = docPerfil.data().nome.trim();
-            nomeAtletaFinal = nomeCompleto.split(" ")[0].toUpperCase();
-        } else if (user.displayName) {
-            nomeAtletaFinal = user.displayName.trim().split(" ")[0].toUpperCase();
-        }
-    } catch (e) {
-        console.warn("Não foi possível buscar o nome no Firestore, usando padrão.", e);
-    }
-
     const novoPost = {
         uid: user.uid,
-        nomeAtleta: nomeAtletaFinal,
+        nomeAtleta: nomeUsuarioAtual, // Usa o nome atualizado obtido do Firestore
         texto: texto,
         midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -2518,7 +2502,6 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpa perfeitamente os campos após o envio com sucesso
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
@@ -2532,11 +2515,24 @@ async function postarNoFeed() {
     }
 }
 
+let nomeUsuarioAtual = "ATLETA"; // Variável global em memória (sem localStorage)
+
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
 
     try {
+        // 1. Busca o nome real do usuário diretamente no Firestore na coleção de perfis
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        if (userDoc.exists) {
+            const dados = userDoc.data();
+            const nomeCompleto = dados.nome || dados.nomeCompleto || user.displayName || "";
+            if (nomeCompleto) {
+                nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
+            }
+        }
+
+        // 2. Busca o feed isolado do usuário
         const snapshot = await db.collection('feed')
             .where('uid', '==', user.uid)
             .orderBy('criadoEm', 'desc')
@@ -2633,11 +2629,9 @@ function atualizarFeedUI() {
             }
         }
 
-        // Extrai apenas o primeiro nome do banco e converte para maiúsculo
-        const nomeCompleto = post.nomeAtleta || "ATLETA";
-        const primeiroNome = nomeCompleto.trim().split(" ")[0].toUpperCase();
-
-        // Se a foto vier salva no post ou tratada, exibe ela; caso contrário, exibe a inicial
+        // Define o nome de exibição: prioriza o nome carregado do Firestore, ignorando o "ATLETA" antigo
+        const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : nomeUsuarioAtual;
+        const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
         const fotoPost = post.fotoUsuario || null;
 
         return `
