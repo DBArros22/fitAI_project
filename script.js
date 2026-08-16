@@ -2479,17 +2479,17 @@ async function postarNoFeed() {
         return;
     }
 
-    // Busca direta e segura garantindo que pegamos o valor atual do input ativo
+    // Captura o elemento diretamente e valida o valor atual na tela
     const inputTexto = document.getElementById('post-texto');
-    const texto = inputTexto ? inputTexto.value.trim() : '';
+    const texto = inputTexto ? inputTexto.value.trim() : "";
     
-    console.log("Texto validado:", texto);
-    console.log("Mídia validada:", midiaAnexada);
+    // Validação flexível: permite postar se houver texto OU mídia anexada
+    const temTexto = texto.length > 0;
+    const temMidia = midiaAnexada !== null && midiaAnexada !== undefined;
 
-    // Validação corrigida: garante que se houver texto OU mídia, o post é aceito
-    if (texto === "" && !midiaAnexada) {
+    if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("O post não pode estar vazio!");
+        mostrarAviso("Escreva algo ou adicione uma mídia para postar!");
         return;
     }
 
@@ -2497,14 +2497,14 @@ async function postarNoFeed() {
         uid: user.uid,
         nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
         texto: texto,
-        midia: midiaAnexada ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
+        midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpa tudo após o sucesso
+        // Limpa os campos após o envio bem-sucedido
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
