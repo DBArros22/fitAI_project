@@ -2515,21 +2515,29 @@ async function postarNoFeed() {
     }
 }
 
-let nomeUsuarioAtual = "ATLETA"; // Variável global em memória (sem localStorage)
+let nomeUsuarioAtual = "ATLETA";
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
 
     try {
-        // 1. Busca o nome real do usuário diretamente no Firestore na coleção de perfis
+        // 1. Busca o documento do usuário logado na coleção 'usuarios'
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        
         if (userDoc.exists) {
             const dados = userDoc.data();
-            const nomeCompleto = dados.nome || dados.nomeCompleto || user.displayName || "";
+            // LOG DE INSPEÇÃO: Abra o F12 (Console) do navegador para ver os dados exatos salvos no seu perfil
+            console.log("Dados do usuário vindos do Firestore:", dados);
+            
+            // Tenta pegar o nome de diferentes variações possíveis do campo no banco
+            const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
+            
             if (nomeCompleto) {
                 nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
             }
+        } else {
+            console.warn("Documento do usuário não encontrado no Firestore para o UID:", user.uid);
         }
 
         // 2. Busca o feed isolado do usuário
@@ -2556,7 +2564,7 @@ async function carregarFeedDoBanco() {
 
         atualizarFeedUI();
     } catch (error) {
-        console.error("Erro ao buscar feed isolado, tentando busca simples:", error);
+        console.error("Erro ao buscar feed isolado:", error);
         try {
             const snapshotFallback = await db.collection('feed').where('uid', '==', user.uid).get();
             feedEvolucao = [];
