@@ -2606,10 +2606,6 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
-    const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    const fotoAtleta = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
-
     container.innerHTML = feedEvolucao.map(post => {
         let midiaHTML = '';
         if (post.midia) {
@@ -2637,15 +2633,22 @@ function atualizarFeedUI() {
             }
         }
 
+        // Extrai apenas o primeiro nome do banco e converte para maiúsculo
+        const nomeCompleto = post.nomeAtleta || "ATLETA";
+        const primeiroNome = nomeCompleto.trim().split(" ")[0].toUpperCase();
+
+        // Se a foto vier salva no post ou tratada, exibe ela; caso contrário, exibe a inicial
+        const fotoPost = post.fotoUsuario || null;
+
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+                            ${fotoPost ? `<img src="${fotoPost}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
                         </div>
                         <div>
-                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
+                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
                             <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
                         </div>
                     </div>
