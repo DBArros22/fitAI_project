@@ -2479,14 +2479,15 @@ async function postarNoFeed() {
         return;
     }
 
+    // Busca direta e segura garantindo que pegamos o valor atual do input ativo
     const inputTexto = document.getElementById('post-texto');
     const texto = inputTexto ? inputTexto.value.trim() : '';
     
-    // Verificação de segurança detalhada no console para debug
-    console.log("Texto capturado:", texto);
-    console.log("Mídia anexada:", midiaAnexada);
+    console.log("Texto validado:", texto);
+    console.log("Mídia validada:", midiaAnexada);
 
-    if (!texto && !midiaAnexada) {
+    // Validação corrigida: garante que se houver texto OU mídia, o post é aceito
+    if (texto === "" && !midiaAnexada) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         mostrarAviso("O post não pode estar vazio!");
         return;
@@ -2496,14 +2497,14 @@ async function postarNoFeed() {
         uid: user.uid,
         nomeAtleta: localStorage.getItem('user_nome') || "ATLETA",
         texto: texto,
-        midia: midiaAnexada || null,
+        midia: midiaAnexada ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     try {
         await db.collection('feed').add(novoPost);
         
-        // Limpeza dos campos após o sucesso
+        // Limpa tudo após o sucesso
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
