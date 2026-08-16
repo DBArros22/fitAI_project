@@ -2566,6 +2566,27 @@ async function carregarFeedDoBanco() {
     }
 }
 
+// Buscar nome do atleta para incluir a dono do poster
+
+async function buscarNomeAtletaFirestore() {
+    const user = auth.currentUser;
+    if (!user) return "ATLETA";
+    
+    try {
+        // Ajuste 'usuarios' para o nome exato da sua collection de perfil
+        const doc = await db.collection('usuarios').doc(user.uid).get();
+        if (doc.exists) {
+            const data = doc.data();
+            return data.nome || user.displayName || "ATLETA";
+        }
+        return "ATLETA";
+    } catch (error) {
+        console.error("Erro ao buscar nome do Firestore:", error);
+        return "ATLETA";
+    }
+}
+
+
 function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
