@@ -2416,7 +2416,9 @@ function renderizarBlog() {
 
 function previewMidia(event) {
     const file = event.target.files[0];
-    const previewContainer = document.getElementById('preview-midia');
+    
+    // Procura por qualquer um dos dois IDs possíveis para evitar conflitos no HTML
+    const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
     
     if (!file) {
         midiaAnexada = null;
