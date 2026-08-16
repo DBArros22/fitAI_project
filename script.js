@@ -2392,22 +2392,28 @@ function renderizarBlog() {
                     <p style="color: #3b82f6; font-size: 9px; margin: 0; font-weight: 900; letter-spacing: 1px;">EVOLUÇÃO PRO</p>
                 </div>
             </div>
+            
+            <!-- Composer Unificado (Texto + Preview da Mídia na mesma caixa) -->
             <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 15px; font-size: 14px; min-height: 60px;"></textarea>
-                <div id="preview-midia" style="margin-bottom: 15px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">
-                    <div style="display: flex; gap: 12px;">
-                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
-                            <input type="file" id="input-media" accept="image/*,video/*" onchange="previewMidia(event)" style="display: none;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
+                
+                <!-- Container de Pré-visualização Integrada -->
+                <div id="preview-midia" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 5px;">
+                    <div style="display: flex; gap: 10px;">
+                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
+                            <input type="file" id="input-media" accept="image/*,video/*,audio/*" onchange="previewMidia(event)" style="display: none;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
                         </label>
-                        <button id="btn-mic" onclick="toggleGravacao()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 42px; height: 42px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        <button id="btn-mic" onclick="toggleGravacao()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                     </div>
-                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 12px 28px; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
+                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
                 </div>
             </div>
+            
             <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
     `;
@@ -2416,8 +2422,6 @@ function renderizarBlog() {
 
 function previewMidia(event) {
     const file = event.target.files[0];
-    
-    // Procura por qualquer um dos dois IDs possíveis para evitar conflitos no HTML
     const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
     
     if (!file) {
@@ -2429,21 +2433,30 @@ function previewMidia(event) {
     const reader = new FileReader();
     reader.onload = function(e) {
         const base64Data = e.target.result;
-        const tipoMidia = file.type.startsWith('video/') ? 'video' : 'foto';
+        let tipoMidia = 'foto';
+        if (file.type.startsWith('video/')) tipoMidia = 'video';
+        if (file.type.startsWith('audio/')) tipoMidia = 'audio';
+        
         midiaAnexada = { tipo: tipoMidia, data: base64Data };
         
         if (previewContainer) {
             if (tipoMidia === 'foto') {
                 previewContainer.innerHTML = `
                     <div style="position: relative; display: inline-block; width: 100%;">
-                        <img src="${base64Data}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <img src="${base64Data}" style="width: 100%; max-height: 220px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    </div>`;
+            } else if (tipoMidia === 'video') {
+                previewContainer.innerHTML = `
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <video src="${base64Data}" controls style="width: 100%; max-height: 220px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"></video>
                         <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
                     </div>`;
             } else {
                 previewContainer.innerHTML = `
-                    <div style="position: relative; display: inline-block; width: 100%;">
-                        <video src="${base64Data}" controls style="width: 100%; max-height: 200px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);"></video>
-                        <button onclick="removerMidia()" style="position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold;">×</button>
+                    <div style="position: relative; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 10px;">
+                        <span style="font-size: 13px; color: #ccc;">🎵 Áudio Anexado Pronto</span>
+                        <button onclick="removerMidia()" style="background: rgba(255,0,0,0.2); color: #ff4d4d; border: none; border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px;">Remover</button>
                     </div>`;
             }
         }
@@ -2453,7 +2466,7 @@ function previewMidia(event) {
 
 function removerMidia() {
     midiaAnexada = null;
-    const previewContainer = document.getElementById('preview-midia');
+    const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
     const inputMedia = document.getElementById('input-media');
     if (previewContainer) previewContainer.innerHTML = "";
     if (inputMedia) inputMedia.value = "";
@@ -2486,19 +2499,9 @@ async function postarNoFeed() {
     try {
         await db.collection('feed').add(novoPost);
         
-        // CORREÇÃO: Limpa explicitamente a caixa de texto após o envio bem-sucedido
-        if (inputTexto) {
-            inputTexto.value = "";
-        }
-
-        // Reseta a mídia anexada e os elementos visuais de preview
-        midiaAnexada = null;
-        
-        const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
-        if (previewContainer) previewContainer.innerHTML = "";
-        
-        const inputMedia = document.getElementById('input-media');
-        if (inputMedia) inputMedia.value = "";
+        // Limpeza cirúrgica: limpa tanto o texto quanto o preview e o arquivo anexado
+        if (inputTexto) inputTexto.value = "";
+        removerMidia();
 
         await carregarFeedDoBanco();
         
@@ -2512,10 +2515,9 @@ async function postarNoFeed() {
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
-    if (!user) return; // Se não houver usuário, não tenta buscar feed
+    if (!user) return; 
 
     try {
-        // Filtra pelo UID do usuário logado para isolar o feed
         const snapshot = await db.collection('feed')
             .where('uid', '==', user.uid)
             .orderBy('criadoEm', 'desc')
@@ -2540,8 +2542,6 @@ async function carregarFeedDoBanco() {
         atualizarFeedUI();
     } catch (error) {
         console.error("Erro ao buscar feed isolado, tentando busca simples:", error);
-        // O Firestore exige um índice composto para o 'where' combinado com 'orderBy'.
-        // Se este erro ocorrer, verifique o link no console do Firebase para criar o índice.
         try {
             const snapshotFallback = await db.collection('feed').where('uid', '==', user.uid).get();
             feedEvolucao = [];
@@ -2671,50 +2671,6 @@ function excluirPost(id) {
         }
     };
 }
-
-function confirmarAcaoOriginal(titulo, messaging, callback) {
-    const modalConfirm = document.createElement('div');
-    modalConfirm.style = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(10px);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 100000; padding: 20px;
-    `;
-
-    modalConfirm.innerHTML = `
-        <div class="glass-panel" style="max-width: 340px; width: 100%; padding: 30px; text-align: center; border: 1px solid #ef4444;">
-            <div style="width: 60px; height: 60px; background: rgba(239, 68, 68, 0.1); border: 2px solid #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #ef4444;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </div>
-            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem;">${titulo}</h3>
-            <p style="color: var(--text-secondary); margin-bottom: 25px; font-size: 13px;">${messaging}</p>
-            <div style="display: flex; gap: 10px;">
-                <button id="confirm-cancel" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 12px;">VOLTAR</button>
-                <button id="confirm-ok" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 12px;">EXCLUIR</button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modalConfirm);
-
-    document.getElementById('confirm-cancel').onclick = () => modalConfirm.remove();
-    document.getElementById('confirm-ok').onclick = () => {
-        callback();
-        modalConfirm.remove();
-    };
-}
-
-window.addEventListener('load', () => {
-    const emailSalvo = localStorage.getItem('fitai_remember_email');
-    const campoEmail = document.getElementById('login-email');
-    const checkbox = document.getElementById('remember-me');
-
-    // Correção contra quebra de escopo: Só executa se os elementos existirem na tela atual
-    if (campoEmail) {
-        if (emailSalvo) campoEmail.value = emailSalvo;
-        if (checkbox && emailSalvo) checkbox.checked = true;
-    }
-});
 
 
 
