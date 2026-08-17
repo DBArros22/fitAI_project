@@ -2547,22 +2547,20 @@ async function carregarFeedDoBanco() {
     if (!user) return; 
 
     try {
-        // 1. Busca o documento do usuário logado na coleção 'usuarios'
+        // 1. Busca os dados reais do usuário logado na coleção 'usuarios' do Firestore
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
         
         if (userDoc.exists) {
             const dados = userDoc.data();
-            // LOG DE INSPEÇÃO: Abra o F12 (Console) do navegador para ver os dados exatos salvos no seu perfil
-            console.log("Dados do usuário vindos do Firestore:", dados);
             
-            // Tenta pegar o nome de diferentes variações possíveis do campo no banco
+            // Pega o nome (tentando as variações mais comuns)
             const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
-            
             if (nomeCompleto) {
                 nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
             }
-        } else {
-            console.warn("Documento do usuário não encontrado no Firestore para o UID:", user.uid);
+
+            // Pega a foto de perfil do Firestore (adaptado para o campo que você utiliza no perfil)
+            fotoUsuarioAtual = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || user.photoURL || null;
         }
 
         // 2. Busca o feed isolado do usuário
@@ -2589,27 +2587,9 @@ async function carregarFeedDoBanco() {
 
         atualizarFeedUI();
     } catch (error) {
-        console.error("Erro ao buscar feed isolado:", error);
-        try {
-            const snapshotFallback = await db.collection('feed').where('uid', '==', user.uid).get();
-            feedEvolucao = [];
-            
-            snapshotFallback.forEach(doc => {
-                const postData = doc.data();
-                feedEvolucao.push({
-                    id: doc.id,
-                    ...postData,
-                    data: "Recentemente"
-                });
-            });
-
-            atualizarFeedUI();
-        } catch (errFallback) {
-            console.error("Erro crítico ao carregar feed:", errFallback);
-        }
+        console.error("Erro ao carregar feed e dados do perfil:", error);
     }
 }
-
 // Buscar nome do atleta para incluir a dono do poster
 
 async function buscarNomeAtletaFirestore() {
