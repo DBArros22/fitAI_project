@@ -2541,6 +2541,7 @@ async function postarNoFeed() {
 }
 
 let nomeUsuarioAtual = "ATLETA";
+let fotoUsuarioAtual = null; // variavel global para armazenar a foto do Firestore.
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
