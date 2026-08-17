@@ -317,39 +317,63 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    const nomeAtleta = localStorage.getItem('user_nome') || "ATLETA";
-    
-    // Sincronizado perfeitamente com o UID do usuário salvo na função de cima
+    // Obtém o usuário atual logado
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    const fotoAtleta = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
 
-    container.innerHTML = feedEvolucao.map(post => `
-        <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                        ${fotoAtleta ? `<img src="${fotoAtleta}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">F</span>`}
+    container.innerHTML = feedEvolucao.map(post => {
+        let midiaHTML = '';
+        if (post.midia) {
+            const tipo = typeof post.midia === 'object' ? post.midia.tipo : (post.midia.startsWith('data:video') ? 'video' : (post.midia.startsWith('data:audio') ? 'audio' : 'foto'));
+            const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
+
+            if (tipo === 'foto') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
+                        <img src="${urlMidia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">
+                        <a href="${urlMidia}" download="evolucao-foto.jpg" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Foto</a>
+                    </div>`;
+            } else if (tipo === 'video') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
+                        <video src="${urlMidia}" controls style="width: 100%; max-height: 250px; display: block;"></video>
+                        <a href="${urlMidia}" download="evolucao-video.mp4" style="position: absolute; bottom: 15px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Vídeo</a>
+                    </div>`;
+            } else if (tipo === 'audio') {
+                midiaHTML = `
+                    <div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+                        <audio src="${urlMidia}" controls style="width: 100%;"></audio>
+                        <a href="${urlMidia}" download="evolucao-audio.webm" style="align-self: flex-end; color: #3b82f6; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Áudio 📥</a>
+                    </div>`;
+            }
+        }
+
+        // Extrai o primeiro nome do post
+        const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : (window.nomeUsuarioAtual || "ATLETA");
+        const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
+        
+        // Pega a foto salva no próprio post (se houver) ou busca da propriedade do usuário/auth
+        const fotoPerfil = post.fotoPerfil || post.fotoUsuario || (user && user.photoURL) || null;
+
+        return `
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            ${fotoPerfil ? `<img src="${fotoPerfil}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
+                            <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
+                        </div>
                     </div>
-                    <div>
-                        <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${nomeAtleta}</p>
-                        <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
-                    </div>
+                    <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
                 </div>
-                <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
+
+                ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
+                ${midiaHTML}
             </div>
-
-            ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
-
-            ${post.midia ? `
-                <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); display: flex; justify-content: center; align-items: center;">
-                    ${post.midia.startsWith('data:video') 
-                        ? `<video src="${post.midia}" controls style="width: 100%; max-height: 250px; display: block;"></video>`
-                        : `<img src="${post.midia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">`
-                    }
-                </div>
-            ` : ''}
-        </div>
-    `).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
+        `;
+    }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
 
 
