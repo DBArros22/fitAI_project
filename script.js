@@ -317,9 +317,6 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    // Obtém o usuário atual logado
-    const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-
     container.innerHTML = feedEvolucao.map(post => {
         let midiaHTML = '';
         if (post.midia) {
@@ -347,19 +344,19 @@ function atualizarFeedUI() {
             }
         }
 
-        // Extrai o primeiro nome do post
-        const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : (window.nomeUsuarioAtual || "ATLETA");
+        // Define o nome de exibição corrigido
+        const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : nomeUsuarioAtual;
         const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
         
-        // Pega a foto salva no próprio post (se houver) ou busca da propriedade do usuário/auth
-        const fotoPerfil = post.fotoPerfil || post.fotoUsuario || (user && user.photoURL) || null;
+        // CORREÇÃO CRUCIAL: Verifica fotoPerfil salva no post ou recorre à foto atual do Firestore
+        const fotoPerfilPost = post.fotoPerfil || fotoUsuarioAtual || null;
 
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${fotoPerfil ? `<img src="${fotoPerfil}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
+                            ${fotoPerfilPost ? `<img src="${fotoPerfilPost}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
                         </div>
                         <div>
                             <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
