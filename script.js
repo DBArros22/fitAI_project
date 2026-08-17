@@ -2517,7 +2517,8 @@ async function postarNoFeed() {
 
     const novoPost = {
         uid: user.uid,
-        nomeAtleta: nomeUsuarioAtual, // Usa o nome atualizado obtido do Firestore
+        nomeAtleta: nomeUsuarioAtual, // usa o nome do firestone
+        fotoPerfil: user.photoURL || null, // para salvar a foto do perfil atrelado ao post da pagina de feed
         texto: texto,
         midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
