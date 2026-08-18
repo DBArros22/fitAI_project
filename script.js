@@ -1376,6 +1376,8 @@ async function excluirFicha(nome) {
     }
 }
 
+// Inicio das functions da pagina de consulta treinos 
+
 function renderizarFichasConsulta() {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
