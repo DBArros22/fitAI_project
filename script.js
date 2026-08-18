@@ -1384,6 +1384,8 @@ async function excluirFicha(nome) {
     }
 }
 
+// XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
+
 // Inicio das functions da pagina de consulta treinos 
 
 function renderizarFichasConsulta() {
