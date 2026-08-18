@@ -1152,7 +1152,7 @@ async function concluirRedefinicaoSenha() {
     }
 }
 
-// --- 3. GESTÃO TREINOS ---
+// --- 3. PAGINA DE TREINOS E EXERCICIOS ---
 
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
