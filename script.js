@@ -317,45 +317,29 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    container.innerHTML = feedEvolucao.map(post => {
-        let midiaHTML = '';
-        if (post.midia) {
-            const tipo = typeof post.midia === 'object' ? post.midia.tipo : (post.midia.startsWith('data:video') ? 'video' : (post.midia.startsWith('data:audio') ? 'audio' : 'foto'));
-            const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
+    // Se a variável global fotoUsuarioAtual estiver vazia, tentamos resgatar do Auth como backup
+    const fotoBackup = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.photoURL : null;
 
-            if (tipo === 'foto') {
-                midiaHTML = `
-                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
-                        <img src="${urlMidia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;">
-                        <a href="${urlMidia}" download="evolucao-foto.jpg" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Foto</a>
-                    </div>`;
-            } else if (tipo === 'video') {
-                midiaHTML = `
-                    <div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;">
-                        <video src="${urlMidia}" controls style="width: 100%; max-height: 250px; display: block;"></video>
-                        <a href="${urlMidia}" download="evolucao-video.mp4" style="position: absolute; bottom: 15px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 6px 12px; border-radius: 8px; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Vídeo</a>
-                    </div>`;
-            } else if (tipo === 'audio') {
-                midiaHTML = `
-                    <div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-                        <audio src="${urlMidia}" controls style="width: 100%;"></audio>
-                        <a href="${urlMidia}" download="evolucao-audio.webm" style="align-self: flex-end; color: #3b82f6; font-size: 11px; text-decoration: none; font-weight: bold;">Baixar Áudio 📥</a>
-                    </div>`;
-            }
-        }
+    container.innerHTML = feedEvolucao.map(post => {
+        // ... (seu código de midiaHTML permanece igual) ...
+        // [INSIRA AQUI O SEU BLOCO midiaHTML QUE VOCÊ JÁ TEM]
+        
+        // Lógica robusta para a Foto: 
+        // 1. Tenta a foto salva no post
+        // 2. Tenta a variável global carregada pelo carregarFeedDoBanco
+        // 3. Tenta o PhotoURL do Firebase Auth
+        const fotoFinal = post.fotoPerfil || fotoUsuarioAtual || fotoBackup || null;
 
         const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : nomeUsuarioAtual;
         const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
-        
-        // CORREÇÃO: Usa a foto salva no post ou recorre à variável global do Firestore (fotoUsuarioAtual)
-        const fotoPerfilPost = post.fotoPerfil || fotoUsuarioAtual || null;
 
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${fotoPerfilPost ? `<img src="${fotoPerfilPost}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
+                            ${fotoFinal ? `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
+                            <span style="color:white; font-weight:900; display: ${fotoFinal ? 'none' : 'block'};">${primeiroNome.charAt(0)}</span>
                         </div>
                         <div>
                             <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
@@ -364,7 +348,6 @@ function atualizarFeedUI() {
                     </div>
                     <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
                 </div>
-
                 ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
                 ${midiaHTML}
             </div>
