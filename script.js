@@ -2526,56 +2526,57 @@ async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
 
+    // 1. TENTATIVA IMEDIATA VIA LOCALSTORAGE (Garante que exibe a foto mesmo se o Firestore estiver offline)
+    const fotoLocalStorage = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
+    const nomeLocalStorage = localStorage.getItem('user_nome');
+    
+    if (fotoLocalStorage) fotoUsuarioAtual = fotoLocalStorage;
+    if (nomeLocalStorage) nomeUsuarioAtual = nomeLocalStorage.trim().split(" ")[0].toUpperCase();
+
     try {
+        // 2. TENTA BUSCAR NO FIRESTORE (Se houver conexão)
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        
         if (userDoc.exists) {
             const dados = userDoc.data();
-            
-            // ATENÇÃO: SUBSTITUA 'fotoPerfil' ABAIXO PELA CHAVE QUE VOCÊ VIU NO CONSOLE (Passo 1)
-            fotoUsuarioAtual = dados.fotoPerfil || dados.foto || dados.avatar || user.photoURL || null;
-            
-            const nomeCompleto = dados.nome || user.displayName || "ATLETA";
-            nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
-        }
+            const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
+            if (nomeCompleto) {
+                nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
+                localStorage.setItem('user_nome', nomeUsuarioAtual); // Atualiza cache
+            }
 
-        const snapshot = await db.collection('feed').where('uid', '==', user.uid).orderBy('criadoEm', 'desc').get();
+            const fotoFirestore = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || user.photoURL || null;
+            if (fotoFirestore) {
+                fotoUsuarioAtual = fotoFirestore;
+                localStorage.setItem(`user_foto_${user.uid}`, fotoFirestore); // Atualiza cache
+            }
+        }
+    } catch (error) {
+        console.warn("Aviso: Firestore offline, utilizando dados em cache local.", error);
+    }
+
+    // 3. BUSCA O FEED NO BANCO (Com tratamento para caso falhe)
+    try {
+        const snapshot = await db.collection('feed')
+            .where('uid', '==', user.uid)
+            .orderBy('criadoEm', 'desc')
+            .get();
         
         feedEvolucao = [];
         snapshot.forEach(doc => {
             const postData = doc.data();
-            // AQUI ESTÁ O SEGREDO: Se o post não tem fotoPerfil, forçamos a foto atual do perfil
             feedEvolucao.push({
                 id: doc.id,
                 ...postData,
-                fotoPerfil: postData.fotoPerfil || fotoUsuarioAtual, 
-                data: postData.criadoEm ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
+                fotoPerfil: postData.fotoPerfil || fotoUsuarioAtual,
+                data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
-
-        atualizarFeedUI();
-    } catch (error) {
-        console.error("Erro crítico no carregamento:", error);
+    } catch (feedError) {
+        console.error("Erro ao carregar posts do feed:", feedError);
     }
-}
 
-// Buscar nome do atleta para incluir a dono do poster
-
-async function buscarNomeAtletaFirestore() {
-    const user = auth.currentUser;
-    if (!user) return "ATLETA";
-    
-    try {
-        // Ajuste 'usuarios' para o nome exato da sua collection de perfil
-        const doc = await db.collection('usuarios').doc(user.uid).get();
-        if (doc.exists) {
-            const data = doc.data();
-            return data.nome || user.displayName || "ATLETA";
-        }
-        return "ATLETA";
-    } catch (error) {
-        console.error("Erro ao buscar nome do Firestore:", error);
-        return "ATLETA";
-    }
+    atualizarFeedUI();
 }
 
 
