@@ -313,49 +313,6 @@ function handleRecuperar(e) {
 }
 window.handleRecuperar = handleRecuperar;
 
-function atualizarFeedUI() {
-    const container = document.getElementById('feed-container');
-    if (!container) return;
-
-    // Se a variável global fotoUsuarioAtual estiver vazia, tentamos resgatar do Auth como backup
-    const fotoBackup = (typeof auth !== 'undefined' && auth.currentUser) ? auth.currentUser.photoURL : null;
-
-    container.innerHTML = feedEvolucao.map(post => {
-        // ... (seu código de midiaHTML permanece igual) ...
-        // [INSIRA AQUI O SEU BLOCO midiaHTML QUE VOCÊ JÁ TEM]
-        
-        // Lógica robusta para a Foto: 
-        // 1. Tenta a foto salva no post
-        // 2. Tenta a variável global carregada pelo carregarFeedDoBanco
-        // 3. Tenta o PhotoURL do Firebase Auth
-        const fotoFinal = post.fotoPerfil || fotoUsuarioAtual || fotoBackup || null;
-
-        const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : nomeUsuarioAtual;
-        const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
-
-        return `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${fotoFinal ? `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
-                            <span style="color:white; font-weight:900; display: ${fotoFinal ? 'none' : 'block'};">${primeiroNome.charAt(0)}</span>
-                        </div>
-                        <div>
-                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
-                            <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
-                        </div>
-                    </div>
-                    <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; padding: 0 5px; line-height: 1;">&times;</button>
-                </div>
-                ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
-                ${midiaHTML}
-            </div>
-        `;
-    }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
-}
-
-
 function habilitarEdicaoCampo(idInput, btnElement) {
     const input = document.getElementById(idInput);
     if (!input) return;
