@@ -344,15 +344,14 @@ function atualizarFeedUI() {
             }
         }
 
-        // Define o nome de exibição corrigido
         const nomePost = (post.nomeAtleta && post.nomeAtleta !== "ATLETA") ? post.nomeAtleta : nomeUsuarioAtual;
         const primeiroNome = nomePost.trim().split(" ")[0].toUpperCase();
         
-        // CORREÇÃO CRUCIAL: Verifica fotoPerfil salva no post ou recorre à foto atual do Firestore
+        // CORREÇÃO: Usa a foto salva no post ou recorre à variável global do Firestore (fotoUsuarioAtual)
         const fotoPerfilPost = post.fotoPerfil || fotoUsuarioAtual || null;
 
         return `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 5px; position: relative;">
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
