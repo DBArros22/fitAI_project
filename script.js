@@ -2527,49 +2527,37 @@ async function carregarFeedDoBanco() {
     if (!user) return; 
 
     try {
-        // 1. Busca os dados reais do usuário logado na coleção 'usuarios' do Firestore
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
-        
         if (userDoc.exists) {
             const dados = userDoc.data();
             
-            // Pega o nome (tentando as variações mais comuns)
-            const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
-            if (nomeCompleto) {
-                nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
-            }
-
-            // Pega a foto de perfil do Firestore (adaptado para o campo que você utiliza no perfil)
-            fotoUsuarioAtual = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || user.photoURL || null;
+            // ATENÇÃO: SUBSTITUA 'fotoPerfil' ABAIXO PELA CHAVE QUE VOCÊ VIU NO CONSOLE (Passo 1)
+            fotoUsuarioAtual = dados.fotoPerfil || dados.foto || dados.avatar || user.photoURL || null;
+            
+            const nomeCompleto = dados.nome || user.displayName || "ATLETA";
+            nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
         }
 
-        // 2. Busca o feed isolado do usuário
-        const snapshot = await db.collection('feed')
-            .where('uid', '==', user.uid)
-            .orderBy('criadoEm', 'desc')
-            .get();
+        const snapshot = await db.collection('feed').where('uid', '==', user.uid).orderBy('criadoEm', 'desc').get();
         
         feedEvolucao = [];
-        
         snapshot.forEach(doc => {
             const postData = doc.data();
-            let dataFormatada = "Recentemente";
-            if (postData.criadoEm && postData.criadoEm.toDate) {
-                dataFormatada = postData.criadoEm.toDate().toLocaleString('pt-BR');
-            }
-
+            // AQUI ESTÁ O SEGREDO: Se o post não tem fotoPerfil, forçamos a foto atual do perfil
             feedEvolucao.push({
                 id: doc.id,
                 ...postData,
-                data: dataFormatada
+                fotoPerfil: postData.fotoPerfil || fotoUsuarioAtual, 
+                data: postData.criadoEm ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
 
         atualizarFeedUI();
     } catch (error) {
-        console.error("Erro ao carregar feed e dados do perfil:", error);
+        console.error("Erro crítico no carregamento:", error);
     }
 }
+
 // Buscar nome do atleta para incluir a dono do poster
 
 async function buscarNomeAtletaFirestore() {
