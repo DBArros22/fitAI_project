@@ -1309,6 +1309,14 @@ function abrirFicha(nome) {
     renderizarResumoFicha(nome);
 }
 
+function voltarParaFichas() {
+    // Garante que a lista de treinos seja renderizada com os dados atualizados antes de exibir
+    if (typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    }
+    showView('fichas'); // Altere para o nome correto da view de listagem de fichas se necessário
+}
+
 function mascaraTempo(input) {
     let v = input.value.replace(/\D/g, ''); 
     if (v.length > 6) v = v.slice(0, 6); 
