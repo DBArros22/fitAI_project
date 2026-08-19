@@ -2422,6 +2422,7 @@ function salvarEdicaoInline(id, tipo) {
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
+    
     container.innerHTML = `
         <div class="glass-panel" style="padding: 16px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -2434,11 +2435,10 @@ function renderizarBlog() {
                 </div>
             </div>
             
-            <!-- Composer Unificado (Texto + Preview da Mídia na mesma caixa) -->
+            <!-- Composer Unificado -->
             <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                 <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
                 
-                <!-- Container de Pré-visualização Integrada -->
                 <div id="preview-midia" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
                 
                 <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 5px;">
@@ -2458,7 +2458,27 @@ function renderizarBlog() {
             <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
         </div>
     `;
+
+    // Carrega o feed inicialmente
     atualizarFeedUI();
+
+    // --- ESCUTA REATIVA PARA O WEBAPP ---
+    // Se o usuário estiver com o blog aberto ou voltar para ele, atualiza automaticamente ao disparar os eventos
+    if (!window._blogListenersAtivados) {
+        window._blogListenersAtivados = true; // Evita duplicação de listeners globais
+        
+        window.addEventListener('fitaiPerfilAtualizado', () => {
+            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
+                atualizarFeedUI();
+            }
+        });
+
+        window.addEventListener('fitaiFotoAtualizada', () => {
+            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
+                atualizarFeedUI();
+            }
+        });
+    }
 }
 
 function previewMidia(event) {
