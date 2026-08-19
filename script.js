@@ -303,17 +303,20 @@ async function carregarDadosPerfil() {
     const preview = document.getElementById('perfil-foto-preview');
     const navIcon = document.getElementById('nav-perfil-icon');
 
+    // Defina aqui o HTML padrão do seu "boneco" (ex: FontAwesome, SVG ou imagem padrão)
+    // Substitua o exemplo abaixo pelo código exato do ícone que você já usa no seu HTML
+    const htmlBonecoPadrao = `<i class="fas fa-user"></i>`; 
+
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
         if (preview) preview.innerHTML = imgHtml;
         if (navIcon) navIcon.innerHTML = imgHtml;
     } else {
-        // SE NÃO TEM FOTO, LIMPA VISUALMENTE! 
-        // Isso impede que a foto antiga fique "pendurada" na tela
-        if (preview) preview.innerHTML = ''; 
-        if (navIcon) navIcon.innerHTML = '';
+        // Restaura o ícone padrão do boneco se não houver foto
+        if (preview) preview.innerHTML = htmlBonecoPadrao; 
+        if (navIcon) navIcon.innerHTML = htmlBonecoPadrao;
     }
-} // <--- CHAVE QUE FALTAVA FECHANDO A FUNÇÃO
+}
 
 window.carregarDadosPerfil = carregarDadosPerfil;
 
