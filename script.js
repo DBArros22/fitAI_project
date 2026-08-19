@@ -2673,11 +2673,15 @@ function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    // Pega a foto diretamente do localStorage (mesma fonte provável do topo da página)
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    const fotoTopo = user ? (localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto')) : localStorage.getItem('user_foto');
+    if (!user) return;
+
+    // Busca correta nas chaves específicas do usuário logado (mesmo padrão do Perfil)
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    const nomeSalvo = dadosLocais.nome || user.displayName || "ATLETA";
     
-    const nomeSalvo = localStorage.getItem('user_nome') || "ATLETA";
+    const fotoTopo = localStorage.getItem(`user_foto_${user.uid}`) || '';
+    
     const primeiroNome = nomeSalvo.trim().split(" ")[0].toUpperCase();
 
     container.innerHTML = feedEvolucao.map(post => {
@@ -2695,7 +2699,6 @@ function atualizarFeedUI() {
             }
         }
 
-        // Define a foto final priorizando a do topo ou a do post
         const fotoFinal = post.fotoPerfil || fotoTopo || null;
 
         return `
