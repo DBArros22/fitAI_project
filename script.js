@@ -259,7 +259,7 @@ async function carregarDadosPerfil() {
     let telFinal = "";
 
     try {
-        // 1. Tenta buscar os dados direto do Firestore (onde o cadastro salvou!)
+        // 1. Tenta buscar os dados direto do Firestore
         if (typeof db !== 'undefined' && db) {
             const docRef = await db.collection("usuarios").doc(user.uid).get();
             if (docRef.exists) {
@@ -272,14 +272,14 @@ async function carregarDadosPerfil() {
         console.error("Erro ao buscar dados do perfil no Firestore:", error);
     }
 
-    // 2. Se por acaso não achar no Firestore, tenta buscar do localStorage como fallback
+    // 2. Fallback para o localStorage se necessário
     if (!nomeFinal || !telFinal) {
         const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
         nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
         telFinal = telFinal || dadosLocais.tel || "";
     }
 
-    // Preenche os inputs de nome e telefone e os deixa bloqueados por padrão
+    // Preenche os inputs de nome e telefone
     const inputNome = document.getElementById('perfil-nome');
     if (inputNome) {
         inputNome.value = nomeFinal;
@@ -292,29 +292,28 @@ async function carregarDadosPerfil() {
         inputTel.disabled = true;
     }
 
-    // Carrega a foto de perfil se houver
-    const foto = localStorage.getItem(`user_foto_${user.uid}`);
-    
-    // Se existir uma foto genérica velha que não pertence a este usuário, a removemos
+    // Limpa chave genérica antiga do localStorage
     if (localStorage.getItem('user_foto')) {
         localStorage.removeItem('user_foto');
     }
 
+    // Carrega a foto de perfil específica do usuário atual
+    const foto = localStorage.getItem(`user_foto_${user.uid}`);
+
     const preview = document.getElementById('perfil-foto-preview');
     const navIcon = document.getElementById('nav-perfil-icon');
 
-    // Defina aqui o HTML padrão do seu "boneco" (ex: FontAwesome, SVG ou imagem padrão)
-    // Substitua o exemplo abaixo pelo código exato do ícone que você já usa no seu HTML
-    const htmlBonecoPadrao = `<i class="fas fa-user"></i>`; 
+    // SVG original do boneco para quando não houver foto
+    const svgBonecoPadrao = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
         if (preview) preview.innerHTML = imgHtml;
         if (navIcon) navIcon.innerHTML = imgHtml;
     } else {
-        // Restaura o ícone padrão do boneco se não houver foto
-        if (preview) preview.innerHTML = htmlBonecoPadrao; 
-        if (navIcon) navIcon.innerHTML = htmlBonecoPadrao;
+        // Se não tiver foto, restaura o SVG do boneco padrão
+        if (preview) preview.innerHTML = svgBonecoPadrao;
+        if (navIcon) navIcon.innerHTML = svgBonecoPadrao;
     }
 }
 
