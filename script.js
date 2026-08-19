@@ -259,7 +259,6 @@ async function carregarDadosPerfil() {
     let telFinal = "";
 
     try {
-        // 1. Tenta buscar os dados direto do Firestore
         if (typeof db !== 'undefined' && db) {
             const docRef = await db.collection("usuarios").doc(user.uid).get();
             if (docRef.exists) {
@@ -272,14 +271,12 @@ async function carregarDadosPerfil() {
         console.error("Erro ao buscar dados do perfil no Firestore:", error);
     }
 
-    // 2. Fallback para o localStorage se necessário
     if (!nomeFinal || !telFinal) {
         const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
         nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
         telFinal = telFinal || dadosLocais.tel || "";
     }
 
-    // Preenche os inputs de nome e telefone
     const inputNome = document.getElementById('perfil-nome');
     if (inputNome) {
         inputNome.value = nomeFinal;
@@ -303,17 +300,19 @@ async function carregarDadosPerfil() {
     const preview = document.getElementById('perfil-foto-preview');
     const navIcon = document.getElementById('nav-perfil-icon');
 
-    // SVG original do boneco para quando não houver foto
-    const svgBonecoPadrao = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    // SVG original do boneco ajustado para preencher perfeitamente os containers
+    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 
     if (foto) {
-        const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        if (preview) preview.innerHTML = imgHtml;
-        if (navIcon) navIcon.innerHTML = imgHtml;
+        const imgHtmlGrande = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        const imgHtmlPequeno = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+        
+        if (preview) preview.innerHTML = imgHtmlGrande;
+        if (navIcon) navIcon.innerHTML = imgHtmlPequeno;
     } else {
-        // Se não tiver foto, restaura o SVG do boneco padrão
-        if (preview) preview.innerHTML = svgBonecoPadrao;
-        if (navIcon) navIcon.innerHTML = svgBonecoPadrao;
+        if (preview) preview.innerHTML = svgBonecoGrande;
+        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
     }
 }
 
