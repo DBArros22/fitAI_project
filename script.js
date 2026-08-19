@@ -231,6 +231,14 @@ async function handleLogin(e) {
     }
 }
 
+// Força limpeza localStorage
+
+function limparCacheLocalSessao() {
+    localStorage.removeItem('bancoDeDados');
+    localStorage.removeItem('perfil_usuario'); // Ajuste para a chave exata que você usa para a foto
+    // Remova também outras chaves locais que pertencem ao usuário, se houver
+}
+
 async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
