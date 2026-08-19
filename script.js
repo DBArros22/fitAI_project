@@ -379,11 +379,16 @@ async function salvarDadosPerfil(event) {
     const mudouTel = novoTel !== telAntigo;
     const mudouNome = nome !== (dadosAtuais.nome || "");
 
-    // REGRA 1: Se mudou APENAS nome ou telefone (ou ambos), salva direto SEM modal de e-mail!
+    // REGRA 1: Fazer com que mude telefone e nome sem precisar de código de 
     if (!mudouEmail) {
         dadosAtuais.nome = nome;
         dadosAtuais.tel = novoTel;
         localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+
+        // Atualiza também se houver uma variável global de usuário em memória
+        if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
+            usuarioAtual.nome = nome;
+        }
 
         // Sincroniza com o Firestore se disponível
         if (typeof db !== 'undefined' && db) {
@@ -405,7 +410,15 @@ async function salvarDadosPerfil(event) {
 
         exibirFeedbackSucessoBotao(btn);
         mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
-        if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        
+        // Força a atualização do feed e dispara um evento customizado para qualquer outra tela atualizar
+        if (typeof atualizarFeedUI === "function") {
+            atualizarFeedUI();
+        }
+        
+        // Dispara um evento global informando que o perfil mudou
+        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel } }));
+
         return;
     }
 
