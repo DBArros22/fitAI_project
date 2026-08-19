@@ -2416,7 +2416,38 @@ function salvarEdicaoInline(id, tipo) {
 
 // FUNÇÃO AUXILIAR: Executa a máscara de tempo inteligente HH:MM:SS diretamente no input de edição
  
+// Ouvinte reativo Listener global para SPA WebApp
+
+window.addEventListener('fitaiPerfilAtualizado', (e) => {
+    const novoNome = e.detail.nome;
+    // Atualiza todos os elementos do DOM na página que exibem o nome do usuário logado
+    document.querySelectorAll('.usuario-nome-display, [data-user-name]').forEach(el => {
+        el.innerText = novoNome;
+    });
+
+    // ADICIONE ESTA LINHA: Garante que o feed também atualize os posts
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+});
+
+window.addEventListener('fitaiFotoAtualizada', (e) => {
+    const novaFoto = e.detail.foto;
+    const imgHtmlPequeno = `<img src="${novaFoto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    
+    // Atualiza o ícone do topo / navbar instantaneamente em qualquer tela
+    const navIcon = document.getElementById('nav-perfil-icon');
+    if (navIcon) navIcon.innerHTML = imgHtmlPequeno;
+
+    // Atualiza qualquer outra miniatura de avatar espalhada pelo app
+    document.querySelectorAll('.avatar-usuario-global').forEach(el => {
+        el.innerHTML = imgHtmlPequeno;
+    });
+
+    // ADICIONE ESTA LINHA: Garante que o feed também atualize as fotos dos posts
+    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+});
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 
 
 function renderizarBlog() {
