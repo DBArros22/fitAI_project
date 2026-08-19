@@ -188,11 +188,18 @@ window.alternarAbaAuth = window.toggleAuthTab;
 async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
 
+    // 1. LIMPEZA IMEDIATA: Antes de tentar logar, garantimos que não haja cache residual
+    localStorage.removeItem('bancoDeDados');
+    localStorage.removeItem('perfil_usuario'); 
+    
+    // Forçamos a limpeza visual da foto no DOM aqui também
+    const fotoPerfil = document.getElementById('foto-perfil-feed');
+    if (fotoPerfil) fotoPerfil.src = ''; 
+
     const emailInput = document.getElementById('login-email');
     const passInput = document.getElementById('login-pass');
 
-    if (!emailInput || !passInput) return;
-
+    // ... (o restante do seu código segue igual) ...
     const email = emailInput.value.trim();
     const pass = passInput.value;
 
@@ -203,7 +210,6 @@ async function handleLogin(e) {
     try {
         if (!auth) throw new Error("Firebase não está carregado.");
         
-        // Assegura persistência local correta
         await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
         await auth.signInWithEmailAndPassword(email, pass);
         
