@@ -293,15 +293,27 @@ async function carregarDadosPerfil() {
     }
 
     // Carrega a foto de perfil se houver
-    const foto = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
+    const foto = localStorage.getItem(`user_foto_${user.uid}`);
+    
+    // Se existir uma foto genérica velha que não pertence a este usuário, a removemos
+    if (localStorage.getItem('user_foto')) {
+        localStorage.removeItem('user_foto');
+    }
+
+    const preview = document.getElementById('perfil-foto-preview');
+    const navIcon = document.getElementById('nav-perfil-icon');
+
     if (foto) {
         const imgHtml = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        const preview = document.getElementById('perfil-foto-preview');
-        const navIcon = document.getElementById('nav-perfil-icon');
         if (preview) preview.innerHTML = imgHtml;
         if (navIcon) navIcon.innerHTML = imgHtml;
+    } else {
+        // SE NÃO TEM FOTO, LIMPA VISUALMENTE! 
+        // Isso impede que a foto antiga fique "pendurada" na tela
+        if (preview) preview.innerHTML = ''; 
+        if (navIcon) navIcon.innerHTML = '';
     }
-}
+} // <--- CHAVE QUE FALTAVA FECHANDO A FUNÇÃO
 
 window.carregarDadosPerfil = carregarDadosPerfil;
 
