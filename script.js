@@ -1682,11 +1682,15 @@ async function adicionarExercicio() {
     }
     bancoDeDados.fichas[ativa].unshift(novo);
     
-    // AGUARDA O SALVAMENTO ANTES DE CONTINUAR
+    // 1. Aguarda o salvamento no Firebase
     await salvarBanco();
     
-    console.log("Set estruturado e salvo com sucesso no banco:", novo);
-
+    // 2. ATUALIZAÇÃO DINÂMICA: Renderiza a lista de fichas (atualiza o contador imediatamente)
+    if (typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    }
+    
+    // 3. Atualiza os detalhes da tela de consulta e logs
     if (typeof renderizarLogTreino === 'function') {
         renderizarLogTreino();
     }
@@ -1695,10 +1699,13 @@ async function adicionarExercicio() {
         renderizarFichasConsulta();
     }
 
+    // Limpa campos
     if (campoSeries) campoSeries.value = "";
     if (campoReps) campoReps.value = "";
     if (campoCarga) campoCarga.value = "";
     if (campoTempo) campoTempo.value = "";
+    
+    mostrarAviso("Exercício adicionado com sucesso!");
 }
 
 function formatarTempoParaExibicao(valor) {
