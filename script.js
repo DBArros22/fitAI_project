@@ -339,6 +339,47 @@ async function carregarDadosPerfil() {
     }
 }
 
+// Função peril // código OTP simulado 
+
+async function persistirDadosPerfilFinal(nome, telefone, btn) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    dadosAtuais.nome = nome;
+    dadosAtuais.tel = telefone;
+    
+    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+
+    if (typeof db !== 'undefined' && db) {
+        try {
+            await db.collection('usuarios').doc(user.uid).set({
+                nome: nome,
+                telefone: telefone
+            }, { merge: true });
+        } catch (err) {
+            console.error("Erro ao atualizar dados no Firestore:", err);
+        }
+    }
+
+    // Bloqueia os inputs novamente e remove o alerta visual
+    ['perfil-nome', 'perfil-tel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = true;
+            el.classList.remove('input-pendente');
+        }
+    });
+
+    dadosOriginaisPerfil = { nome: nome, tel: telefone };
+
+    if (btn) exibirFeedbackSucessoBotao(btn);
+    mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+    
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
+}
 
 window.carregarDadosPerfil = carregarDadosPerfil;
 
