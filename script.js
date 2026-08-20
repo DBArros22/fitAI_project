@@ -339,6 +339,23 @@ async function carregarDadosPerfil() {
     }
 }
 
+// adição perfil listener
+
+document.addEventListener('DOMContentLoaded', () => {
+    ['perfil-nome', 'perfil-tel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => {
+                if (el.value.trim() !== '') {
+                    el.classList.add('input-pendente');
+                } else {
+                    el.classList.remove('input-pendente');
+                }
+            });
+        }
+    });
+});
+
 // Função peril // código OTP simulado 
 
 async function persistirDadosPerfilFinal(nome, telefone, btn) {
