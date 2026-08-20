@@ -605,6 +605,8 @@ function fecharModalEmail() {
 
 // Alterar foto do perfil
 
+let novaFotoBase64Temp = null;
+
 function atualizarFotoPerfil(input) {
     const user = auth.currentUser;
     if (!user) return;
@@ -612,24 +614,23 @@ function atualizarFotoPerfil(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const fotoUrl = e.target.result;
+            novaFotoBase64Temp = e.target.result; // Apenas guarda temporariamente
             
-            // Salva na chave específica do usuário logado
-            localStorage.setItem(`user_foto_${user.uid}`, fotoUrl);
+            // Mostra a pré-visualização na tela para o usuário ver como ficou
+            const imgHtml = `<img src="${novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
             
-            // Também salva em uma chave genérica para compatibilidade imediata
-            localStorage.setItem('user_foto', fotoUrl);
-
-            const imgHtml = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover;">`;
+            if (document.getElementById('perfil-foto-preview')) {
+                document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            }
             
-            if (document.getElementById('perfil-foto-preview')) document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
-            if (document.getElementById('nav-perfil-icon')) document.getElementById('nav-perfil-icon').innerHTML = imgHtml;
-            
-            if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+            // Opcional: Adiciona a classe de pendência para o usuário saber que há alteração não salva
+            const inputNome = document.getElementById('perfil-nome');
+            if (inputNome) inputNome.classList.add('input-pendente');
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
+window.atualizarFotoPerfil = atualizarFotoPerfil;
 
 async function processarTrocaEmail() {
     const fluxo = window.fluxoTrocaPendente;
