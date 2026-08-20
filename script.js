@@ -439,8 +439,6 @@ function habilitarEdicaoCampo(idInput, btnElement) {
     }
 }
 
-let novaFotoBase64Temp = null;
-
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
