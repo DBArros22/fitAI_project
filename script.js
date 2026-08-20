@@ -2959,14 +2959,14 @@ function atualizarFeedUI() {
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     if (!user) return;
 
-    // Busca os dados atualizados diretamente do localStorage do usuário logado
+    // 1. Captura o nome atualizado do localStorage (igualzinho você já faz)
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const nomeSalvo = dadosLocais.nome || user.displayName || "ATLETA";
-    const fotoTopo = localStorage.getItem(`user_foto_${user.uid}`) || '';
-    
     const primeiroNome = nomeSalvo.trim().split(" ")[0].toUpperCase();
 
-    // Se a lista de posts estiver vazia ou não existir, inicializa um array vazio para evitar erros
+    // 2. Captura a FOTO atualizada do localStorage do usuário (Chave exata do perfil)
+    const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || null;
+
     const listaPosts = typeof feedEvolucao !== 'undefined' ? feedEvolucao : [];
 
     container.innerHTML = listaPosts.map(post => {
@@ -2984,8 +2984,8 @@ function atualizarFeedUI() {
             }
         }
 
-        // Garante que o post utilize prioritariamente a foto atualizada do usuário logado (caso pertença a ele)
-        const fotoFinal = fotoTopo || post.fotoPerfil || null;
+        // REGRA DEFINITIVA: Força a foto atual do perfil a dominar todos os posts (igual ao nome)
+        const fotoFinal = fotoPerfilAtual;
 
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
@@ -3007,7 +3007,6 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
-
 window.atualizarFeedUI = atualizarFeedUI;
 
 function excluirPost(id) {
