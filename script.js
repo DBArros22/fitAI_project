@@ -2419,32 +2419,46 @@ function salvarEdicaoInline(id, tipo) {
 // Ouvinte reativo Listener global para SPA WebApp
 
 window.addEventListener('fitaiPerfilAtualizado', (e) => {
-    const novoNome = e.detail.nome;
-    // Atualiza todos os elementos do DOM na página que exibem o nome do usuário logado
+    const novoNome = e.detail ? e.detail.nome : null;
+    if (novoNome) {
+        nomeUsuarioAtual = novoNome.trim().split(" ")[0].toUpperCase();
+        localStorage.setItem('user_nome', nomeUsuarioAtual);
+    }
     document.querySelectorAll('.usuario-nome-display, [data-user-name]').forEach(el => {
-        el.innerText = novoNome;
+        if (novoNome) el.innerText = novoNome;
     });
 
-    // ADICIONE ESTA LINHA: Garante que o feed também atualize os posts
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+    // RECARREGA O FEED DO BANCO/CACHE PARA ATUALIZAR TODOS OS POSTS INSTANTANEAMENTE
+    if (typeof carregarFeedDoBanco === "function") {
+        carregarFeedDoBanco();
+    } else if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
 });
 
 window.addEventListener('fitaiFotoAtualizada', (e) => {
-    const novaFoto = e.detail.foto;
-    const imgHtmlPequeno = `<img src="${novaFoto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    const novaFoto = e.detail ? e.detail.foto : localStorage.getItem(`user_foto_${auth.currentUser?.uid}`);
+    if (novaFoto) {
+        fotoUsuarioAtual = novaFoto;
+    }
     
-    // Atualiza o ícone do topo / navbar instantaneamente em qualquer tela
+    const imgHtmlPequeno = novaFoto ? `<img src="${novaFoto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">` : '';
+    
     const navIcon = document.getElementById('nav-perfil-icon');
-    if (navIcon) navIcon.innerHTML = imgHtmlPequeno;
+    if (navIcon && imgHtmlPequeno) navIcon.innerHTML = imgHtmlPequeno;
 
-    // Atualiza qualquer outra miniatura de avatar espalhada pelo app
     document.querySelectorAll('.avatar-usuario-global').forEach(el => {
-        el.innerHTML = imgHtmlPequeno;
+        if (imgHtmlPequeno) el.innerHTML = imgHtmlPequeno;
     });
 
-    // ADICIONE ESTA LINHA: Garante que o feed também atualize as fotos dos posts
-    if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+    // RECARREGA O FEED PARA ATUALIZAR AS FOTOS DOS POSTS INSTANTANEAMENTE
+    if (typeof carregarFeedDoBanco === "function") {
+        carregarFeedDoBanco();
+    } else if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
 });
+
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
