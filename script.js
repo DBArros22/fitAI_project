@@ -448,22 +448,22 @@ async function salvarDadosPerfil(event) {
 
     const inputNome = document.getElementById('perfil-nome');
     const inputTel = document.getElementById('perfil-tel');
-    const inputEmail = document.getElementById('perfil-email');
 
     const nome = inputNome ? inputNome.value.trim() : "";
     const novoTel = inputTel ? inputTel.value.trim() : "";
     
-    // O e-mail é fixo e imutável (pegamos direto do auth para garantir segurança)
     const emailAtual = user.email;
     
-    // Recupera os dados salvos anteriormente para comparar
+    // Recupera os dados salvos anteriormente e limpa espaços extras
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const telAntigo = dadosAtuais.tel || "";
+    const telAntigo = (dadosAtuais.tel || "").trim();
+    const nomeAntigo = (dadosAtuais.nome || "").trim();
     
     const btn = event.currentTarget;
 
+    // Comparações limpas e precisas
     const mudouTel = novoTel !== telAntigo;
-    const mudouNome = nome !== (dadosAtuais.nome || "");
+    const mudouNome = nome !== nomeAntigo;
 
     // Se nada mudou, avisa e para
     if (!mudouNome && !mudouTel) {
@@ -471,66 +471,75 @@ async function salvarDadosPerfil(event) {
         return;
     }
 
-    // REGRA 1: Se o TELEFONE mudou, exigimos obrigatoriamente o código de segurança antes de salvar
-    if (mudouTel) {
-        const codigoTelefone = Math.floor(100000 + Math.random() * 900000).toString();
+    // REGRA DE OURO: Se o TELEFONE NÃO mudou (ou seja, mudou SÓ o nome), pula direto para o salvamento!
+    if (!mudouTel) {
+        dadosAtuais.nome = nome;
+        dadosAtuais.tel = telAntigo; // Mantém o telefone antigo
+        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+        localStorage.setItem('user_nome', nome);
 
-        window.fluxoTrocaPendente = {
-            user: user,
-            nome: nome,
-            telAntigo: telAntigo,
-            novoTel: novoTel,
-            emailAntigo: emailAtual,
-            novoEmail: emailAtual, // E-mail mantido igual pois não pode ser alterado
-            codigoAntigoGerado: codigoTelefone, // Usado para validar o telefone atual
-            codigoNovoGerado: codigoTelefone,   // Usado para validar o novo telefone
-            btnAlvo: btn,
-            apenasTelefone: true // Flag indicando que é apenas troca de telefone
-        };
+        if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
+            usuarioAtual.nome = nome;
+        }
 
-        const lblAntigo = document.getElementById('label-email-antigo');
-        const lblNovo = document.getElementById('label-email-novo');
+        if (typeof db !== 'undefined' && db) {
+            try {
+                await db.collection('usuarios').doc(user.uid).set({
+                    nome: nome,
+                    telefone: telAntigo
+                }, { merge: true });
+            } catch (err) {
+                console.error("Erro ao atualizar dados no Firestore:", err);
+            }
+        }
+
+        // Bloqueia os inputs e remove o alerta visual de pendência
+        ['perfil-nome', 'perfil-tel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.classList.remove('input-pendente');
+            }
+        });
+
+        exibirFeedbackSucessoBotao(btn);
+        mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
         
-        if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (Telefone Atual):`;
-        if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo Telefone):`;
-
-        mostrarAvisoNotificacao(`Código de segurança gerado (Simulação): ${codigoTelefone}`, "sucesso");
-        abrirModalEmail();
-        return;
-    }
-
-    // REGRA 2: Se mudou APENAS o nome (e o telefone continua igual), salva direto sem código
-    dadosAtuais.nome = nome;
-    dadosAtuais.tel = telAntigo;
-    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
-    localStorage.setItem('user_nome', nome);
-
-    if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
-        usuarioAtual.nome = nome;
-    }
-
-    if (typeof db !== 'undefined' && db) {
-        try {
-            await db.collection('usuarios').doc(user.uid).set({
-                nome: nome,
-                telefone: telAntigo
-            }, { merge: true });
-        } catch (err) {
-            console.error("Erro ao atualizar dados no Firestore:", err);
+        if (typeof atualizarFeedUI === "function") {
+            atualizarFeedUI();
         }
+        
+        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
+        return; // ENCERRA AQUI. Não abre modal de código de jeito nenhum!
     }
 
-    // Bloqueia os inputs e remove o alerta de pendência visual
-    ['perfil-nome', 'perfil-tel'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.disabled = true;
-            el.classList.remove('input-pendente');
-        }
-    });
+    // REGRA DE SEGURANÇA: Se chegou aqui, é porque o TELEFONE mudou de fato. Exige o código.
+    const codigoTelefone = Math.floor(100000 + Math.random() * 900000).toString();
 
-    exibirFeedbackSucessoBotao(btn);
-    mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+    window.fluxoTrocaPendente = {
+        user: user,
+        nome: nome,
+        telAntigo: telAntigo,
+        novoTel: novoTel,
+        emailAntigo: emailAtual,
+        novoEmail: emailAtual,
+        codigoAntigoGerado: codigoTelefone,
+        codigoNovoGerado: codigoTelefone,
+        btnAlvo: btn,
+        apenasTelefone: true
+    };
+
+    const lblAntigo = document.getElementById('label-email-antigo');
+    const lblNovo = document.getElementById('label-email-novo');
+    
+    if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (Telefone Atual):`;
+    if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo Telefone):`;
+
+    mostrarAvisoNotificacao(`Código de segurança gerado (Simulação): ${codigoTelefone}`, "sucesso");
+    abrirModalEmail();
+}
+
+window.salvarDadosPerfil = salvarDadosPerfil; com sucesso!", "sucesso");
     
     if (typeof atualizarFeedUI === "function") {
         atualizarFeedUI();
