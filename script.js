@@ -649,6 +649,7 @@ function fecharModalEmail() {
     window.fluxoTrocaEmailPendente = null;
 }
 
+
 // Alterar foto do perfil
 
 let novaFotoBase64Temp = null;
@@ -669,14 +670,104 @@ function atualizarFotoPerfil(input) {
                 document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
             }
             
-            // Opcional: Adiciona a classe de pendência para o usuário saber que há alteração não salva
-            const inputNome = document.getElementById('perfil-nome');
-            if (inputNome) inputNome.classList.add('input-pendente');
+            // Adiciona a classe de pendência para o usuário saber que há alteração não salva
+            ['perfil-nome', 'perfil-tel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('input-pendente');
+            });
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 window.atualizarFotoPerfil = atualizarFotoPerfil;
+
+
+// Função auxiliar para aplicar a foto instantaneamente na interface (topo e feed)
+function aplicarFotoNaInterface(uid, fotoUrl) {
+    if (!fotoUrl) return;
+    
+    // Atualiza o ícone do topo superior direito
+    const navIcon = document.getElementById('nav-perfil-icon');
+    if (navIcon) {
+        navIcon.innerHTML = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    }
+
+    // Atualiza os avatares nos posts do feed instantaneamente
+    document.querySelectorAll(`img[data-user-avatar="${uid}"], .avatar-usuario-atual`).forEach(imgEl => {
+        imgEl.src = fotoUrl;
+    });
+}
+
+async function processarTrocaEmail() {
+    const fluxo = window.fluxoTrocaPendente;
+    if (!fluxo) return;
+
+    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
+    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
+
+    if (codAntigoDigitado !== fluxo.codigoAntigoGerado) {
+        mostrarAvisoNotificacao("Código de confirmação incorreto!", "erro");
+        return;
+    }
+
+    if (codNovoDigitado !== fluxo.codigoNovoGerado) {
+        mostrarAvisoNotificacao("Código de confirmação incorreto!", "erro");
+        return;
+    }
+    
+    try {
+        // Salva os dados atualizados localmente
+        const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${fluxo.user.uid}`)) || {};
+        dadosAtuais.nome = fluxo.nome;
+        dadosAtuais.tel = fluxo.novoTel;
+        
+        localStorage.setItem(`fitai_user_data_${fluxo.user.uid}`, JSON.stringify(dadosAtuais));
+        localStorage.setItem('user_nome', fluxo.nome);
+
+        // Se houver foto temporária pendente, salva de vez aqui também
+        if (novaFotoBase64Temp !== null) {
+            localStorage.setItem(`user_foto_${fluxo.user.uid}`, novaFotoBase64Temp);
+            localStorage.setItem('user_foto', novaFotoBase64Temp);
+            aplicarFotoNaInterface(fluxo.user.uid, novaFotoBase64Temp);
+            novaFotoBase64Temp = null;
+        }
+
+        // Sincroniza com o Firestore
+        if (typeof db !== 'undefined' && db) {
+            await db.collection('usuarios').doc(fluxo.user.uid).set({
+                nome: fluxo.nome,
+                telefone: fluxo.novoTel
+            }, { merge: true });
+        }
+
+        exibirFeedbackSucessoBotao(fluxo.btnAlvo);
+        fecharModalEmail();
+        mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+        
+        // Bloqueia os inputs novamente e remove a classe de pendência
+        ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.classList.remove('input-pendente');
+            }
+        });
+
+        if (typeof atualizarFeedUI === "function") atualizarFeedUI();
+        window.fluxoTrocaPendente = null;
+
+        // Redireciona para o feed após salvar
+        setTimeout(() => {
+            if (typeof showView === "function") showView('lobby');
+        }, 400);
+
+    } catch (error) {
+        console.error("Erro ao atualizar dados críticos:", error);
+        mostrarAvisoNotificacao("Erro ao atualizar os dados. Tente novamente.", "erro");
+    }
+}
+
+window.processarTrocaEmail = processarTrocaEmail;
 
 async function processarTrocaEmail() {
     const fluxo = window.fluxoTrocaPendente;
