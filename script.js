@@ -695,6 +695,35 @@ async function processarTrocaEmail() {
 
 window.processarTrocaEmail = processarTrocaEmail;
 
+// function para indicar a falta de save nas inputs de trocar nome e telefone
+
+function iniciarMonitoramentoPendenciaPerfil() {
+    const inputNome = document.getElementById('perfil-nome');
+    const inputTel = document.getElementById('perfil-tel');
+
+    [inputNome, inputTel].forEach(el => {
+        if (el && !el._monitorPendenciaAtivo) {
+            el._monitorPendenciaAtivo = true; // Evita duplicar ouvintes
+            
+            el.addEventListener('input', () => {
+                const user = auth.currentUser;
+                if (!user) return;
+                
+                // Pega os dados originais salvos
+                const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+                const valorOriginal = el.id === 'perfil-nome' ? (dadosAtuais.nome || "") : (dadosAtuais.tel || "");
+                const valorAtual = el.value.trim();
+
+                // Se o que foi digitado for diferente do original, adiciona o alerta âmbar
+                if (valorAtual !== valorOriginal) {
+                    el.classList.add('input-pendente');
+                } else {
+                    el.classList.remove('input-pendente');
+                }
+            });
+        }
+    });
+}    
 
 function exibirFeedbackSucessoBotao(btn) {
     if (!btn) return;

@@ -86,7 +86,6 @@ input:disabled {
 }
 
 
-
 /* Garante que nada do App apareça quando o login estiver ativo */
 #view-login:not(.hidden) ~ #app-shell,
 #view-login:not(.hidden) ~ .navbar,
