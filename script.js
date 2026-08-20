@@ -429,10 +429,15 @@ async function salvarDadosPerfil(event) {
         return;
     }
 
-    const nome = document.getElementById('perfil-nome').value.trim();
-    const novoTel = document.getElementById('perfil-tel').value.trim();
-    const novoEmail = document.getElementById('perfil-email').value.trim();
-    const emailAntigo = user.email;
+    const inputNome = document.getElementById('perfil-nome');
+    const inputTel = document.getElementById('perfil-tel');
+    const inputEmail = document.getElementById('perfil-email');
+
+    const nome = inputNome ? inputNome.value.trim() : "";
+    const novoTel = inputTel ? inputTel.value.trim() : "";
+    
+    // O e-mail é fixo e imutável (pegamos direto do auth para garantir segurança)
+    const emailAtual = user.email;
     
     // Recupera os dados salvos anteriormente para comparar
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
@@ -440,77 +445,81 @@ async function salvarDadosPerfil(event) {
     
     const btn = event.currentTarget;
 
-    const mudouEmail = novoEmail !== emailAntigo;
     const mudouTel = novoTel !== telAntigo;
     const mudouNome = nome !== (dadosAtuais.nome || "");
 
-    // REGRA 1: Fazer com que mude telefone e nome sem precisar de código de 
-    if (!mudouEmail) {
-        dadosAtuais.nome = nome;
-        dadosAtuais.tel = novoTel;
-        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
-
-        // Atualiza também se houver uma variável global de usuário em memória
-        if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
-            usuarioAtual.nome = nome;
-        }
-
-        // Sincroniza com o Firestore se disponível
-        if (typeof db !== 'undefined' && db) {
-            try {
-                await db.collection('usuarios').doc(user.uid).set({
-                    nome: nome,
-                    telefone: novoTel
-                }, { merge: true });
-            } catch (err) {
-                console.error("Erro ao atualizar dados no Firestore:", err);
-            }
-        }
-
-        // Bloqueia os inputs novamente após salvar
-        ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.disabled = true;
-        });
-
-        exibirFeedbackSucessoBotao(btn);
-        mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
-        
-        // Força a atualização do feed e dispara um evento customizado para qualquer outra tela atualizar
-        if (typeof atualizarFeedUI === "function") {
-            atualizarFeedUI();
-        }
-        
-        // Dispara um evento global informando que o perfil mudou
-        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel } }));
-
+    // Se nada mudou, avisa e para
+    if (!mudouNome && !mudouTel) {
+        mostrarAvisoNotificacao("Nenhuma alteração foi realizada.");
         return;
     }
 
-    // REGRA 2: Se o E-MAIL mudou, aí sim exigimos o fluxo de segurança por código
-    const codAntigo = Math.floor(100000 + Math.random() * 900000).toString();
-    const codNovo = Math.floor(100000 + Math.random() * 900000).toString();
+    // REGRA 1: Se o TELEFONE mudou, exigimos obrigatoriamente o código de segurança antes de salvar
+    if (mudouTel) {
+        const codigoTelefone = Math.floor(100000 + Math.random() * 900000).toString();
 
-    window.fluxoTrocaPendente = {
-        user: user,
-        nome: nome,
-        telAntigo: telAntigo,
-        novoTel: novoTel,
-        emailAntigo: emailAntigo,
-        novoEmail: novoEmail,
-        codigoAntigoGerado: codAntigo,
-        codigoNovoGerado: codNovo,
-        btnAlvo: btn
-    };
+        window.fluxoTrocaPendente = {
+            user: user,
+            nome: nome,
+            telAntigo: telAntigo,
+            novoTel: novoTel,
+            emailAntigo: emailAtual,
+            novoEmail: emailAtual, // E-mail mantido igual pois não pode ser alterado
+            codigoAntigoGerado: codigoTelefone, // Usado para validar o telefone atual
+            codigoNovoGerado: codigoTelefone,   // Usado para validar o novo telefone
+            btnAlvo: btn,
+            apenasTelefone: true // Flag indicando que é apenas troca de telefone
+        };
 
-    const lblAntigo = document.getElementById('label-email-antigo');
-    const lblNovo = document.getElementById('label-email-novo');
+        const lblAntigo = document.getElementById('label-email-antigo');
+        const lblNovo = document.getElementById('label-email-novo');
+        
+        if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (Telefone Atual):`;
+        if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo Telefone):`;
+
+        mostrarAvisoNotificacao(`Código de segurança gerado (Simulação): ${codigoTelefone}`, "sucesso");
+        abrirModalEmail();
+        return;
+    }
+
+    // REGRA 2: Se mudou APENAS o nome (e o telefone continua igual), salva direto sem código
+    dadosAtuais.nome = nome;
+    dadosAtuais.tel = telAntigo;
+    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+    localStorage.setItem('user_nome', nome);
+
+    if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
+        usuarioAtual.nome = nome;
+    }
+
+    if (typeof db !== 'undefined' && db) {
+        try {
+            await db.collection('usuarios').doc(user.uid).set({
+                nome: nome,
+                telefone: telAntigo
+            }, { merge: true });
+        } catch (err) {
+            console.error("Erro ao atualizar dados no Firestore:", err);
+        }
+    }
+
+    // Bloqueia os inputs e remove o alerta de pendência visual
+    ['perfil-nome', 'perfil-tel'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.disabled = true;
+            el.classList.remove('input-pendente');
+        }
+    });
+
+    exibirFeedbackSucessoBotao(btn);
+    mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
     
-    if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (E-mail Antigo):`;
-    if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo E-mail):`;
-
-    mostrarAvisoNotificacao("Códigos de segurança enviados para os e-mails!", "sucesso");
-    abrirModalEmail();
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
+    
+    window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
 }
 
 window.salvarDadosPerfil = salvarDadosPerfil;
