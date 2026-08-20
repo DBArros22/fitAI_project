@@ -539,15 +539,6 @@ async function salvarDadosPerfil(event) {
     abrirModalEmail();
 }
 
-window.salvarDadosPerfil = salvarDadosPerfil; com sucesso!", "sucesso");
-    
-    if (typeof atualizarFeedUI === "function") {
-        atualizarFeedUI();
-    }
-    
-    window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
-}
-
 window.salvarDadosPerfil = salvarDadosPerfil;
 
 window.habilitarEdicaoCampo = habilitarEdicaoCampo;
