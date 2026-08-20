@@ -439,6 +439,8 @@ function habilitarEdicaoCampo(idInput, btnElement) {
     }
 }
 
+let novaFotoBase64Temp = null;
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -464,14 +466,21 @@ async function salvarDadosPerfil(event) {
     // Comparações limpas e precisas
     const mudouTel = novoTel !== telAntigo;
     const mudouNome = nome !== nomeAntigo;
+    const mudouFoto = novaFotoBase64Temp !== null; // Verifica se uma nova foto foi selecionada
 
-    // Se nada mudou, avisa e para
-    if (!mudouNome && !mudouTel) {
+    // Se nada mudou (nem nome, nem telefone, nem foto), avisa e para
+    if (!mudouNome && !mudouTel && !mudouFoto) {
         mostrarAvisoNotificacao("Nenhuma alteração foi realizada.");
         return;
     }
 
-    // REGRA DE OURO: Se o TELEFONE NÃO mudou (ou seja, mudou SÓ o nome), pula direto para o salvamento!
+    // Se houver uma foto nova pendente, efetiva o salvamento dela no localStorage agora
+    if (mudouFoto) {
+        localStorage.setItem(`user_foto_${user.uid}`, novaFotoBase64Temp);
+        novaFotoBase64Temp = null; // Reseta a variável temporária após salvar
+    }
+
+    // REGRA DE OURO: Se o TELEFONE NÃO mudou (ou seja, mudou SÓ o nome e/ou a foto), pula direto para o salvamento!
     if (!mudouTel) {
         dadosAtuais.nome = nome;
         dadosAtuais.tel = telAntigo; // Mantém o telefone antigo
