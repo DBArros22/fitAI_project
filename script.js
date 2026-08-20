@@ -443,6 +443,10 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
 
+if (typeof window.novaFotoBase64Temp === 'undefined') {
+    window.novaFotoBase64Temp = null;
+}
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -481,7 +485,6 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 1. PROCESSAMENTO IMEDIATO DA FOTO (SE HOUVER)
     // ==========================================
-    
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
         
