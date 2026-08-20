@@ -481,6 +481,7 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 1. PROCESSAMENTO IMEDIATO DA FOTO (SE HOUVER)
     // ==========================================
+    
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
         
