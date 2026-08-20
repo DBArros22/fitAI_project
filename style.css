@@ -75,6 +75,17 @@ body {
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
 }
 
+.input-pendente {
+    border: 1px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.05) !important;
+}
+
+/* Garante que o input, mesmo desabilitado, receba cliques */
+input:disabled {
+    cursor: default;
+}
+
+
 
 /* Garante que nada do App apareça quando o login estiver ativo */
 #view-login:not(.hidden) ~ #app-shell,
