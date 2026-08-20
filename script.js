@@ -652,7 +652,9 @@ function fecharModalEmail() {
 
 // Alterar foto do perfil
 
-let novaFotoBase64Temp = null;
+if (typeof window.novaFotoBase64Temp === 'undefined') {
+    window.novaFotoBase64Temp = null;
+}
 
 function atualizarFotoPerfil(input) {
     const user = auth.currentUser;
@@ -661,10 +663,11 @@ function atualizarFotoPerfil(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            novaFotoBase64Temp = e.target.result; // Apenas guarda temporariamente
+            // Usa explicitamente a propriedade global do window
+            window.novaFotoBase64Temp = e.target.result; 
             
             // Mostra a pré-visualização na tela para o usuário ver como ficou
-            const imgHtml = `<img src="${novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
+            const imgHtml = `<img src="${window.novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
             
             if (document.getElementById('perfil-foto-preview')) {
                 document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
@@ -679,8 +682,8 @@ function atualizarFotoPerfil(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
-window.atualizarFotoPerfil = atualizarFotoPerfil;
 
+window.atualizarFotoPerfil = atualizarFotoPerfil;
 
 // Função auxiliar para aplicar a foto instantaneamente na interface (topo e feed)
 function aplicarFotoNaInterface(uid, fotoUrl) {
