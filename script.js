@@ -3007,6 +3007,7 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
+
 window.atualizarFeedUI = atualizarFeedUI;
 
 function excluirPost(id) {
