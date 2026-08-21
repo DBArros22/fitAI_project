@@ -708,12 +708,23 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
     const fluxo = window.fluxoTrocaPendente;
     if (!fluxo) return;
 
-    // Se houver alteração de telefone, exige o código correspondente. 
+    // Se houver alteração de telefone, exige a senha atual do Firebase para validar a segurança.
     // Se o telefone NÃO mudou, ele pula essa trava e segue livre.
     if (fluxo.novoTel && fluxo.novoTel !== fluxo.telAntigo) {
-        const codTelefoneDigitado = document.getElementById('codigo-telefone').value.trim();
-        if (codTelefoneDigitado !== fluxo.codigoTelefoneGerado) {
-            mostrarAvisoNotificacao("Código de confirmação do telefone incorreto!", "erro");
+        const senhaAtualDigitada = document.getElementById('senha-atual-confirmacao').value.trim();
+        
+        if (!senhaAtualDigitada) {
+            mostrarAvisoNotificacao("Digite sua senha atual para confirmar a alteração do telefone.", "erro");
+            return;
+        }
+
+        try {
+            // Cria a credencial com o e-mail do usuário e a senha digitada para reautenticar nativamente
+            const credencial = firebase.auth.EmailAuthProvider.credential(fluxo.user.email, senhaAtualDigitada);
+            await fluxo.user.reauthenticateWithCredential(credencial);
+        } catch (error) {
+            console.error("Erro na reautenticação:", error);
+            mostrarAvisoNotificacao("Senha atual incorreta! Alteração de telefone cancelada.", "erro");
             return;
         }
     }
