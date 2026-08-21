@@ -501,30 +501,28 @@ async function salvarDadosPerfil(event) {
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
 if (mudouTel) {
-    window.fluxoTrocaPendente = {
-        user: user,
-        nome: nome,
-        telAntigo: telAntigo,
-        novoTel: novoTel,
-        btnAlvo: btn
-    };
+        window.fluxoTrocaPendente = {
+            user: user,
+            nome: nome,
+            telAntigo: telAntigo,
+            novoTel: novoTel,
+            btnAlvo: btn
+        };
 
-    // ABRIR APENAS O MODAL DE SENHA
-    const modalSenha = document.getElementById('modal-confirmar-senha');
-    if (modalSenha) {
-        modalSenha.style.display = 'flex';
+        const modalSenha = document.getElementById('modal-confirmar-senha');
+        if (modalSenha) {
+            // Remove a classe hidden e força o display flex para o modal aparecer na tela
+            modalSenha.classList.remove('hidden');
+            modalSenha.style.display = 'flex';
+        }
+
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual duas vezes.", "aviso");
+        }
+        return; // Interrompe para aguardar a senha no modal
     }
+
     
-    // GARANTIR QUE O MODAL DE EMAIL ESTEJA FECHADO
-    const modalEmail = document.getElementById('modal-verificar-email');
-    if (modalEmail) modalEmail.style.display = 'none';
-
-    if (typeof mostrarAvisoNotificacao === "function") {
-        mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual duas vezes.", "aviso");
-    }
-    return; 
-}
-
     // ==========================================
     // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
     // ==========================================
