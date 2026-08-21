@@ -461,7 +461,6 @@ async function salvarDadosPerfil(event) {
 
     const nome = inputNome ? inputNome.value.trim() : "";
     const novoTel = inputTel ? inputTel.value.trim() : "";
-    const emailAtual = user.email;
     
     // Recupera dados salvos anteriores
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
@@ -483,57 +482,46 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 1. PROCESSAMENTO IMEDIATO DA FOTO (SE HOUVER)
+    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
         
-        // Salva nos storages locais
         localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
         localStorage.setItem('user_foto', fotoFinal);
 
-        // ATUALIZAÇÃO INSTANTÂNEA NO TOPO SUPERIOR DIREITO
-        const navIcon = document.getElementById('nav-perfil-icon');
-        if (navIcon) {
-            navIcon.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+        if (typeof aplicarFotoNaInterface === "function") {
+            aplicarFotoNaInterface(user.uid, fotoFinal);
         }
 
-        // ATUALIZAÇÃO INSTANTÂNEA NOS POSTS DO FEED (avatares do usuário logado)
-        document.querySelectorAll(`img[data-user-avatar="${user.uid}"], .avatar-usuario-atual`).forEach(imgEl => {
-            imgEl.src = fotoFinal;
-        });
-
-        window.novaFotoBase64Temp = null; // Reseta a temporária
+        window.novaFotoBase64Temp = null; 
     }
 
     // ==========================================
-    // 2. REGRA DE SEGURANÇA PARA O TELEFONE
+    // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
     if (mudouTel) {
-        // Guarda o fluxo pendente para ser efetivado após a confirmação da senha atual
         window.fluxoTrocaPendente = {
             user: user,
             nome: nome,
             telAntigo: telAntigo,
             novoTel: novoTel,
-            email: emailAtual,
             btnAlvo: btn
         };
 
-        // Abre o modal de senha atual existente no HTML
         const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) {
             modalSenha.style.display = 'flex';
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual.", "aviso");
+            mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual duas vezes.", "aviso");
         }
         return; // Interrompe para aguardar a senha no modal
     }
 
     // ==========================================
-    // 3. SALVAMENTO DIRETO (NOME E/OU FOTO)
+    // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
     // ==========================================
     dadosAtuais.nome = nome;
     dadosAtuais.tel = telAntigo;
@@ -555,7 +543,7 @@ async function salvarDadosPerfil(event) {
         }
     }
 
-    // Trava os inputs novamente e remove o destaque de pendência
+    // Trava os inputs novamente e remove o destaque
     ['perfil-nome', 'perfil-tel'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -571,17 +559,15 @@ async function salvarDadosPerfil(event) {
         mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
     }
     
-    // Atualiza o feed de forma global
     if (typeof atualizarFeedUI === "function") {
         atualizarFeedUI();
     }
     
     window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
 
-    // Redireciona instantaneamente para a tela principal/feed
     setTimeout(() => {
         if (typeof showView === "function") {
-            showView('lobby'); // Altere para 'feed' caso o nome da sua view principal seja diferente
+            showView('lobby');
         }
     }, 400);
 }
@@ -696,34 +682,40 @@ function aplicarFotoNaInterface(uid, fotoUrl) {
 
 // Observação PAGINA ALTERAÇÃO PERFIL /// ESTE CODIGO EMBORA SEjA DENOMINADO A TROCAR EMAIL É RESPONSAVEL TAMBEM POR TROCAR NOME, TEL E FOTO NO PERFIL.
 
-async function processarTrocaEmail() { // Mantém o nome da função para não quebrar chamadas existentes
+async function processarTrocaEmail() { 
     const fluxo = window.fluxoTrocaPendente;
     if (!fluxo) return;
 
-    // Se houver alteração de telefone, exige a senha atual do Firebase usando o ID correto do seu HTML
-    if (fluxo.novoTel && fluxo.novoTel !== fluxo.telAntigo) {
-        const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value.trim();
-        
-        if (!senhaAtualDigitada) {
-            mostrarAvisoNotificacao("Digite sua senha atual para confirmar a alteração do telefone.", "erro");
-            return;
-        }
+    // Pega os valores dos dois inputs de senha do modal
+    const senha1 = document.getElementById('confirm-pass-atual').value.trim();
+    const senha2 = document.getElementById('confirm-pass-atual-2').value.trim();
 
-        try {
-            // Cria a credencial com o e-mail do usuário e a senha digitada para reautenticar nativamente
-            const credencial = firebase.auth.EmailAuthProvider.credential(fluxo.user.email, senhaAtualDigitada);
-            await fluxo.user.reauthenticateWithCredential(credencial);
-        } catch (error) {
-            console.error("Erro na reautenticação:", error);
-            mostrarAvisoNotificacao("Senha atual incorreta! Alteração de telefone cancelada.", "erro");
-            return;
+    if (!senha1 || !senha2) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Preencha os dois campos de senha.", "erro");
         }
+        return;
+    }
+
+    if (senha1 !== senha2) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("As senhas digitadas não conferem!", "erro");
+        }
+        return;
+    }
+
+    try {
+        const credencial = firebase.auth.EmailAuthProvider.credential(fluxo.user.email, senha1);
+        await fluxo.user.reauthenticateWithCredential(credencial);
+    } catch (error) {
+        console.error("Erro na reautenticação:", error);
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Senha atual incorreta! Alteração de telefone cancelada.", "erro");
+        }
+        return;
     }
     
     try {
-        // O e-mail não é alterado aqui, pois é imutável e credencial de acesso.
-
-        // Salva os dados atualizados localmente
         const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${fluxo.user.uid}`)) || {};
         dadosAtuais.nome = fluxo.nome;
         dadosAtuais.tel = fluxo.novoTel;
@@ -731,7 +723,6 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
         localStorage.setItem(`fitai_user_data_${fluxo.user.uid}`, JSON.stringify(dadosAtuais));
         localStorage.setItem('user_nome', fluxo.nome);
 
-        // Se houver foto temporária pendente, salva instantaneamente junto com o nome
         if (window.novaFotoBase64Temp !== null) {
             localStorage.setItem(`user_foto_${fluxo.user.uid}`, window.novaFotoBase64Temp);
             localStorage.setItem('user_foto', window.novaFotoBase64Temp);
@@ -741,7 +732,6 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
             window.novaFotoBase64Temp = null;
         }
 
-        // Sincroniza com o Firestore (Apenas Nome e Telefone)
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(fluxo.user.uid).set({
                 nome: fluxo.nome,
@@ -749,16 +739,21 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
             }, { merge: true });
         }
 
-        exibirFeedbackSucessoBotao(fluxo.btnAlvo);
+        if (typeof exibirFeedbackSucessoBotao === "function") {
+            exibirFeedbackSucessoBotao(fluxo.btnAlvo);
+        }
         
-        // Fecha o modal correto de senha do seu HTML
         const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) modalSenha.style.display = 'none';
         
-        mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+        document.getElementById('confirm-pass-atual').value = '';
+        document.getElementById('confirm-pass-atual-2').value = '';
         
-        // Bloqueia os inputs novamente
-        ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Perfil e telefone atualizados com sucesso!", "sucesso");
+        }
+        
+        ['perfil-nome', 'perfil-tel'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.disabled = true;
@@ -769,14 +764,15 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
         if (typeof atualizarFeedUI === "function") atualizarFeedUI();
         window.fluxoTrocaPendente = null;
 
-        // Redireciona para o lobby junto com o nome e a foto instantaneamente
         setTimeout(() => {
             if (typeof showView === "function") showView('lobby');
         }, 400);
 
     } catch (error) {
         console.error("Erro ao atualizar dados:", error);
-        mostrarAvisoNotificacao("Erro ao atualizar os dados. Tente novamente.", "erro");
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Erro ao atualizar os dados. Tente novamente.", "erro");
+        }
     }
 }
 
