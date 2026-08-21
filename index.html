@@ -857,13 +857,14 @@
     <div id="modal-confirmar-senha" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
         <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
-            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual</b> para prosseguir:</p>
+            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual duas vezes</b> para prosseguir:</p>
             
-            <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
+            <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 12px; text-align: center;">
+            <input type="password" id="confirm-pass-atual-2" placeholder="Confirme a Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
             
             <div style="display: flex; gap: 10px;">
                 <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-                <button onclick="processarTrocaSenha()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
+                <button onclick="processarTrocaEmail()" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
             </div>
         </div>
     </div>
