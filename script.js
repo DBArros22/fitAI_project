@@ -510,34 +510,26 @@ async function salvarDadosPerfil(event) {
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE
     // ==========================================
     if (mudouTel) {
-        const codigoTelefone = Math.floor(100000 + Math.random() * 900000).toString();
-
+        // Guarda o fluxo pendente para ser efetivado após a confirmação da senha atual
         window.fluxoTrocaPendente = {
             user: user,
             nome: nome,
             telAntigo: telAntigo,
             novoTel: novoTel,
-            emailAntigo: emailAtual,
-            novoEmail: emailAtual,
-            codigoAntigoGerado: codigoTelefone,
-            codigoNovoGerado: codigoTelefone,
-            btnAlvo: btn,
-            apenasTelefone: true
+            email: emailAtual,
+            btnAlvo: btn
         };
 
-        const lblAntigo = document.getElementById('label-email-antigo');
-        const lblNovo = document.getElementById('label-email-novo');
-        
-        if (lblAntigo) lblAntigo.innerText = `Código de Confirmação (Telefone Atual):`;
-        if (lblNovo) lblNovo.innerText = `Código de Confirmação (Novo Telefone):`;
+        // Abre o modal de senha atual existente no HTML
+        const modalSenha = document.getElementById('modal-confirmar-senha');
+        if (modalSenha) {
+            modalSenha.style.display = 'flex';
+        }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao(`Código de segurança gerado (Simulação): ${codigoTelefone}`, "sucesso");
+            mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual.", "aviso");
         }
-        if (typeof abrirModalEmail === "function") {
-            abrirModalEmail();
-        }
-        return; // Interrompe para aguardar o código do telefone
+        return; // Interrompe para aguardar a senha no modal
     }
 
     // ==========================================
