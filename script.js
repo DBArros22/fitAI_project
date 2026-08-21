@@ -708,10 +708,9 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
     const fluxo = window.fluxoTrocaPendente;
     if (!fluxo) return;
 
-    // Se houver alteração de telefone, exige a senha atual do Firebase para validar a segurança.
-    // Se o telefone NÃO mudou, ele pula essa trava e segue livre.
+    // Se houver alteração de telefone, exige a senha atual do Firebase usando o ID correto do seu HTML
     if (fluxo.novoTel && fluxo.novoTel !== fluxo.telAntigo) {
-        const senhaAtualDigitada = document.getElementById('senha-atual-confirmacao').value.trim();
+        const senhaAtualDigitada = document.getElementById('confirm-pass-atual').value.trim();
         
         if (!senhaAtualDigitada) {
             mostrarAvisoNotificacao("Digite sua senha atual para confirmar a alteração do telefone.", "erro");
@@ -759,7 +758,11 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
         }
 
         exibirFeedbackSucessoBotao(fluxo.btnAlvo);
-        fecharModalEmail();
+        
+        // Fecha o modal correto de senha do seu HTML
+        const modalSenha = document.getElementById('modal-confirmar-senha');
+        if (modalSenha) modalSenha.style.display = 'none';
+        
         mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
         
         // Bloqueia os inputs novamente
@@ -774,7 +777,7 @@ async function processarTrocaEmail() { // Mantém o nome da função para não q
         if (typeof atualizarFeedUI === "function") atualizarFeedUI();
         window.fluxoTrocaPendente = null;
 
-        // Redireciona para o blog junto com o nome e a foto instantaneamente
+        // Redireciona para o lobby junto com o nome e a foto instantaneamente
         setTimeout(() => {
             if (typeof showView === "function") showView('lobby');
         }, 400);
