@@ -682,6 +682,7 @@ function atualizarFotoPerfil(input) {
         reader.readAsDataURL(input.files[0]);
     }
 }
+
 window.atualizarFotoPerfil = atualizarFotoPerfil;
 
 // Função auxiliar para aplicar a foto instantaneamente na interface (topo e feed)
