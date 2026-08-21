@@ -511,18 +511,18 @@ if (mudouTel) {
 
         const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) {
-            // Remove a classe hidden e força o display flex para o modal aparecer na tela
+            // ESSA É A LINHA QUE FAZ O MODAL APARECER NA TELA
             modalSenha.classList.remove('hidden');
             modalSenha.style.display = 'flex';
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Para alterar o telefone, digite sua senha atual duas vezes.", "aviso");
+            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
         }
-        return; // Interrompe para aguardar a senha no modal
+        return; // Interrompe para aguardar o preenchimento no modal
     }
 
-    
+
     // ==========================================
     // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
     // ==========================================
