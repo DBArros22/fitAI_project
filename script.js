@@ -702,6 +702,8 @@ function aplicarFotoNaInterface(uid, fotoUrl) {
 }
 
 
+// Observação PAGINA ALTERAÇÃO PERFIL /// ESTE CODIGO EMBORA SEjA DENOMINADO A TROCAR EMAIL É RESPONSAVEL TAMBEM POR TROCAR NOME, TEL E FOTO NO PERFIL.
+
 async function processarTrocaEmail() { // Mantém o nome da função para não quebrar chamadas existentes
     const fluxo = window.fluxoTrocaPendente;
     if (!fluxo) return;
