@@ -500,7 +500,7 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
-if (mudouTel) {
+   if (mudouTel) {
         window.fluxoTrocaPendente = {
             user: user,
             nome: nome,
@@ -511,15 +511,18 @@ if (mudouTel) {
 
         const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) {
-            // ESSA É A LINHA QUE FAZ O MODAL APARECER NA TELA
+            // Remove a classe hidden caso ela force display:none
             modalSenha.classList.remove('hidden');
-            modalSenha.style.display = 'flex';
+            // Força o estilo inline com !important para ignorar qualquer CSS externo bloqueando
+            modalSenha.setAttribute('style', 'position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.8) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;');
+        } else {
+            console.error("ERRO: O elemento #modal-confirmar-senha não foi encontrado no HTML!");
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
+            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes.", "aviso");
         }
-        return; // Interrompe para aguardar o preenchimento no modal
+        return; 
     }
 
 
