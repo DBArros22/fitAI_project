@@ -701,24 +701,24 @@ function aplicarFotoNaInterface(uid, fotoUrl) {
     });
 }
 
-async function processarTrocaEmail() {
+
+async function processarTrocaEmail() { // Mantém o nome da função para não quebrar chamadas existentes
     const fluxo = window.fluxoTrocaPendente;
     if (!fluxo) return;
 
-    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
-    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
-
-    if (codAntigoDigitado !== fluxo.codigoAntigoGerado) {
-        mostrarAvisoNotificacao("Código de confirmação incorreto!", "erro");
-        return;
-    }
-
-    if (codNovoDigitado !== fluxo.codigoNovoGerado) {
-        mostrarAvisoNotificacao("Código de confirmação incorreto!", "erro");
-        return;
+    // Se houver alteração de telefone, exige o código correspondente. 
+    // Se o telefone NÃO mudou, ele pula essa trava e segue livre.
+    if (fluxo.novoTel && fluxo.novoTel !== fluxo.telAntigo) {
+        const codTelefoneDigitado = document.getElementById('codigo-telefone').value.trim();
+        if (codTelefoneDigitado !== fluxo.codigoTelefoneGerado) {
+            mostrarAvisoNotificacao("Código de confirmação do telefone incorreto!", "erro");
+            return;
+        }
     }
     
     try {
+        // O e-mail não é alterado aqui, pois é imutável e credencial de acesso.
+
         // Salva os dados atualizados localmente
         const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${fluxo.user.uid}`)) || {};
         dadosAtuais.nome = fluxo.nome;
@@ -727,15 +727,17 @@ async function processarTrocaEmail() {
         localStorage.setItem(`fitai_user_data_${fluxo.user.uid}`, JSON.stringify(dadosAtuais));
         localStorage.setItem('user_nome', fluxo.nome);
 
-        // Se houver foto temporária pendente, salva de vez aqui também
-        if (novaFotoBase64Temp !== null) {
-            localStorage.setItem(`user_foto_${fluxo.user.uid}`, novaFotoBase64Temp);
-            localStorage.setItem('user_foto', novaFotoBase64Temp);
-            aplicarFotoNaInterface(fluxo.user.uid, novaFotoBase64Temp);
-            novaFotoBase64Temp = null;
+        // Se houver foto temporária pendente, salva instantaneamente junto com o nome
+        if (window.novaFotoBase64Temp !== null) {
+            localStorage.setItem(`user_foto_${fluxo.user.uid}`, window.novaFotoBase64Temp);
+            localStorage.setItem('user_foto', window.novaFotoBase64Temp);
+            if (typeof aplicarFotoNaInterface === "function") {
+                aplicarFotoNaInterface(fluxo.user.uid, window.novaFotoBase64Temp);
+            }
+            window.novaFotoBase64Temp = null;
         }
 
-        // Sincroniza com o Firestore
+        // Sincroniza com o Firestore (Apenas Nome e Telefone)
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(fluxo.user.uid).set({
                 nome: fluxo.nome,
@@ -747,7 +749,7 @@ async function processarTrocaEmail() {
         fecharModalEmail();
         mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
         
-        // Bloqueia os inputs novamente e remove a classe de pendência
+        // Bloqueia os inputs novamente
         ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -759,78 +761,14 @@ async function processarTrocaEmail() {
         if (typeof atualizarFeedUI === "function") atualizarFeedUI();
         window.fluxoTrocaPendente = null;
 
-        // Redireciona para o feed após salvar
+        // Redireciona para o blog junto com o nome e a foto instantaneamente
         setTimeout(() => {
             if (typeof showView === "function") showView('lobby');
         }, 400);
 
     } catch (error) {
-        console.error("Erro ao atualizar dados críticos:", error);
+        console.error("Erro ao atualizar dados:", error);
         mostrarAvisoNotificacao("Erro ao atualizar os dados. Tente novamente.", "erro");
-    }
-}
-
-window.processarTrocaEmail = processarTrocaEmail;
-
-async function processarTrocaEmail() {
-    const fluxo = window.fluxoTrocaPendente;
-    if (!fluxo) return;
-
-    const codAntigoDigitado = document.getElementById('codigo-email-antigo').value.trim();
-    const codNovoDigitado = document.getElementById('codigo-email-novo').value.trim();
-
-    if (codAntigoDigitado !== fluxo.codigoAntigoGerado) {
-        mostrarAvisoNotificacao("Código do e-mail antigo incorreto!", "erro");
-        return;
-    }
-
-    if (codNovoDigitado !== fluxo.codigoNovoGerado) {
-        mostrarAvisoNotificacao("Código do novo e-mail incorreto!", "erro");
-        return;
-    }
-    
-    try {
-        // Atualiza o e-mail criticamente no Firebase Auth
-        if (fluxo.novoEmail && fluxo.novoEmail !== fluxo.emailAntigo) {
-            await fluxo.user.updateEmail(fluxo.novoEmail);
-        }
-
-        // Salva os dados atualizados localmente
-        const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${fluxo.user.uid}`)) || {};
-        dadosAtuais.nome = fluxo.nome;
-        dadosAtuais.tel = fluxo.novoTel;
-        
-        localStorage.setItem(`fitai_user_data_${fluxo.user.uid}`, JSON.stringify(dadosAtuais));
-
-        // Sincroniza com o Firestore
-        if (typeof db !== 'undefined' && db) {
-            await db.collection('usuarios').doc(fluxo.user.uid).set({
-                nome: fluxo.nome,
-                telefone: fluxo.novoTel,
-                email: fluxo.novoEmail
-            }, { merge: true });
-        }
-
-        exibirFeedbackSucessoBotao(fluxo.btnAlvo);
-        fecharModalEmail();
-        mostrarAvisoNotificacao("E-mail e dados de perfil atualizados com sucesso!", "sucesso");
-        
-        // Bloqueia os inputs novamente
-        ['perfil-nome', 'perfil-tel', 'perfil-email'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.disabled = true;
-        });
-
-        if (typeof atualizarFeedUI === "function") atualizarFeedUI();
-        window.fluxoTrocaPendente = null;
-
-    } catch (error) {
-        console.error("Erro ao atualizar dados críticos:", error);
-        if (error.code === 'auth/requires-recent-login') {
-            mostrarAvisoNotificacao("Por segurança, faça login novamente antes de alterar o e-mail.", "erro");
-        } else {
-            mostrarAvisoNotificacao("Erro ao atualizar o e-mail. Tente novamente.", "erro");
-        }
     }
 }
 
