@@ -500,12 +500,7 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
-      if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
-        }
-        return; // Interrompe para aguardar a senha no modal
-
-      if (mudouTel) {
+    if (mudouTel) {
         // Guarda os dados temporariamente para usar depois da confirmação da senha
         window.fluxoTrocaPendente = {
             user: user,
@@ -515,17 +510,16 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        // 1. Limpa os inputs de senha do modal para garantirem que venham vazios
+        // Limpa os inputs de senha do modal para garantirem que venham vazios
         const inputPass1 = document.getElementById('confirm-pass-atual');
         const inputPass2 = document.getElementById('confirm-pass-atual-2');
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        // 2. Busca o modal no HTML
+        // Busca o modal no HTML e o exibe forçando o display flex
         const modalSenha = document.getElementById('modal-confirmar-senha');
         
         if (modalSenha) {
-            // Remove a classe hidden e força o display flex ignorando qualquer conflito de CSS
             modalSenha.classList.remove('hidden');
             modalSenha.style.cssText = "position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
         } else {
@@ -534,8 +528,11 @@ async function salvarDadosPerfil(event) {
             return;
         }
 
-        // Interrompe o salvamento para aguardar o usuário digitar a senha no modal
-        return; 
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
+        }
+        
+        return; // Interrompe para aguardar o preenchimento no modal
     }
 
     // ==========================================
@@ -593,59 +590,6 @@ async function salvarDadosPerfil(event) {
 window.salvarDadosPerfil = salvarDadosPerfil;
 
 window.habilitarEdicaoCampo = habilitarEdicaoCampo;
-
-function reenviarTokenSeguranca(tipo) {
-    if (!window.fluxoTrocaEmailPendente) return;
-
-    const novoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
-
-    if (tipo === 'antigo') {
-        window.fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
-        mostrarAvisoNotificacao(`Código reenviado para o canal antigo!`, "sucesso");
-    } else {
-        window.fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
-        mostrarAvisoNotificacao(`Código reenviado para o novo canal!`, "sucesso");
-    }
-}
-
-window.habilitarEdicaoCampo = habilitarEdicaoCampo;
-
-function reenviarTokenSeguranca(tipo) {
-    if (!window.fluxoTrocaEmailPendente) return;
-
-    const novoCodigo = Math.floor(100000 + Math.random() * 900000).toString();
-
-    if (tipo === 'antigo') {
-        window.fluxoTrocaEmailPendente.codigoAntigoGerado = novoCodigo;
-        mostrarAvisoNotificacao(`Código reenviado para o e-mail antigo!`, "sucesso");
-    } else {
-        window.fluxoTrocaEmailPendente.codigoNovoGerado = novoCodigo;
-        mostrarAvisoNotificacao(`Código reenviado para o novo e-mail!`, "sucesso");
-    }
-}
-
-function abrirModalEmail() {
-    const modal = document.getElementById('modal-verificar-email');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
-    }
-}
-
-function fecharModalEmail() {
-    const modal = document.getElementById('modal-verificar-email');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-    }
-    const elAntigo = document.getElementById('codigo-email-antigo');
-    const elNovo = document.getElementById('codigo-email-novo');
-    if (elAntigo) elAntigo.value = "";
-    if (elNovo) elNovo.value = "";
-    window.fluxoTrocaEmailPendente = null;
-}
-
-
 // Alterar foto do perfil
 
 if (typeof window.novaFotoBase64Temp === 'undefined') {
