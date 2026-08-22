@@ -537,7 +537,51 @@ async function salvarDadosPerfil(event) {
         return; 
     }
 
-    
+    async function confirmarOperacaoComSenha() {
+    const p1 = document.getElementById('confirm-pass-atual').value;
+    const p2 = document.getElementById('confirm-pass-atual-2').value;
+
+    if (!p1 || !p2 || p1 !== p2) {
+        mostrarAvisoNotificacao("As senhas não coincidem ou estão vazias!", "erro");
+        return;
+    }
+
+    try {
+        // Reautentica o usuário com a senha atual (padrão Firebase)
+        const credencial = firebase.auth.EmailAuthProvider.credential(auth.currentUser.email, p1);
+        await auth.currentUser.reauthenticateWithCredential(credencial);
+
+        const dadosPendentes = window.fluxoTrocaPendente;
+        if (!dadosPendentes) return;
+
+        if (dadosPendentes.tipo === 'telefone') {
+            // Executa a alteração do telefone
+            const { user, nome, novoTel } = dadosPendentes;
+
+            const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+            dadosAtuais.nome = nome;
+            dadosAtuais.tel = novoTel;
+            localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+
+            if (typeof db !== 'undefined' && db) {
+                await db.collection('usuarios').doc(user.uid).set({
+                    nome: nome,
+                    telefone: novoTel
+                }, { merge: true });
+            }
+
+            mostrarAvisoNotificacao("Telefone alterado com sucesso!", "sucesso");
+            fecharModalSenha();
+            location.reload();
+        }
+        // Se for o fluxo de senha, segue o processo normal que você já tinha...
+
+    } catch (error) {
+        mostrarAvisoNotificacao("Senha atual incorreta!", "erro");
+    }
+}
+window.confirmarOperacaoComSenha = confirmarOperacaoComSenha;
+
     // ==========================================
     // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
     // ==========================================
