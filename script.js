@@ -514,40 +514,87 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        // 1. Limpa os inputs do modal
         const inputPass1 = document.getElementById('confirm-pass-atual');
         const inputPass2 = document.getElementById('confirm-pass-atual-2');
-        
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        // 2. Localiza o modal no HTML
         const modalSenha = document.getElementById('modal-confirmar-senha');
-        
         if (!modalSenha) {
-            console.error("ERRO GRAVE: O elemento com id 'modal-confirmar-senha' NÃO EXISTE no HTML desta página!");
-            alert("Erro crítico: O modal de senha não foi encontrado no HTML.");
+            console.error("ERRO GRAVE: O modal não existe!");
             return;
         }
 
-        console.log("-> Modal encontrado com sucesso. Forçando exibição...");
+        // ALTERA O BOTÃO DO MODAL PARA EXECUTAR A TROCA DE TELEFONE
+        const btnConfirmarModal = modalSenha.querySelector('button.btn-primary');
+        if (btnConfirmarModal) {
+            btnConfirmarModal.setAttribute('onclick', 'executarTrocaTelefoneDefinitiva()');
+        }
 
-        // 3. Força a exibição ignorando qualquer classe conflitante
+        // Força a exibição
         modalSenha.classList.remove('hidden');
         modalSenha.style.setProperty('display', 'flex', 'important');
         modalSenha.style.setProperty('position', 'fixed', 'important');
         modalSenha.style.setProperty('inset', '0', 'important');
-        modalSenha.style.setProperty('z-index', '999999', 'important');
+        modalSenha.style.setProperty('z-index', '3000', 'important');
 
-        // Trava o scroll da página de fundo
         document.body.style.overflow = "hidden";
 
         if (typeof mostrarAvisoNotificacao === "function") {
             mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
         }
         
-        return; // Interrompe o salvamento comum para aguardar o modal
+        return; 
     }
+
+async function executarTrocaTelefoneDefinitiva() {
+    const p1 = document.getElementById('confirm-pass-atual').value;
+    const p2 = document.getElementById('confirm-pass-atual-2').value;
+
+    if (!p1 || !p2 || p1 !== p2) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("As senhas não coincidem ou estão vazias!", "erro");
+        }
+        return;
+    }
+
+    try {
+        const dados = window.fluxoTrocaPendente;
+        if (!dados) return;
+
+        // Reautenticação padrão do Firebase
+        const credencial = firebase.auth.EmailAuthProvider.credential(dados.user.email, p1);
+        await firebase.auth().currentUser.reauthenticateWithCredential(credencial);
+
+        // Atualiza no LocalStorage
+        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${dados.user.uid}`)) || {};
+        dadosLocais.nome = dados.nome;
+        dadosLocais.tel = dados.novoTel;
+        localStorage.setItem(`fitai_user_data_${dados.user.uid}`, JSON.stringify(dadosLocais));
+
+        // Atualiza no Firestore
+        if (typeof db !== 'undefined' && db) {
+            await db.collection('usuarios').doc(dados.user.uid).set({
+                nome: dados.nome,
+                telefone: dados.novoTel
+            }, { merge: true });
+        }
+
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Telefone alterado com sucesso!", "sucesso");
+        }
+
+        fecharModalSenha();
+        location.reload();
+
+    } catch (error) {
+        console.error("Erro na reautenticação:", error);
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Senha atual incorreta!", "erro");
+        }
+    }
+}
+window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 
     async function confirmarOperacaoComSenha() {
     const p1 = document.getElementById('confirm-pass-atual').value;
