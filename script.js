@@ -509,24 +509,22 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        const modalSenha = document.getElementById('modal-confirmar-senha');
-        
-        // TESTE DE INSPEÇÃO DIRETA NO CONSOLE
-        console.log("Elemento modal encontrado?", modalSenha);
+        // Limpa os inputs do modal antes de abrir para não vir lixo anterior
+        const input1 = document.getElementById('confirm-pass-atual');
+        const input2 = document.getElementById('confirm-pass-atual-2');
+        if (input1) input1.value = "";
+        if (input2) input2.value = "";
 
+        const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) {
             modalSenha.classList.remove('hidden');
-            modalSenha.style.display = 'flex';
             modalSenha.style.setProperty('display', 'flex', 'important');
-        } else {
-            alert("ERRO CRÍTICO: O HTML do modal-confirmar-senha não está nesta página!");
-            return;
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes.", "aviso");
+            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
         }
-        return; 
+        return; // Interrompe para aguardar a senha no modal
     }
 
 
