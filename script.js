@@ -487,8 +487,9 @@ async function salvarDadosPerfil(event) {
     // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
     if (mudouTel) {
-        console.log("-> Iniciando fluxo de troca de telefone...");
+        console.log("-> Disparando modal de senha para alteração de telefone...");
 
+        // Guarda os dados pendentes
         window.fluxoTrocaPendente = {
             tipo: 'telefone',
             user: user,
@@ -498,35 +499,29 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        // Localiza o modal no HTML atual
         const modalSenha = document.getElementById('modal-confirmar-senha');
-        
         if (!modalSenha) {
-            console.error("ERRO CRÍTICO: O modal 'modal-confirmar-senha' não existe no HTML.");
-            alert("Erro: O modal de confirmação não foi encontrado.");
+            console.error("ERRO: #modal-confirmar-senha não encontrado!");
             return;
         }
 
-        // SALVA-VIDAS: Move o modal para a raiz do body (mata qualquer conflito de container pai)
-        document.body.appendChild(modalSenha);
-
-        // Limpa os inputs de senha anterior
+        // Limpa os campos de senha
         const inputPass1 = document.getElementById('confirm-pass-atual');
         const inputPass2 = document.getElementById('confirm-pass-atual-2');
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        // Altera dinamicamente o botão do modal para chamar a função de telefone
-        const btnConfirmarModal = modalSenha.querySelector('button.btn-primary');
-        if (btnConfirmarModal) {
-            btnConfirmarModal.setAttribute('onclick', 'executarTrocaTelefoneDefinitiva()');
+        // Atrela a função correta ao botão de confirmação do modal
+        const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
+        if (btnConfirmar) {
+            // Remove eventos antigos clonando o botão ou sobrescrevendo o onclick
+            btnConfirmar.onclick = null;
+            btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
         }
 
-        // FORÇA ABSOLUTA DE EXIBIÇÃO (Ignora classes e CSS conflitantes)
+        // Força a exibição na tela com prioridade máxima
         modalSenha.classList.remove('hidden');
-        modalSenha.style.cssText = "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.85) !important; z-index: 999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
-
-        // Trava o scroll da página de fundo
+        modalSenha.style.display = 'flex';
         document.body.style.overflow = "hidden";
 
         if (typeof mostrarAvisoNotificacao === "function") {
@@ -551,17 +546,17 @@ async function executarTrocaTelefoneDefinitiva() {
         const dados = window.fluxoTrocaPendente;
         if (!dados) return;
 
-        // Reautenticação padrão do Firebase
+        // Reautentica no Firebase com a senha atual
         const credencial = firebase.auth.EmailAuthProvider.credential(dados.user.email, p1);
         await firebase.auth().currentUser.reauthenticateWithCredential(credencial);
 
-        // Atualiza no LocalStorage
+        // Atualiza LocalStorage
         const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${dados.user.uid}`)) || {};
         dadosLocais.nome = dados.nome;
         dadosLocais.tel = dados.novoTel;
         localStorage.setItem(`fitai_user_data_${dados.user.uid}`, JSON.stringify(dadosLocais));
 
-        // Atualiza no Firestore
+        // Atualiza Firestore
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(dados.user.uid).set({
                 nome: dados.nome,
@@ -583,6 +578,7 @@ async function executarTrocaTelefoneDefinitiva() {
         }
     }
 }
+window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 
 window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 
