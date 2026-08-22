@@ -1009,7 +1009,6 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     }, 3500);
 }
 
-window.reenviarTokenSeguranca = reenviarTokenSeguranca;
 window.carregarDadosPerfil = carregarDadosPerfil;
 window.salvarDadosPerfil = salvarDadosPerfil;
 window.processarisTrocaEmail = processarTrocaEmail;
