@@ -447,6 +447,8 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
 
+window.habilitarEdicaoCampo = habilitarEdicaoCampo;
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -589,8 +591,7 @@ async function salvarDadosPerfil(event) {
 
 window.salvarDadosPerfil = salvarDadosPerfil;
 
-window.habilitarEdicaoCampo = habilitarEdicaoCampo;
-// Alterar foto do perfil
+// Atualização de foto de perfil
 
 if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
