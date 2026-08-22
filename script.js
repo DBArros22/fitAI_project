@@ -506,6 +506,7 @@ async function salvarDadosPerfil(event) {
         return; // Interrompe para aguardar a senha no modal
 
       if (mudouTel) {
+        // Guarda os dados temporariamente para usar depois da confirmação da senha
         window.fluxoTrocaPendente = {
             user: user,
             nome: nome,
@@ -514,27 +515,28 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        // Limpa os inputs do modal antes de abrir
-        const input1 = document.getElementById('confirm-pass-atual');
-        const input2 = document.getElementById('confirm-pass-atual-2');
-        if (input1) input1.value = "";
-        if (input2) input2.value = "";
+        // 1. Limpa os inputs de senha do modal para garantirem que venham vazios
+        const inputPass1 = document.getElementById('confirm-pass-atual');
+        const inputPass2 = document.getElementById('confirm-pass-atual-2');
+        if (inputPass1) inputPass1.value = "";
+        if (inputPass2) inputPass2.value = "";
 
-        // Abre o modal corretamente forçando o display flex
+        // 2. Busca o modal no HTML
         const modalSenha = document.getElementById('modal-confirmar-senha');
+        
         if (modalSenha) {
+            // Remove a classe hidden e força o display flex ignorando qualquer conflito de CSS
             modalSenha.classList.remove('hidden');
-            modalSenha.style.setProperty('display', 'flex', 'important');
+            modalSenha.style.cssText = "position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
+        } else {
+            console.error("ERRO CRÍTICO: O elemento com id 'modal-confirmar-senha' não foi encontrado no HTML!");
+            alert("Erro: O modal de confirmação de senha não foi encontrado na página.");
+            return;
         }
 
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes.", "aviso");
-        }
-        return; // Interrompe para aguardar a confirmação no modal
+        // Interrompe o salvamento para aguardar o usuário digitar a senha no modal
+        return; 
     }
-
-     
-
 
     // ==========================================
     // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
