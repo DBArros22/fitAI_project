@@ -816,6 +816,10 @@ function fecharModalSenha() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
+    
+    // <--- RESTAURA O SCROLL DA PÁGINA AQUI --->
+    document.body.style.overflow = "auto";
+
     const inputPass1 = document.getElementById('confirm-pass-atual');
     const inputPass2 = document.getElementById('confirm-pass-atual-2');
     if (inputPass1) inputPass1.value = "";
