@@ -500,7 +500,12 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
-   if (mudouTel) {
+      if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
+        }
+        return; // Interrompe para aguardar a senha no modal
+
+      if (mudouTel) {
         window.fluxoTrocaPendente = {
             user: user,
             nome: nome,
@@ -509,12 +514,13 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
-        // Limpa os inputs do modal antes de abrir para não vir lixo anterior
+        // Limpa os inputs do modal antes de abrir
         const input1 = document.getElementById('confirm-pass-atual');
         const input2 = document.getElementById('confirm-pass-atual-2');
         if (input1) input1.value = "";
         if (input2) input2.value = "";
 
+        // Abre o modal corretamente forçando o display flex
         const modalSenha = document.getElementById('modal-confirmar-senha');
         if (modalSenha) {
             modalSenha.classList.remove('hidden');
@@ -522,10 +528,12 @@ async function salvarDadosPerfil(event) {
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
+            mostrarAvisoNotificacao("Por favor, digite sua senha atual duas vezes.", "aviso");
         }
-        return; // Interrompe para aguardar a senha no modal
+        return; // Interrompe para aguardar a confirmação no modal
     }
+
+     
 
 
     // ==========================================
@@ -859,9 +867,14 @@ function fecharModalSenha() {
         modal.classList.add('hidden');
         modal.style.display = 'none';
     }
-    const inputPass = document.getElementById('confirm-pass-atual');
-    if (inputPass) inputPass.value = "";
+    const inputPass1 = document.getElementById('confirm-pass-atual');
+    const inputPass2 = document.getElementById('confirm-pass-atual-2');
+    if (inputPass1) inputPass1.value = "";
+    if (inputPass2) inputPass2.value = "";
+    
+    window.fluxoTrocaPendente = null;
 }
+window.fecharModalSenha = fecharModalSenha;
 
 async function processarTrocaSenha() {
     const senhaAtualInput = document.getElementById('confirm-pass-atual');
