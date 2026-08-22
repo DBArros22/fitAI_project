@@ -486,24 +486,8 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
-    if (mudouFoto) {
-        const fotoFinal = window.novaFotoBase64Temp;
-        
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-
-        if (typeof aplicarFotoNaInterface === "function") {
-            aplicarFotoNaInterface(user.uid, fotoFinal);
-        }
-
-        window.novaFotoBase64Temp = null; 
-    }
-
-    // ==========================================
-    // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
-    // ==========================================
     if (mudouTel) {
-        console.log("-> Detectada alteração de telefone. Tentando abrir o modal...");
+        console.log("-> Iniciando fluxo de troca de telefone...");
 
         window.fluxoTrocaPendente = {
             tipo: 'telefone',
@@ -514,30 +498,35 @@ async function salvarDadosPerfil(event) {
             btnAlvo: btn
         };
 
+        // Localiza o modal no HTML atual
+        const modalSenha = document.getElementById('modal-confirmar-senha');
+        
+        if (!modalSenha) {
+            console.error("ERRO CRÍTICO: O modal 'modal-confirmar-senha' não existe no HTML.");
+            alert("Erro: O modal de confirmação não foi encontrado.");
+            return;
+        }
+
+        // SALVA-VIDAS: Move o modal para a raiz do body (mata qualquer conflito de container pai)
+        document.body.appendChild(modalSenha);
+
+        // Limpa os inputs de senha anterior
         const inputPass1 = document.getElementById('confirm-pass-atual');
         const inputPass2 = document.getElementById('confirm-pass-atual-2');
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        const modalSenha = document.getElementById('modal-confirmar-senha');
-        if (!modalSenha) {
-            console.error("ERRO GRAVE: O modal não existe!");
-            return;
-        }
-
-        // ALTERA O BOTÃO DO MODAL PARA EXECUTAR A TROCA DE TELEFONE
+        // Altera dinamicamente o botão do modal para chamar a função de telefone
         const btnConfirmarModal = modalSenha.querySelector('button.btn-primary');
         if (btnConfirmarModal) {
             btnConfirmarModal.setAttribute('onclick', 'executarTrocaTelefoneDefinitiva()');
         }
 
-        // Força a exibição
+        // FORÇA ABSOLUTA DE EXIBIÇÃO (Ignora classes e CSS conflitantes)
         modalSenha.classList.remove('hidden');
-        modalSenha.style.setProperty('display', 'flex', 'important');
-        modalSenha.style.setProperty('position', 'fixed', 'important');
-        modalSenha.style.setProperty('inset', '0', 'important');
-        modalSenha.style.setProperty('z-index', '3000', 'important');
+        modalSenha.style.cssText = "position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background: rgba(0, 0, 0, 0.85) !important; z-index: 999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
 
+        // Trava o scroll da página de fundo
         document.body.style.overflow = "hidden";
 
         if (typeof mostrarAvisoNotificacao === "function") {
@@ -594,6 +583,7 @@ async function executarTrocaTelefoneDefinitiva() {
         }
     }
 }
+
 window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 
     async function confirmarOperacaoComSenha() {
@@ -919,7 +909,7 @@ function fecharModalSenha() {
         modal.style.display = 'none';
     }
     
-    // <--- RESTAURA O SCROLL DA PÁGINA AQUI --->
+    // Restaura o scroll da página
     document.body.style.overflow = "auto";
 
     const inputPass1 = document.getElementById('confirm-pass-atual');
