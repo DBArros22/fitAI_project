@@ -510,13 +510,17 @@ async function salvarDadosPerfil(event) {
         };
 
         const modalSenha = document.getElementById('modal-confirmar-senha');
+        
+        // TESTE DE INSPEÇÃO DIRETA NO CONSOLE
+        console.log("Elemento modal encontrado?", modalSenha);
+
         if (modalSenha) {
-            // Remove a classe hidden caso ela force display:none
             modalSenha.classList.remove('hidden');
-            // Força o estilo inline com !important para ignorar qualquer CSS externo bloqueando
-            modalSenha.setAttribute('style', 'position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.8) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;');
+            modalSenha.style.display = 'flex';
+            modalSenha.style.setProperty('display', 'flex', 'important');
         } else {
-            console.error("ERRO: O elemento #modal-confirmar-senha não foi encontrado no HTML!");
+            alert("ERRO CRÍTICO: O HTML do modal-confirmar-senha não está nesta página!");
+            return;
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
