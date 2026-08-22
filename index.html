@@ -856,45 +856,15 @@
 
     <div id="modal-confirmar-senha" class="hidden" style="position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 999999 !important; display: none; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;">
         <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
-            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
-            <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual duas vezes</b> para prosseguir:</p>
+             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
+             <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual duas vezes</b> para prosseguir:</p>
             
-            <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 12px; text-align: center;">
-            <input type="password" id="confirm-pass-atual-2" placeholder="Confirme a Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
+             <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 12px; text-align: center;">
+             <input type="password" id="confirm-pass-atual-2" placeholder="Confirme a Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
             
-            <div style="display: flex; gap: 10px;">
+             <div style="display: flex; gap: 10px;">
                 <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-                <!-- O ID AQUI É A CHAVE DE OURO -->
                 <button id="btn-modal-confirmar-acao" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
-            </div>
-        </div>
-    </div>
-
-
-    <div id="modal-verificar-email" class="hidden" style="position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-        <div class="glass-panel" style="width: 90%; max-width: 420px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px; color: white;">
-            <h3 class="italic-bold" style="color: white; margin-bottom: 5px; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px;">Autenticação Crítica</h3>
-            <p style="color: #64748b; font-size: 0.75rem; margin-bottom: 25px;">Para sua proteção, valide a alteração inserindo os códigos enviados.</p>
-            
-            <div style="margin-bottom: 18px; text-align: left;">
-                <label id="label-email-antigo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no E-mail Antigo (...):</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="codigo-email-antigo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                    <button onclick="reenviarTokenSeguranca('antigo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 25px; text-align: left;">
-                <label id="label-email-novo" style="font-size: 0.68rem; text-transform: uppercase; color: #94a3b8; font-weight: bold; display: block; margin-bottom: 6px; word-break: break-all;">Código no Novo E-mail (...):</label>
-                <div style="display: flex; gap: 8px;">
-                    <input type="text" id="codigo-email-novo" maxlength="6" placeholder="000000" class="input-field" style="text-align: center; font-weight: bold; letter-spacing: 4px; flex: 1; background: rgba(15, 23, 42, 0.6);">
-                    <button onclick="reenviarTokenSeguranca('novo')" class="btn-action" style="padding: 0 12px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); border-radius: 12px; color: var(--accent-blue); white-space: nowrap;">Reenviar</button>
-                </div>
-            </div>
-
-            <div style="display: flex; gap: 10px;">
-                <button onclick="fecharModalEmail()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
-                <button onclick="processarTrocaEmail()" class="btn-primary" style="flex: 1;">VERIFICAR</button>
             </div>
         </div>
     </div>
