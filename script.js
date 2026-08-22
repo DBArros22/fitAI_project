@@ -503,33 +503,31 @@ async function salvarDadosPerfil(event) {
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE (EXIGE SENHA DUAS VEZES)
     // ==========================================
     if (mudouTel) {
-        // Guarda os dados temporariamente para usar depois da confirmação da senha
+        // Salva os dados pendentes para finalizar depois que digitar a senha
         window.fluxoTrocaPendente = {
+            tipo: 'telefone',
             user: user,
             nome: nome,
-            telAntigo: telAntigo,
             novoTel: novoTel,
             btnAlvo: btn
         };
 
-        // Limpa os inputs de senha do modal para garantirem que venham vazios
-        const inputPass1 = document.getElementById('confirm-pass-atual');
-        const inputPass2 = document.getElementById('confirm-pass-atual-2');
-        if (inputPass1) inputPass1.value = "";
-        if (inputPass2) inputPass2.value = "";
-
-        // Busca o modal no HTML
-        const modalSenha = document.getElementById('modal-confirmar-senha');
+        // Procura o modal existente no seu HTML (o mesmo da troca de senha)
+        const modalSenha = document.getElementById('modal-confirmar-senha'); // Ajuste o ID se o seu modal tiver outro nome no HTML
         
         if (modalSenha) {
-            // <--- COLOQUE AQUI --->
-            document.body.style.overflow = "hidden"; // Trava a página atrás
+            // Limpa os inputs de senha do modal para garantirem que venham vazios
+            const inputPass1 = document.getElementById('confirm-pass-atual'); // Ajuste o ID do input se necessário
+            const inputPass2 = document.getElementById('confirm-pass-atual-2'); // Ajuste o ID do segundo input se necessário
+            if (inputPass1) inputPass1.value = "";
+            if (inputPass2) inputPass2.value = "";
+
+            // Trava o scroll da página e exibe o modal exatamente igual ao fluxo de senha
+            document.body.style.overflow = "hidden";
             modalSenha.classList.remove('hidden');
-            modalSenha.style.cssText = "position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
+            modalSenha.style.display = "flex"; 
         } else {
-            console.error("ERRO CRÍTICO: O elemento com id 'modal-confirmar-senha' não foi encontrado no HTML!");
-            alert("Erro: O modal de confirmação de senha não foi encontrado na página.");
-            return;
+            console.error("O modal de confirmação não foi encontrado no HTML.");
         }
 
         if (typeof mostrarAvisoNotificacao === "function") {
@@ -539,6 +537,7 @@ async function salvarDadosPerfil(event) {
         return; 
     }
 
+    
     // ==========================================
     // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
     // ==========================================
