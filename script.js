@@ -518,12 +518,14 @@ async function salvarDadosPerfil(event) {
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        // Busca o modal no HTML e o exibe forçando o display flex
+        // Busca o modal no HTML
         const modalSenha = document.getElementById('modal-confirmar-senha');
         
         if (modalSenha) {
+            // <--- COLOQUE AQUI --->
+            document.body.style.overflow = "hidden"; // Trava a página atrás
             modalSenha.classList.remove('hidden');
-            modalSenha.style.cssText = "position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 99999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
+            modalSenha.style.cssText = "position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 999999 !important; display: flex !important; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;";
         } else {
             console.error("ERRO CRÍTICO: O elemento com id 'modal-confirmar-senha' não foi encontrado no HTML!");
             alert("Erro: O modal de confirmação de senha não foi encontrado na página.");
@@ -534,7 +536,7 @@ async function salvarDadosPerfil(event) {
             mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
         }
         
-        return; // Interrompe para aguardar o preenchimento no modal
+        return; 
     }
 
     // ==========================================
