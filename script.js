@@ -486,6 +486,22 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
+    if (mudouFoto) {
+        const fotoFinal = window.novaFotoBase64Temp;
+        
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+
+        if (typeof aplicarFotoNaInterface === "function") {
+            aplicarFotoNaInterface(user.uid, fotoFinal);
+        }
+
+        window.novaFotoBase64Temp = null; 
+    }
+
+    // ==========================================
+    // 2. REGRA DE SEGURANÇA PARA O TELEFONE
+    // ==========================================
     if (mudouTel) {
         console.log("-> Disparando modal de senha para alteração de telefone...");
 
@@ -514,7 +530,6 @@ async function salvarDadosPerfil(event) {
         // Atrela a função correta ao botão de confirmação do modal
         const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
         if (btnConfirmar) {
-            // Remove eventos antigos clonando o botão ou sobrescrevendo o onclick
             btnConfirmar.onclick = null;
             btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
         }
@@ -530,7 +545,7 @@ async function salvarDadosPerfil(event) {
         
         return; 
     }
-
+}
 async function executarTrocaTelefoneDefinitiva() {
     const p1 = document.getElementById('confirm-pass-atual').value;
     const p2 = document.getElementById('confirm-pass-atual-2').value;
