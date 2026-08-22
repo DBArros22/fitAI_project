@@ -919,6 +919,7 @@ function fecharModalSenha() {
     
     window.fluxoTrocaPendente = null;
 }
+
 window.fecharModalSenha = fecharModalSenha;
 
 async function processarTrocaSenha() {
