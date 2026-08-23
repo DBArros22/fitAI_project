@@ -565,7 +565,6 @@ async function salvarDadosPerfil(event) {
         
         return; 
     }
-<<<<<<< 
 
     // ==========================================
     // 3. SE SÓ MUDOU NOME (SEM TELEFONE), SALVA DIRETO
@@ -593,9 +592,6 @@ async function salvarDadosPerfil(event) {
     }
 }
 
-=======
-
->>>>>>> 11fe2c691d6d1441ec31402e305329f9a1809406
 async function executarTrocaTelefoneDefinitiva() {
     const p1 = document.getElementById('confirm-pass-atual').value;
     const p2 = document.getElementById('confirm-pass-atual-2').value;
