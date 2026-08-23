@@ -449,6 +449,7 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
 
 window.habilitarEdicaoCampo = habilitarEdicaoCampo;
 
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -484,8 +485,26 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
+    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE (SE HOUVER)
     // ==========================================
+<<<<<<< HEAD
+    if (mudouFoto) {
+        const fotoFinal = window.novaFotoBase64Temp;
+        
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+
+        if (typeof aplicarFotoNaInterface === "function") {
+            aplicarFotoNaInterface(user.uid, fotoFinal);
+        }
+
+        window.novaFotoBase64Temp = null; 
+    }
+
+    // ==========================================
+    // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU
+    // ==========================================
+=======
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
         
@@ -502,10 +521,11 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA PARA O TELEFONE
     // ==========================================
+>>>>>>> 11fe2c691d6d1441ec31402e305329f9a1809406
     if (mudouTel) {
-        console.log("-> Disparando modal de senha para alteração de telefone...");
+        console.log("-> Disparando modal de senha EXCLUSIVAMENTE por alteração de telefone...");
 
-        // Guarda os dados pendentes
+        // Guarda os dados pendentes (incluindo o nome caso ele também tenha mudado junto)
         window.fluxoTrocaPendente = {
             tipo: 'telefone',
             user: user,
@@ -545,7 +565,37 @@ async function salvarDadosPerfil(event) {
         
         return; 
     }
+<<<<<<< 
+
+    // ==========================================
+    // 3. SE SÓ MUDOU NOME (SEM TELEFONE), SALVA DIRETO
+    // ==========================================
+    try {
+        dadosAtuais.nome = nome;
+        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+
+        if (typeof db !== 'undefined' && db) {
+            await db.collection('usuarios').doc(user.uid).set({
+                nome: nome
+            }, { merge: true });
+        }
+
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Alterações salvas com sucesso!", "sucesso");
+        }
+        
+        location.reload();
+    } catch (error) {
+        console.error("Erro ao salvar alterações:", error);
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Erro ao salvar alterações.", "erro");
+        }
+    }
 }
+
+=======
+
+>>>>>>> 11fe2c691d6d1441ec31402e305329f9a1809406
 async function executarTrocaTelefoneDefinitiva() {
     const p1 = document.getElementById('confirm-pass-atual').value;
     const p2 = document.getElementById('confirm-pass-atual-2').value;
