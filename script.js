@@ -465,15 +465,18 @@ async function salvarDadosPerfil(event) {
     const nome = inputNome ? inputNome.value.trim() : "";
     const novoTel = inputTel ? inputTel.value.trim() : "";
     
+    // Recupera dados salvos anteriores
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const telAntigo = (dadosAtuais.tel || "").trim();
     const nomeAntigo = (dadosAtuais.nome || "").trim();
     
-    // Só considera que mudou o telefone se:
-    // 1. O usuário digitou algo no input de telefone
-    // 2. O novo telefone é diferente do antigo salvo
-    // 3. O telefone antigo não está vazio (evita falso positivo no primeiro carregamento)
-    const mudouTel = novoTel !== "" && telAntigo !== "" && novoTel !== telAntigo;
+    const btn = event.currentTarget;
+
+    // Limpa para comparar apenas os dígitos e evitar falsos positivos
+    const apenasNumerosNovo = novoTel.replace(/\D/g, '');
+    const apenasNumerosAntigo = telAntigo.replace(/\D/g, '');
+
+    const mudouTel = (apenasNumerosAntigo !== "" && apenasNumerosNovo !== "" && apenasNumerosNovo !== apenasNumerosAntigo);
     const mudouNome = nome !== nomeAntigo;
     const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
 
@@ -486,7 +489,7 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE (SE HOUVER)
+    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
@@ -502,12 +505,11 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU
+    // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU DE FATO
     // ==========================================
     if (mudouTel) {
-        console.log("-> Disparando modal de senha EXCLUSIVAMENTE por alteração de telefone...");
+        console.log("-> Telefone alterado. Exigindo senha.");
 
-        // Guarda os dados pendentes (incluindo o nome caso ele também tenha mudado junto)
         window.fluxoTrocaPendente = {
             tipo: 'telefone',
             user: user,
@@ -523,20 +525,17 @@ async function salvarDadosPerfil(event) {
             return;
         }
 
-        // Limpa os campos de senha
         const inputPass1 = document.getElementById('confirm-pass-atual');
         const inputPass2 = document.getElementById('confirm-pass-atual-2');
         if (inputPass1) inputPass1.value = "";
         if (inputPass2) inputPass2.value = "";
 
-        // Atrela a função correta ao botão de confirmação do modal
         const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
         if (btnConfirmar) {
             btnConfirmar.onclick = null;
             btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
         }
 
-        // Força a exibição na tela com prioridade máxima
         modalSenha.classList.remove('hidden');
         modalSenha.style.display = 'flex';
         document.body.style.overflow = "hidden";
@@ -549,23 +548,50 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 3. SE SÓ MUDOU NOME (SEM TELEFONE), SALVA DIRETO
+    // 3. SALVAMENTO DIRETO (NOME OU FOTO, SEM MUDAR TELEFONE)
     // ==========================================
     try {
         dadosAtuais.nome = nome;
+        dadosAtuais.tel = telAntigo; // Mantém o telefone antigo intacto
         localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+        localStorage.setItem('user_nome', nome);
 
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(user.uid).set({
-                nome: nome
+                nome: nome,
+                telefone: telAntigo
             }, { merge: true });
         }
 
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Alterações salvas com sucesso!", "sucesso");
+        // Trava os inputs novamente e remove o destaque
+        ['perfil-nome', 'perfil-tel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.classList.remove('input-pendente');
+            }
+        });
+
+        if (typeof exibirFeedbackSucessoBotao === "function" && btn) {
+            exibirFeedbackSucessoBotao(btn);
         }
         
-        location.reload();
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+        }
+        
+        if (typeof atualizarFeedUI === "function") {
+            atualizarFeedUI();
+        }
+        
+        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
+
+        setTimeout(() => {
+            if (typeof showView === "function") {
+                showView('lobby');
+            }
+        }, 400);
+
     } catch (error) {
         console.error("Erro ao salvar alterações:", error);
         if (typeof mostrarAvisoNotificacao === "function") {
@@ -573,6 +599,8 @@ async function salvarDadosPerfil(event) {
         }
     }
 }
+
+window.salvarDadosPerfil = salvarDadosPerfil;
 
 async function executarTrocaTelefoneDefinitiva() {
     const p1 = document.getElementById('confirm-pass-atual').value;
@@ -621,9 +649,41 @@ async function executarTrocaTelefoneDefinitiva() {
         }
     }
 }
-window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 
 window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
+
+
+// 2. Função para atualizar a foto de perfil temporariamente
+if (typeof window.novaFotoBase64Temp === 'undefined') {
+    window.novaFotoBase64Temp = null;
+}
+
+function atualizarFotoPerfil(input) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            window.novaFotoBase64Temp = e.target.result; 
+            
+            const imgHtml = `<img src="${window.novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
+            
+            if (document.getElementById('perfil-foto-preview')) {
+                document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            }
+            
+            ['perfil-nome', 'perfil-tel'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('input-pendente');
+            });
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+window.atualizarFotoPerfil = atualizarFotoPerfil;
+
 
     async function confirmarOperacaoComSenha() {
     const p1 = document.getElementById('confirm-pass-atual').value;
@@ -763,18 +823,17 @@ window.atualizarFotoPerfil = atualizarFotoPerfil;
 function aplicarFotoNaInterface(uid, fotoUrl) {
     if (!fotoUrl) return;
     
-    // Atualiza o ícone do topo superior direito
     const navIcon = document.getElementById('nav-perfil-icon');
     if (navIcon) {
         navIcon.innerHTML = `<img src="${fotoUrl}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
     }
 
-    // Atualiza os avatares nos posts do feed instantaneamente
     document.querySelectorAll(`img[data-user-avatar="${uid}"], .avatar-usuario-atual`).forEach(imgEl => {
         imgEl.src = fotoUrl;
     });
 }
 
+window.aplicarFotoNaInterface = aplicarFotoNaInterface;
 
 function iniciarMonitoramentoPendenciaPerfil() {
     const inputNome = document.getElementById('perfil-nome');
