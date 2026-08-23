@@ -459,7 +459,7 @@ async function salvarDadosPerfil(event) {
         return;
     }
 
-    const inputNome = document.getElementById('perfil-nome');
+     const inputNome = document.getElementById('perfil-nome');
     const inputTel = document.getElementById('perfil-tel');
 
     const nome = inputNome ? inputNome.value.trim() : "";
@@ -472,10 +472,11 @@ async function salvarDadosPerfil(event) {
     
     const btn = event.currentTarget;
 
-    // Limpa para comparar apenas os dígitos e evitar falsos positivos
+    // Limpa para comparar apenas os dígitos e evitar falsos positivos de máscara
     const apenasNumerosNovo = novoTel.replace(/\D/g, '');
     const apenasNumerosAntigo = telAntigo.replace(/\D/g, '');
 
+    // TRAVA CRUCIAL: Só considera que mudou se houver um número antigo salvo E o novo for estritamente diferente
     const mudouTel = (apenasNumerosAntigo !== "" && apenasNumerosNovo !== "" && apenasNumerosNovo !== apenasNumerosAntigo);
     const mudouNome = nome !== nomeAntigo;
     const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
