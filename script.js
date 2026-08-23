@@ -488,7 +488,6 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE (SE HOUVER)
     // ==========================================
-<<<<<<< HEAD
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
         
@@ -505,24 +504,6 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU
     // ==========================================
-=======
-    if (mudouFoto) {
-        const fotoFinal = window.novaFotoBase64Temp;
-        
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-
-        if (typeof aplicarFotoNaInterface === "function") {
-            aplicarFotoNaInterface(user.uid, fotoFinal);
-        }
-
-        window.novaFotoBase64Temp = null; 
-    }
-
-    // ==========================================
-    // 2. REGRA DE SEGURANÇA PARA O TELEFONE
-    // ==========================================
->>>>>>> 11fe2c691d6d1441ec31402e305329f9a1809406
     if (mudouTel) {
         console.log("-> Disparando modal de senha EXCLUSIVAMENTE por alteração de telefone...");
 
