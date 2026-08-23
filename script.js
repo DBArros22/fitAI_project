@@ -465,14 +465,15 @@ async function salvarDadosPerfil(event) {
     const nome = inputNome ? inputNome.value.trim() : "";
     const novoTel = inputTel ? inputTel.value.trim() : "";
     
-    // Recupera dados salvos anteriores
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const telAntigo = (dadosAtuais.tel || "").trim();
     const nomeAntigo = (dadosAtuais.nome || "").trim();
     
-    const btn = event.currentTarget;
-
-    const mudouTel = novoTel !== telAntigo;
+    // Só considera que mudou o telefone se:
+    // 1. O usuário digitou algo no input de telefone
+    // 2. O novo telefone é diferente do antigo salvo
+    // 3. O telefone antigo não está vazio (evita falso positivo no primeiro carregamento)
+    const mudouTel = novoTel !== "" && telAntigo !== "" && novoTel !== telAntigo;
     const mudouNome = nome !== nomeAntigo;
     const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
 
