@@ -263,6 +263,7 @@ async function carregarDadosPerfil() {
 
     let nomeFinal = "";
     let telFinal = "";
+    let fotoFinal = "";
 
     try {
         if (typeof db !== 'undefined' && db) {
@@ -271,6 +272,7 @@ async function carregarDadosPerfil() {
                 const dadosDoc = docRef.data();
                 nomeFinal = dadosDoc.nome || "";
                 telFinal = dadosDoc.tel || dadosDoc.telefone || "";
+                fotoFinal = dadosDoc.fotoPerfil || "";
             }
         }
     } catch (error) {
@@ -283,8 +285,10 @@ async function carregarDadosPerfil() {
         telFinal = telFinal || dadosLocais.tel || "";
     }
 
-    // Guarda o estado original para comparação
-    dadosOriginaisPerfil = { nome: nomeFinal, tel: telFinal };
+    if (fotoFinal) {
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+    }
 
     const inputNome = document.getElementById('perfil-nome');
     if (inputNome) {
@@ -300,27 +304,7 @@ async function carregarDadosPerfil() {
         inputTel.classList.remove('input-pendente');
     }
 
-    // Monitoramento reativo discreto para o alerta de pendência ao digitar
-    [
-        { el: inputNome, key: 'nome' },
-        { el: inputTel, key: 'tel' }
-    ].forEach(item => {
-        if (item.el && !item.el._listenerAdicionado) {
-            item.el._listenerAdicionado = true;
-            item.el.addEventListener('input', (e) => {
-                const valorAtual = e.target.value.trim();
-                const valorOriginal = dadosOriginaisPerfil[item.key] || "";
-                
-                if (valorAtual !== valorOriginal) {
-                    e.target.classList.add('input-pendente');
-                } else {
-                    e.target.classList.remove('input-pendente');
-                }
-            });
-        }
-    });
-
-    // Carrega a foto de perfil específica do usuário atual
+    // Carrega a foto de perfil na interface
     const foto = localStorage.getItem(`user_foto_${user.uid}`);
     const preview = document.getElementById('perfil-foto-preview');
     const navIcon = document.getElementById('nav-perfil-icon');
@@ -329,32 +313,14 @@ async function carregarDadosPerfil() {
     const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
 
     if (foto) {
-        const imgHtmlGrande = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        const imgHtmlPequeno = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
-        if (preview) preview.innerHTML = imgHtmlGrande;
-        if (navIcon) navIcon.innerHTML = imgHtmlPequeno;
+        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
     } else {
         if (preview) preview.innerHTML = svgBonecoGrande;
         if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
     }
 }
-
-// adição perfil listener
-
-document.addEventListener('DOMContentLoaded', () => {
-    ['perfil-nome', 'perfil-tel'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.addEventListener('input', () => {
-                if (el.value.trim() !== '') {
-                    el.classList.add('input-pendente');
-                } else {
-                    el.classList.remove('input-pendente');
-                }
-            });
-        }
-    });
-});
+window.carregarDadosPerfil = carregarDadosPerfil;
 
 // Função peril // código OTP simulado 
 
