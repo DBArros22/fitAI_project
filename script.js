@@ -508,6 +508,15 @@ async function salvarDadosPerfil(event) {
     // ==========================================
     // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU DE FATO
     // ==========================================
+
+      console.log("DIAGNÓSTICO ->", {
+      novoTel,
+      telAntigo,
+      apenasNumerosNovo,
+      apenasNumerosAntigo,
+      mudouTel
+     });
+    
     if (mudouTel) {
         console.log("-> Telefone alterado. Exigindo senha.");
 
