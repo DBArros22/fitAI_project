@@ -668,6 +668,81 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
 
+async function carregarDadosPerfil() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // TRAVA DEFINITIVA DO E-MAIL
+    const inputEmail = document.getElementById('perfil-email');
+    if (inputEmail) {
+        inputEmail.value = user.email || "";
+        inputEmail.disabled = true;
+        inputEmail.style.opacity = "0.6";
+        inputEmail.style.cursor = "not-allowed";
+    }
+
+    let nomeFinal = "";
+    let telFinal = "";
+    let fotoFinal = "";
+
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const docRef = await db.collection("usuarios").doc(user.uid).get();
+            if (docRef.exists) {
+                const dadosDoc = docRef.data();
+                nomeFinal = dadosDoc.nome || "";
+                telFinal = dadosDoc.tel || dadosDoc.telefone || "";
+                fotoFinal = dadosDoc.fotoPerfil || "";
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao buscar dados do perfil no Firestore:", error);
+    }
+
+    if (!nomeFinal || !telFinal) {
+        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
+        telFinal = telFinal || dadosLocais.tel || "";
+    }
+
+    if (fotoFinal) {
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+    }
+
+    const inputNome = document.getElementById('perfil-nome');
+    if (inputNome) {
+        inputNome.value = nomeFinal;
+        inputNome.disabled = true;
+        inputNome.classList.remove('input-pendente');
+    }
+    
+    const inputTel = document.getElementById('perfil-tel');
+    if (inputTel) {
+        inputTel.value = telFinal;
+        inputTel.disabled = true;
+        inputTel.classList.remove('input-pendente');
+    }
+
+    // Carrega a foto de perfil na interface
+    const foto = localStorage.getItem(`user_foto_${user.uid}`);
+    const preview = document.getElementById('perfil-foto-preview');
+    const navIcon = document.getElementById('nav-perfil-icon');
+
+    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+    if (foto) {
+        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    } else {
+        if (preview) preview.innerHTML = svgBonecoGrande;
+        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
+    }
+}
+window.carregarDadosPerfil = carregarDadosPerfil;
+
+
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
     if (!user) {
@@ -701,15 +776,6 @@ async function salvarDadosPerfil(event) {
     const mudouNome = nome !== nomeAntigo;
     const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
 
-    // Diagnóstico limpo no console para conferência
-    console.log("DIAGNÓSTICO ->", {
-        nomeMudou: mudouNome,
-        fotoMudou: mudouFoto,
-        telMudou: mudouTel,
-        apenasNumerosAntigo,
-        apenasNumerosNovo
-    });
-
     // Se nada mudou, avisa e para
     if (!mudouNome && !mudouTel && !mudouFoto) {
         if (typeof mostrarAvisoNotificacao === "function") {
@@ -719,7 +785,7 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE (COM SINCRONIZAÇÃO NO FEED)
+    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
     // ==========================================
     if (mudouFoto) {
         const fotoFinal = window.novaFotoBase64Temp;
@@ -727,7 +793,6 @@ async function salvarDadosPerfil(event) {
         localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
         localStorage.setItem('user_foto', fotoFinal);
 
-        // Aplica instantaneamente na interface do perfil e no topo/feed
         if (typeof aplicarFotoNaInterface === "function") {
             aplicarFotoNaInterface(user.uid, fotoFinal);
         }
@@ -779,18 +844,23 @@ async function salvarDadosPerfil(event) {
     }
 
     // ==========================================
-    // 3. SALVAMENTO DIRETO (NOME OU FOTO, SEM MUDAR TELEFONE)
+    // 3. SALVAMENTO DIRETO (NOME, FOTO OU AMBOS, SEM MUDAR TELEFONE)
     // ==========================================
     try {
+        const fotoParaSalvar = localStorage.getItem(`user_foto_${user.uid}`) || "";
+
         dadosAtuais.nome = nome;
-        dadosAtuais.tel = telAntigo; // Mantém o telefone antigo intacto
+        dadosAtuais.tel = telAntigo; 
+        dadosAtuais.foto = fotoParaSalvar;
+        
         localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
         localStorage.setItem('user_nome', nome);
 
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(user.uid).set({
                 nome: nome,
-                telefone: telAntigo
+                telefone: telAntigo,
+                fotoPerfil: fotoParaSalvar
             }, { merge: true });
         }
 
@@ -830,7 +900,6 @@ async function salvarDadosPerfil(event) {
         }
     }
 }
-
 window.salvarDadosPerfil = salvarDadosPerfil;
 
 // Atualização de foto de perfil
