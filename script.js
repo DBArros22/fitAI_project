@@ -425,299 +425,6 @@ async function salvarDadosPerfil(event) {
         return;
     }
 
-     const inputNome = document.getElementById('perfil-nome');
-    const inputTel = document.getElementById('perfil-tel');
-
-    const nome = inputNome ? inputNome.value.trim() : "";
-    const novoTel = inputTel ? inputTel.value.trim() : "";
-    
-    // Recupera dados salvos anteriores
-    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const telAntigo = (dadosAtuais.tel || "").trim();
-    const nomeAntigo = (dadosAtuais.nome || "").trim();
-    
-    const btn = event.currentTarget;
-
-    // Limpa para comparar apenas os dígitos e evitar falsos positivos de máscara
-    const apenasNumerosNovo = novoTel.replace(/\D/g, '');
-    const apenasNumerosAntigo = telAntigo.replace(/\D/g, '');
-
-    // TRAVA CRUCIAL: Só considera que mudou se houver um número antigo salvo E o novo for estritamente diferente
-    const mudouTel = (apenasNumerosAntigo !== "" && apenasNumerosNovo !== "" && apenasNumerosNovo !== apenasNumerosAntigo);
-    const mudouNome = nome !== nomeAntigo;
-    const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
-
-    // Se nada mudou, avisa e para
-    if (!mudouNome && !mudouTel && !mudouFoto) {
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Nenhuma alteração foi realizada.");
-        }
-        return;
-    }
-
-    // ==========================================
-    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE
-    // ==========================================
-    if (mudouFoto) {
-        const fotoFinal = window.novaFotoBase64Temp;
-        
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-
-        if (typeof aplicarFotoNaInterface === "function") {
-            aplicarFotoNaInterface(user.uid, fotoFinal);
-        }
-
-        window.novaFotoBase64Temp = null; 
-    }
-
-    // ==========================================
-    // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU DE FATO
-    // ==========================================
-
-      console.log("DIAGNÓSTICO ->", {
-      novoTel,
-      telAntigo,
-      apenasNumerosNovo,
-      apenasNumerosAntigo,
-      mudouTel
-     });
-    
-    if (mudouTel) {
-        console.log("-> Telefone alterado. Exigindo senha.");
-
-        window.fluxoTrocaPendente = {
-            tipo: 'telefone',
-            user: user,
-            nome: nome,
-            telAntigo: telAntigo,
-            novoTel: novoTel,
-            btnAlvo: btn
-        };
-
-        const modalSenha = document.getElementById('modal-confirmar-senha');
-        if (!modalSenha) {
-            console.error("ERRO: #modal-confirmar-senha não encontrado!");
-            return;
-        }
-
-        const inputPass1 = document.getElementById('confirm-pass-atual');
-        const inputPass2 = document.getElementById('confirm-pass-atual-2');
-        if (inputPass1) inputPass1.value = "";
-        if (inputPass2) inputPass2.value = "";
-
-        const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
-        if (btnConfirmar) {
-            btnConfirmar.onclick = null;
-            btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
-        }
-
-        modalSenha.classList.remove('hidden');
-        modalSenha.style.display = 'flex';
-        document.body.style.overflow = "hidden";
-
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
-        }
-        
-        return; 
-    }
-
-    // ==========================================
-    // 3. SALVAMENTO DIRETO (NOME OU FOTO, SEM MUDAR TELEFONE)
-    // ==========================================
-    try {
-        dadosAtuais.nome = nome;
-        dadosAtuais.tel = telAntigo; // Mantém o telefone antigo intacto
-        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
-        localStorage.setItem('user_nome', nome);
-
-        if (typeof db !== 'undefined' && db) {
-            await db.collection('usuarios').doc(user.uid).set({
-                nome: nome,
-                telefone: telAntigo
-            }, { merge: true });
-        }
-
-        // Trava os inputs novamente e remove o destaque
-        ['perfil-nome', 'perfil-tel'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.disabled = true;
-                el.classList.remove('input-pendente');
-            }
-        });
-
-        if (typeof exibirFeedbackSucessoBotao === "function" && btn) {
-            exibirFeedbackSucessoBotao(btn);
-        }
-        
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
-        }
-        
-        if (typeof atualizarFeedUI === "function") {
-            atualizarFeedUI();
-        }
-        
-        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
-
-        setTimeout(() => {
-            if (typeof showView === "function") {
-                showView('lobby');
-            }
-        }, 400);
-
-    } catch (error) {
-        console.error("Erro ao salvar alterações:", error);
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Erro ao salvar alterações.", "erro");
-        }
-    }
-}
-
-window.salvarDadosPerfil = salvarDadosPerfil;
-
-async function executarTrocaTelefoneDefinitiva() {
-    const p1 = document.getElementById('confirm-pass-atual').value;
-    const p2 = document.getElementById('confirm-pass-atual-2').value;
-
-    if (!p1 || !p2 || p1 !== p2) {
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("As senhas não coincidem ou estão vazias!", "erro");
-        }
-        return;
-    }
-
-    try {
-        const dados = window.fluxoTrocaPendente;
-        if (!dados) return;
-
-        // Reautentica no Firebase com a senha atual
-        const credencial = firebase.auth.EmailAuthProvider.credential(dados.user.email, p1);
-        await firebase.auth().currentUser.reauthenticateWithCredential(credencial);
-
-        // Atualiza LocalStorage
-        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${dados.user.uid}`)) || {};
-        dadosLocais.nome = dados.nome;
-        dadosLocais.tel = dados.novoTel;
-        localStorage.setItem(`fitai_user_data_${dados.user.uid}`, JSON.stringify(dadosLocais));
-
-        // Atualiza Firestore
-        if (typeof db !== 'undefined' && db) {
-            await db.collection('usuarios').doc(dados.user.uid).set({
-                nome: dados.nome,
-                telefone: dados.novoTel
-            }, { merge: true });
-        }
-
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Telefone alterado com sucesso!", "sucesso");
-        }
-
-        fecharModalSenha();
-        location.reload();
-
-    } catch (error) {
-        console.error("Erro na reautenticação:", error);
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Senha atual incorreta!", "erro");
-        }
-    }
-}
-
-window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
-
-
-// 2. Função para atualizar a foto de perfil temporariamente
-if (typeof window.novaFotoBase64Temp === 'undefined') {
-    window.novaFotoBase64Temp = null;
-}
-
-async function carregarDadosPerfil() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    // TRAVA DEFINITIVA DO E-MAIL
-    const inputEmail = document.getElementById('perfil-email');
-    if (inputEmail) {
-        inputEmail.value = user.email || "";
-        inputEmail.disabled = true;
-        inputEmail.style.opacity = "0.6";
-        inputEmail.style.cursor = "not-allowed";
-    }
-
-    let nomeFinal = "";
-    let telFinal = "";
-    let fotoFinal = "";
-
-    try {
-        if (typeof db !== 'undefined' && db) {
-            const docRef = await db.collection("usuarios").doc(user.uid).get();
-            if (docRef.exists) {
-                const dadosDoc = docRef.data();
-                nomeFinal = dadosDoc.nome || "";
-                telFinal = dadosDoc.tel || dadosDoc.telefone || "";
-                fotoFinal = dadosDoc.fotoPerfil || "";
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao buscar dados do perfil no Firestore:", error);
-    }
-
-    if (!nomeFinal || !telFinal) {
-        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
-        telFinal = telFinal || dadosLocais.tel || "";
-    }
-
-    if (fotoFinal) {
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-    }
-
-    const inputNome = document.getElementById('perfil-nome');
-    if (inputNome) {
-        inputNome.value = nomeFinal;
-        inputNome.disabled = true;
-        inputNome.classList.remove('input-pendente');
-    }
-    
-    const inputTel = document.getElementById('perfil-tel');
-    if (inputTel) {
-        inputTel.value = telFinal;
-        inputTel.disabled = true;
-        inputTel.classList.remove('input-pendente');
-    }
-
-    // Carrega a foto de perfil na interface
-    const foto = localStorage.getItem(`user_foto_${user.uid}`);
-    const preview = document.getElementById('perfil-foto-preview');
-    const navIcon = document.getElementById('nav-perfil-icon');
-
-    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-
-    if (foto) {
-        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
-    } else {
-        if (preview) preview.innerHTML = svgBonecoGrande;
-        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
-    }
-}
-window.carregarDadosPerfil = carregarDadosPerfil;
-
-
-async function salvarDadosPerfil(event) {
-    const user = auth.currentUser;
-    if (!user) {
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Usuário não autenticado!", "erro");
-        }
-        return;
-    }
-
     const inputNome = document.getElementById('perfil-nome');
     const inputTel = document.getElementById('perfil-tel');
 
@@ -866,7 +573,140 @@ async function salvarDadosPerfil(event) {
         }
     }
 }
+
 window.salvarDadosPerfil = salvarDadosPerfil;
+
+
+async function executarTrocaTelefoneDefinitiva() {
+    const p1 = document.getElementById('confirm-pass-atual').value;
+    const p2 = document.getElementById('confirm-pass-atual-2').value;
+
+    if (!p1 || !p2 || p1 !== p2) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("As senhas não coincidem ou estão vazias!", "erro");
+        }
+        return;
+    }
+
+    try {
+        const dados = window.fluxoTrocaPendente;
+        if (!dados) return;
+
+        // Reautentica no Firebase com a senha atual
+        const credencial = firebase.auth.EmailAuthProvider.credential(dados.user.email, p1);
+        await firebase.auth().currentUser.reauthenticateWithCredential(credencial);
+
+        // Atualiza LocalStorage
+        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${dados.user.uid}`)) || {};
+        dadosLocais.nome = dados.nome;
+        dadosLocais.tel = dados.novoTel;
+        localStorage.setItem(`fitai_user_data_${dados.user.uid}`, JSON.stringify(dadosLocais));
+
+        // Atualiza Firestore
+        if (typeof db !== 'undefined' && db) {
+            await db.collection('usuarios').doc(dados.user.uid).set({
+                nome: dados.nome,
+                telefone: dados.novoTel
+            }, { merge: true });
+        }
+
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Telefone alterado com sucesso!", "sucesso");
+        }
+
+        fecharModalSenha();
+        location.reload();
+
+    } catch (error) {
+        console.error("Erro na reautenticação:", error);
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Senha atual incorreta!", "erro");
+        }
+    }
+}
+
+window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
+
+
+// 2. Função para atualizar a foto de perfil temporariamente
+if (typeof window.novaFotoBase64Temp === 'undefined') {
+    window.novaFotoBase64Temp = null;
+}
+
+async function carregarDadosPerfil() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    // TRAVA DEFINITIVA DO E-MAIL
+    const inputEmail = document.getElementById('perfil-email');
+    if (inputEmail) {
+        inputEmail.value = user.email || "";
+        inputEmail.disabled = true;
+        inputEmail.style.opacity = "0.6";
+        inputEmail.style.cursor = "not-allowed";
+    }
+
+    let nomeFinal = "";
+    let telFinal = "";
+    let fotoFinal = "";
+
+    try {
+        if (typeof db !== 'undefined' && db) {
+            const docRef = await db.collection("usuarios").doc(user.uid).get();
+            if (docRef.exists) {
+                const dadosDoc = docRef.data();
+                nomeFinal = dadosDoc.nome || "";
+                telFinal = dadosDoc.tel || dadosDoc.telefone || "";
+                fotoFinal = dadosDoc.fotoPerfil || "";
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao buscar dados do perfil no Firestore:", error);
+    }
+
+    if (!nomeFinal || !telFinal) {
+        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
+        telFinal = telFinal || dadosLocais.tel || "";
+    }
+
+    if (fotoFinal) {
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+    }
+
+    const inputNome = document.getElementById('perfil-nome');
+    if (inputNome) {
+        inputNome.value = nomeFinal;
+        inputNome.disabled = true;
+        inputNome.classList.remove('input-pendente');
+    }
+    
+    const inputTel = document.getElementById('perfil-tel');
+    if (inputTel) {
+        inputTel.value = telFinal;
+        inputTel.disabled = true;
+        inputTel.classList.remove('input-pendente');
+    }
+
+    // Carrega a foto de perfil na interface
+    const foto = localStorage.getItem(`user_foto_${user.uid}`);
+    const preview = document.getElementById('perfil-foto-preview');
+    const navIcon = document.getElementById('nav-perfil-icon');
+
+    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+    if (foto) {
+        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
+        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    } else {
+        if (preview) preview.innerHTML = svgBonecoGrande;
+        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
+    }
+}
+window.carregarDadosPerfil = carregarDadosPerfil;
+
 
 // Atualização de foto de perfil
 
