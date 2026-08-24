@@ -668,128 +668,167 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
 
-function atualizarFotoPerfil(input) {
+async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
-    if (!user) return;
-
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            window.novaFotoBase64Temp = e.target.result; 
-            
-            const imgHtml = `<img src="${window.novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
-            
-            if (document.getElementById('perfil-foto-preview')) {
-                document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
-            }
-            
-            ['perfil-nome', 'perfil-tel'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.classList.add('input-pendente');
-            });
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-
-window.atualizarFotoPerfil = atualizarFotoPerfil;
-
-
-    async function confirmarOperacaoComSenha() {
-    const p1 = document.getElementById('confirm-pass-atual').value;
-    const p2 = document.getElementById('confirm-pass-atual-2').value;
-
-    if (!p1 || !p2 || p1 !== p2) {
-        mostrarAvisoNotificacao("As senhas não coincidem ou estão vazias!", "erro");
+    if (!user) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Usuário não autenticado!", "erro");
+        }
         return;
     }
 
-    try {
-        // Reautentica o usuário com a senha atual (padrão Firebase)
-        const credencial = firebase.auth.EmailAuthProvider.credential(auth.currentUser.email, p1);
-        await auth.currentUser.reauthenticateWithCredential(credencial);
+    const inputNome = document.getElementById('perfil-nome');
+    const inputTel = document.getElementById('perfil-tel');
 
-        const dadosPendentes = window.fluxoTrocaPendente;
-        if (!dadosPendentes) return;
+    const nome = inputNome ? inputNome.value.trim() : "";
+    const novoTel = inputTel ? inputTel.value.trim() : "";
+    
+    // Recupera dados salvos anteriores
+    const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    const telAntigo = (dadosAtuais.tel || "").trim();
+    const nomeAntigo = (dadosAtuais.nome || "").trim();
+    
+    const btn = event.currentTarget;
 
-        if (dadosPendentes.tipo === 'telefone') {
-            // Executa a alteração do telefone
-            const { user, nome, novoTel } = dadosPendentes;
+    // Limpa para comparar apenas os dígitos e evitar falsos positivos de máscara
+    const apenasNumerosNovo = novoTel.replace(/\D/g, '');
+    const apenasNumerosAntigo = telAntigo.replace(/\D/g, '');
 
-            const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-            dadosAtuais.nome = nome;
-            dadosAtuais.tel = novoTel;
-            localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+    // ==========================================
+    // REQUISITO: SÓ PEDE SENHA SE O TELEFONE MUDOU DE FATO
+    // ==========================================
+    const mudouTel = apenasNumerosNovo !== apenasNumerosAntigo;
+    const mudouNome = nome !== nomeAntigo;
+    const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
 
-            if (typeof db !== 'undefined' && db) {
-                await db.collection('usuarios').doc(user.uid).set({
-                    nome: nome,
-                    telefone: novoTel
-                }, { merge: true });
-            }
+    // Diagnóstico limpo no console para conferência
+    console.log("DIAGNÓSTICO ->", {
+        nomeMudou: mudouNome,
+        fotoMudou: mudouFoto,
+        telMudou: mudouTel,
+        apenasNumerosAntigo,
+        apenasNumerosNovo
+    });
 
-            mostrarAvisoNotificacao("Telefone alterado com sucesso!", "sucesso");
-            fecharModalSenha();
-            location.reload();
+    // Se nada mudou, avisa e para
+    if (!mudouNome && !mudouTel && !mudouFoto) {
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Nenhuma alteração foi realizada.");
         }
-        // Se for o fluxo de senha, segue o processo normal que você já tinha...
-
-    } catch (error) {
-        mostrarAvisoNotificacao("Senha atual incorreta!", "erro");
-    }
-}
-window.confirmarOperacaoComSenha = confirmarOperacaoComSenha;
-
-    // ==========================================
-    // 3. SALVAMENTO DIRETO (CASO APENAS NOME E/OU FOTO TENHAM MUDADO)
-    // ==========================================
-    dadosAtuais.nome = nome;
-    dadosAtuais.tel = telAntigo;
-    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
-    localStorage.setItem('user_nome', nome);
-
-    if (typeof usuarioAtual !== 'undefined' && usuarioAtual) {
-        usuarioAtual.nome = nome;
+        return;
     }
 
-    if (typeof db !== 'undefined' && db) {
-        try {
+    // ==========================================
+    // 1. FOTO: PROCESSAMENTO IMEDIATO E LIVRE (COM SINCRONIZAÇÃO NO FEED)
+    // ==========================================
+    if (mudouFoto) {
+        const fotoFinal = window.novaFotoBase64Temp;
+        
+        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+        localStorage.setItem('user_foto', fotoFinal);
+
+        // Aplica instantaneamente na interface do perfil e no topo/feed
+        if (typeof aplicarFotoNaInterface === "function") {
+            aplicarFotoNaInterface(user.uid, fotoFinal);
+        }
+
+        window.novaFotoBase64Temp = null; 
+    }
+
+    // ==========================================
+    // 2. REGRA DE SEGURANÇA: APENAS SE O TELEFONE MUDOU
+    // ==========================================
+    if (mudouTel) {
+        console.log("-> Telefone alterado. Exigindo senha.");
+
+        window.fluxoTrocaPendente = {
+            tipo: 'telefone',
+            user: user,
+            nome: nome,
+            telAntigo: telAntigo,
+            novoTel: novoTel,
+            btnAlvo: btn
+        };
+
+        const modalSenha = document.getElementById('modal-confirmar-senha');
+        if (!modalSenha) {
+            console.error("ERRO: #modal-confirmar-senha não encontrado!");
+            return;
+        }
+
+        const inputPass1 = document.getElementById('confirm-pass-atual');
+        const inputPass2 = document.getElementById('confirm-pass-atual-2');
+        if (inputPass1) inputPass1.value = "";
+        if (inputPass2) inputPass2.value = "";
+
+        const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
+        if (btnConfirmar) {
+            btnConfirmar.onclick = null;
+            btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
+        }
+
+        modalSenha.classList.remove('hidden');
+        modalSenha.style.display = 'flex';
+        document.body.style.overflow = "hidden";
+
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
+        }
+        
+        return; 
+    }
+
+    // ==========================================
+    // 3. SALVAMENTO DIRETO (NOME OU FOTO, SEM MUDAR TELEFONE)
+    // ==========================================
+    try {
+        dadosAtuais.nome = nome;
+        dadosAtuais.tel = telAntigo; // Mantém o telefone antigo intacto
+        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+        localStorage.setItem('user_nome', nome);
+
+        if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(user.uid).set({
                 nome: nome,
                 telefone: telAntigo
             }, { merge: true });
-        } catch (err) {
-            console.error("Erro ao atualizar dados no Firestore:", err);
+        }
+
+        // Trava os inputs novamente e remove o destaque
+        ['perfil-nome', 'perfil-tel'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.classList.remove('input-pendente');
+            }
+        });
+
+        if (typeof exibirFeedbackSucessoBotao === "function" && btn) {
+            exibirFeedbackSucessoBotao(btn);
+        }
+        
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
+        }
+        
+        if (typeof atualizarFeedUI === "function") {
+            atualizarFeedUI();
+        }
+        
+        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
+
+        setTimeout(() => {
+            if (typeof showView === "function") {
+                showView('lobby');
+            }
+        }, 400);
+
+    } catch (error) {
+        console.error("Erro ao salvar alterações:", error);
+        if (typeof mostrarAvisoNotificacao === "function") {
+            mostrarAvisoNotificacao("Erro ao salvar alterações.", "erro");
         }
     }
-
-    // Trava os inputs novamente e remove o destaque
-    ['perfil-nome', 'perfil-tel'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            el.disabled = true;
-            el.classList.remove('input-pendente');
-        }
-    });
-
-    if (typeof exibirFeedbackSucessoBotao === "function") {
-        exibirFeedbackSucessoBotao(btn);
-    }
-    if (typeof mostrarAvisoNotificacao === "function") {
-        mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
-    }
-    
-    if (typeof atualizarFeedUI === "function") {
-        atualizarFeedUI();
-    }
-    
-    window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, novoTel: telAntigo } }));
-
-    setTimeout(() => {
-        if (typeof showView === "function") {
-            showView('lobby');
-        }
-    }, 400);
 }
 
 window.salvarDadosPerfil = salvarDadosPerfil;
