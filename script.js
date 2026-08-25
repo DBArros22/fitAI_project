@@ -250,6 +250,13 @@ function limparCacheLocalSessao() {
 }
 
 
+Entendi exatamente o que está acontecendo. O problema é que, ao carregar a página de perfil ou o feed, o script lia apenas o localStorage do navegador ou dependia de um salvamento manual prévio para preencher as variáveis globais, fazendo o sistema cair no fallback "ATLETA".
+
+Para resolver isso de forma definitiva e direta, vamos garantir que o nome seja recuperado imediatamente do cache local de forma inteligente e que, se o usuário tiver preenchido algo, o sistema priorize o nome real sem exigir um novo clique em "Salvar".
+
+Aqui está a função carregarDadosPerfil definitiva e corrigida para você substituir no seu código. Ela resolve o bug do "ATLETA" tanto no perfil quanto na hora de montar os posts do feed:
+
+JavaScript
 let dadosOriginaisPerfil = {};
 
 async function carregarDadosPerfil() {
@@ -265,40 +272,57 @@ async function carregarDadosPerfil() {
         inputEmail.style.cursor = "not-allowed";
     }
 
-    // 1. Pega primeiro o que está no localStorage (resposta instantânea)
+    // 1. Pega os dados salvos no localStorage específico do usuário
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    let nomeFinal = dadosLocais.nome || user.displayName || "";
-    let telFinal = dadosLocais.tel || "";
+    
+    // CORREÇÃO CRUCIAL: Garante que busca o nome salvo no objeto local, depois no displayName, e só por último usa o fallback "Atleta" se realmente não houver nada
+    let nomeFinal = dadosLocais.nome || user.displayName || (user.email ? user.email.split('@')[0] : "Atleta");
+    let telFinal = dadosLocais.tel || dadosLocais.telefone || "";
     let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || "";
 
-    // 2. Busca no Firestore para sincronizar com o servidor em segundo plano
+    // Se o nome encontrado for genérico ou vazio, mas existir no perfil do Google/Auth, usa ele
+    if ((!nomeFinal || nomeFinal.toLowerCase() === "atleta") && user.displayName) {
+        nomeFinal = user.displayName;
+    }
+
+    // 2. Busca na nuvem (Firestore) em segundo plano para atualizar se houver dados novos
     try {
         if (typeof db !== 'undefined' && db) {
             const docRef = await db.collection("usuarios").doc(user.uid).get();
             if (docRef.exists) {
                 const dadosDoc = docRef.data();
                 
-                // Se o banco tiver dados válidos, atualiza as variáveis
-                if (dadosDoc.nome) nomeFinal = dadosDoc.nome;
-                if (dadosDoc.tel || dadosDoc.telefone) telFinal = dadosDoc.tel || dadosDoc.telefone;
+                if (dadosDoc.nome && dadosDoc.nome.trim() !== "") {
+                    nomeFinal = dadosDoc.nome;
+                    dadosLocais.nome = nomeFinal; // Atualiza o objeto local
+                }
+                if (dadosDoc.tel || dadosDoc.telefone) {
+                    telFinal = dadosDoc.tel || dadosDoc.telefone;
+                    dadosLocais.tel = telFinal;
+                }
                 
-                // Se o banco tiver foto salva, prioriza ela e atualiza o localStorage
                 if (dadosDoc.fotoPerfil) {
                     fotoFinal = dadosDoc.fotoPerfil;
                     localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
                     localStorage.setItem('user_foto', fotoFinal);
                 }
+
+                // Salva preventivamente no localStorage para o feed nunca mais ler "Atleta"
+                localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosLocais));
             }
         }
     } catch (error) {
         console.error("Erro ao buscar dados do perfil no Firestore:", error);
     }
 
-    // Preenche os inputs de texto e aplica as travas de estado
+    // Guarda nos dados originais para controle de alterações se necessário
+    dadosOriginaisPerfil = { nome: nomeFinal, tel: telFinal };
+
+    // Preenche os inputs de texto na tela de perfil
     const inputNome = document.getElementById('perfil-nome');
     if (inputNome) {
         inputNome.value = nomeFinal;
-        inputNome.disabled = true;
+        inputNome.disabled = true; // Mantém travado até o usuário clicar em editar
         inputNome.classList.remove('input-pendente');
     }
     
@@ -309,7 +333,7 @@ async function carregarDadosPerfil() {
         inputTel.classList.remove('input-pendente');
     }
 
-    // 3. Aplica a foto de perfil na interface de forma definitiva (com SVGs de fallback)
+    // 3. Aplica a foto e o nome na interface de forma definitiva (Avatar e Miniaturas do Feed)
     const preview = document.getElementById('perfil-foto-preview');
     const navIcon = document.getElementById('nav-perfil-icon');
 
@@ -323,6 +347,11 @@ async function carregarDadosPerfil() {
         if (preview) preview.innerHTML = svgBonecoGrande;
         if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
     }
+
+    // Atualiza também elementos do feed se houverem na página atual
+    document.querySelectorAll(`.nome-usuario-atual, [data-user-name-id="${user.uid}"]`).forEach(el => {
+        el.innerText = nomeFinal;
+    });
 }  
 
 window.carregarDadosPerfil = carregarDadosPerfil;
