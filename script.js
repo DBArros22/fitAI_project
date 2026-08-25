@@ -466,12 +466,7 @@ window.carregarDadosPerfil = carregarDadosPerfil;
 
 async function salvarDadosPerfil(event) {
     const user = auth.currentUser;
-    if (!user) {
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Usuário não autenticado!", "erro");
-        }
-        return;
-    }
+    if (!user) return;
 
     const inputNome = document.getElementById('perfil-nome');
     const inputTel = document.getElementById('perfil-tel');
@@ -481,136 +476,50 @@ async function salvarDadosPerfil(event) {
     
     const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const telAntigo = (dadosAtuais.tel || "").trim();
-    const nomeAntigo = (dadosAtuais.nome || "").trim();
     
-    const btn = event.currentTarget;
+    // Pega a foto nova (se houver) ou mantém a atual
+    let fotoParaSalvar = window.novaFotoBase64Temp || localStorage.getItem(`user_foto_${user.uid}`) || "";
 
-    const apenasNumerosNovo = novoTel.replace(/\D/g, '');
-    const apenasNumerosAntigo = telAntigo.replace(/\D/g, '');
-
-    const mudouTel = apenasNumerosNovo !== apenasNumerosAntigo;
-    const mudouNome = nome !== nomeAntigo;
-    const mudouFoto = window.novaFotoBase64Temp !== null && typeof window.novaFotoBase64Temp !== 'undefined';
-
-    if (!mudouNome && !mudouTel && !mudouFoto) {
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Nenhuma alteração foi realizada.");
-        }
-        return;
-    }
-
-    // ==========================================
-    // 1. FOTO: CAPTURA E PERSISTÊNCIA IMEDIATA
-    // ==========================================
-    let fotoParaSalvar = localStorage.getItem(`user_foto_${user.uid}`) || "";
-
-    if (mudouFoto) {
-        fotoParaSalvar = window.novaFotoBase64Temp;
-        
-        // Salva imediatamente em todas as chaves locais do navegador
-        localStorage.setItem(`user_foto_${user.uid}`, fotoParaSalvar);
-        localStorage.setItem('user_foto', fotoParaSalvar);
-
-        if (typeof aplicarFotoNaInterface === "function") {
-            aplicarFotoNaInterface(user.uid, fotoParaSalvar);
-        }
-
-        // IMPORTANTE: Limpamos a temporária SOMENTE AGORA, após já termos guardado na fotoFinal
-        window.novaFotoBase64Temp = null; 
-    }
-
-    // ==========================================
-    // 2. REGRA DE SEGURANÇA: TELEFONE
-    // ==========================================
-    if (mudouTel) {
-        window.fluxoTrocaPendente = {
-            tipo: 'telefone',
-            user: user,
-            nome: nome,
-            telAntigo: telAntigo,
-            novoTel: novoTel,
-            btnAlvo: btn
-        };
-
-        const modalSenha = document.getElementById('modal-confirmar-senha');
-        if (!modalSenha) return;
-
-        const inputPass1 = document.getElementById('confirm-pass-atual');
-        const inputPass2 = document.getElementById('confirm-pass-atual-2');
-        if (inputPass1) inputPass1.value = "";
-        if (inputPass2) inputPass2.value = "";
-
-        const btnConfirmar = document.getElementById('btn-modal-confirmar-acao');
-        if (btnConfirmar) {
-            btnConfirmar.onclick = null;
-            btnConfirmar.onclick = executarTrocaTelefoneDefinitiva;
-        }
-
-        modalSenha.classList.remove('hidden');
-        modalSenha.style.display = 'flex';
-        document.body.style.overflow = "hidden";
-
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Digite sua senha atual duas vezes para confirmar a alteração do telefone.", "aviso");
-        }
-        return; 
-    }
-
-    // ==========================================
-    // 3. SALVAMENTO DIRETO (NOME OU FOTO)
-    // ==========================================
+    // 1. SALVA PRIMEIRO NO FIRESTORE (Nuvem)
     try {
-        dadosAtuais.nome = nome;
-        dadosAtuais.tel = telAntigo; 
-        dadosAtuais.fotoPerfil = fotoParaSalvar; // Garante que a foto vai no objeto local
-        
-        localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
-        localStorage.setItem('user_nome', nome);
-
         if (typeof db !== 'undefined' && db) {
             await db.collection('usuarios').doc(user.uid).set({
                 nome: nome,
-                telefone: telAntigo,
+                telefone: telAntigo, // Mantém o antigo se não passou pela confirmação de senha
                 fotoPerfil: fotoParaSalvar
             }, { merge: true });
         }
-
-        ['perfil-nome', 'perfil-tel'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.disabled = true;
-                el.classList.remove('input-pendente');
-            }
-        });
-
-        if (typeof exibirFeedbackSucessoBotao === "function" && btn) {
-            exibirFeedbackSucessoBotao(btn);
-        }
-        
-        if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Perfil atualizado com sucesso!", "sucesso");
-        }
-        
-        if (typeof atualizarFeedUI === "function") {
-            atualizarFeedUI();
-        }
-        
-        window.dispatchEvent(new CustomEvent('perfilAtualizado', { detail: { nome, foto: fotoParaSalvar } }));
-
-        setTimeout(() => {
-            if (typeof showView === "function") {
-                showView('lobby');
-            }
-        }, 400);
-
     } catch (error) {
-        console.error("Erro ao salvar alterações:", error);
+        console.error("Erro ao salvar na nuvem:", error);
         if (typeof mostrarAvisoNotificacao === "function") {
-            mostrarAvisoNotificacao("Erro ao salvar alterações.", "erro");
+            mostrarAvisoNotificacao("Erro de conexão. As alterações não foram salvas na nuvem.", "erro");
         }
+        return; // Para aqui para não dessincronizar
+    }
+
+    // 2. SE A NUVEM ACEITOU, ATUALIZA O CACHE LOCAL E A INTERFACE
+    dadosAtuais.nome = nome;
+    dadosAtuais.tel = telAntigo;
+    dadosAtuais.fotoPerfil = fotoParaSalvar;
+    
+    localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosAtuais));
+    localStorage.setItem('user_nome', nome);
+    
+    if (fotoParaSalvar) {
+        localStorage.setItem(`user_foto_${user.uid}`, fotoParaSalvar);
+        localStorage.setItem('user_foto', fotoParaSalvar);
+    }
+
+    window.novaFotoBase64Temp = null;
+
+    if (typeof mostrarAvisoNotificacao === "function") {
+        mostrarAvisoNotificacao("Perfil atualizado com sucesso na nuvem!", "sucesso");
+    }
+
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
     }
 }
-
 window.salvarDadosPerfil = salvarDadosPerfil;
 
 
