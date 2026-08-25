@@ -2981,8 +2981,7 @@ if (typeof cfIsPaused === 'undefined') {
     window.cfIsPaused = false; 
 }
 
-function gerarSugestao() {
-    // ATUALIZADO PARA O NOVO ID CORRETO DA PÁGINA DE APARELHO OCUPADO
+function gerarSugestao(foiDisparadoPeloUsuario = false) {
     const grupoSelect = document.getElementById('select-grupo-sub-ocupado');
     const exOcupadoSelect = document.getElementById('select-ex-ocupado');
     
@@ -2994,8 +2993,11 @@ function gerarSugestao() {
     const conteudo = document.getElementById('conteudo-sugestao');
     const nomeSugestao = document.getElementById('nome-sugestao');
 
+    // BLINDAGEM: Se não foi o usuário que clicou (ex: execução fantasma ao abrir a página), sai silenciosamente sem abrir modal
     if (!grupo || !exOcupado) {
-        mostrarAvisoAparelhoOcupado("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
+        if (foiDisparadoPeloUsuario) {
+            mostrarAvisoAparelhoOcupado("Por favor, selecione o grupo muscular e qual aparelho está ocupado para podermos sugerir.");
+        }
         return;
     }
 
@@ -3042,10 +3044,12 @@ function gerarSugestao() {
                 conteudo.classList.remove('hidden');
                 conteudo.classList.add('animar-resultado');
             }
-        }, 750); // Tempo do efeito simulando a busca (750 milissegundos)
+        }, 750); 
 
     } else {
-        mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
+        if (foiDisparadoPeloUsuario) {
+            mostrarAvisoAparelhoOcupado("Não encontramos uma alternativa para este exercício no momento.");
+        }
     }
 }
 
@@ -3225,7 +3229,6 @@ const dicionarioExercicios = {
     ]
 };
 
-// Função robusta que trata acentos, maiúsculas e preenche o select corretamente
 function carregarExerciciosSubOcupado() {
     const selectGrupo = document.getElementById('select-grupo-sub-ocupado');
     const selectEx = document.getElementById('select-ex-ocupado');
@@ -3234,7 +3237,6 @@ function carregarExerciciosSubOcupado() {
 
     const grupoSelecionado = selectGrupo.value ? selectGrupo.value.trim() : "";
     
-    // Reseta o select dependente
     selectEx.innerHTML = '<option value="">Qual aparelho está ocupado?</option>';
     
     if (!grupoSelecionado) return;
@@ -3244,7 +3246,6 @@ function carregarExerciciosSubOcupado() {
         return;
     }
 
-    // Normalizador de texto para evitar erros de acentuação ou maiúsculas/minúsculas
     const normalizar = (texto) => texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const grupoBusca = normalizar(grupoSelecionado);
 
@@ -3259,7 +3260,6 @@ function carregarExerciciosSubOcupado() {
         return;
     }
 
-    // Preenche o select de exercícios do Plano B perfeitamente
     exercicios.forEach(ex => {
         const opt = document.createElement('option');
         opt.value = ex;
@@ -3268,7 +3268,6 @@ function carregarExerciciosSubOcupado() {
     });
 }
 
-// Garante que o evento de escuta funcione com o novo ID exclusivo
 document.addEventListener('DOMContentLoaded', () => {
     const selectGrupoSubOcupado = document.getElementById('select-grupo-sub-ocupado');
     if (selectGrupoSubOcupado) {
@@ -3287,13 +3286,30 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
 
 function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
-    if (modalAviso) modalAviso.classList.add('hidden');
+    if (modalAviso) {
+        modalAviso.classList.add('hidden');
+    }
 }
+
+// Vincula o botão "Entendi" de forma automática no carregamento para garantir que feche sempre
+document.addEventListener('DOMContentLoaded', () => {
+    // Procura botões comuns de fechar modal ou pelo texto/classe
+    const botoesFechar = document.querySelectorAll('#modal-aviso button, .btn-fechar-modal, [onclick*="fecharModalAviso"]');
+    botoesFechar.forEach(btn => {
+        btn.onclick = fecharModalAviso;
+    });
+});
 
 function gerarSugestaoComModal() {
-    gerarSugestao();
+    // Passa true para indicar explicitamente que o usuário clicou no botão de sugestão
+    gerarSugestao(true);
 }
 
+window.gerarSugestao = gerarSugestao;
+window.carregarExerciciosSubOcupado = carregarExerciciosSubOcupado;
+window.mostrarAvisoAparelhoOcupado = mostrarAvisoAparelhoOcupado;
+window.fecharModalAviso = fecharModalAviso;
+window.gerarSugestaoComModal = gerarSugestaoComModal;
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
