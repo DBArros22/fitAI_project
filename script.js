@@ -3002,8 +3002,13 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
 
 function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
-    if (modalAviso) modalAviso.classList.add('hidden');
+    if (modalAviso) {
+        // Remove a classe hidden e força o display none via style para sumir na marra
+        modalAviso.classList.add('hidden');
+        modalAviso.style.display = 'none';
+    }
 }
+window.fecharModalAviso = fecharModalAviso;
 
 function gerarSugestaoComModal() {
     gerarSugestao(true); // Informa explicitamente que foi acionado pelo clique do usuário
