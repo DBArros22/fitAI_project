@@ -2728,27 +2728,25 @@ function removerMidia() {
 async function postarNoFeed() {
     const user = auth.currentUser;
     if (!user) {
-        if (typeof mostrarAviso === "function") {
-            mostrarAviso("Você precisa estar logado para postar!");
-        }
+        mostrarAviso("Você precisa estar logado para postar!");
         return;
     }
 
-    // DECLARAÇÃO SEGURA DO NOME (Resolve definitivamente o erro de inicialização)
+    // ======= SUBSTITUA A LINHA ANTIGA POR ESTAS TRÊS ABAIXO =======
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const nomeUsuarioAtual = (dadosLocais.nome || localStorage.getItem('user_nome') || typeof window.nomeUsuarioAtual !== 'undefined' ? window.nomeUsuarioAtual : "ATLETA").trim().split(" ")[0].toUpperCase();
+    const nomeBruto = dadosLocais.nome || localStorage.getItem('user_nome') || (typeof window.nomeUsuarioAtual !== 'undefined' ? window.nomeUsuarioAtual : "ATLETA");
+    const nomeUsuarioAtual = nomeBruto.trim().split(" ")[0].toUpperCase();
+    // ===============================================================
 
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
     const temTexto = texto.length > 0;
-    const temMidia = typeof midiaAnexada !== 'undefined' && midiaAnexada !== null && midiaAnexada !== undefined;
+    const temMidia = midiaAnexada !== null && midiaAnexada !== undefined;
 
     if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (typeof mostrarAviso === "function") {
-            mostrarAviso("O post não pode estar vazio!");
-        }
+        mostrarAviso("O post não pode estar vazio!");
         return;
     }
 
@@ -2768,25 +2766,18 @@ async function postarNoFeed() {
         await db.collection('feed').add(novoPost);
         
         if (inputTexto) inputTexto.value = "";
-        if (typeof removerMidia === "function") {
-            removerMidia();
-        }
+        removerMidia();
 
-        if (typeof carregarFeedDoBanco === "function") {
-            await carregarFeedDoBanco();
-        }
+        await carregarFeedDoBanco();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        if (typeof mostrarAviso === "function") {
-            mostrarAviso("Postagem realizada com sucesso!");
-        }
+        mostrarAviso("Postagem realizada com sucesso!");
     } catch (error) {
         console.error("Erro ao publicar no feed:", error);
-        if (typeof mostrarAviso === "function") {
-            mostrarAviso("Erro ao salvar a postagem.");
-        }
+        mostrarAviso("Erro ao salvar a postagem.");
     }
 }
+
 window.postarNoFeed = postarNoFeed;
 
 let nomeUsuarioAtual = "ATLETA";
