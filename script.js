@@ -252,8 +252,6 @@ function limparCacheLocalSessao() {
 
 let dadosOriginaisPerfil = {};
 
-let dadosOriginaisPerfil = {};
-
 async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
