@@ -2728,26 +2728,37 @@ function removerMidia() {
 async function postarNoFeed() {
     const user = auth.currentUser;
     if (!user) {
-        mostrarAviso("Você precisa estar logado para postar!");
+        if (typeof mostrarAviso === "function") {
+            mostrarAviso("Você precisa estar logado para postar!");
+        }
         return;
     }
+
+    // DECLARAÇÃO SEGURA DO NOME (Resolve definitivamente o erro de inicialização)
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    const nomeUsuarioAtual = (dadosLocais.nome || localStorage.getItem('user_nome') || typeof window.nomeUsuarioAtual !== 'undefined' ? window.nomeUsuarioAtual : "ATLETA").trim().split(" ")[0].toUpperCase();
 
     const inputTexto = document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
     const temTexto = texto.length > 0;
-    const temMidia = midiaAnexada !== null && midiaAnexada !== undefined;
+    const temMidia = typeof midiaAnexada !== 'undefined' && midiaAnexada !== null && midiaAnexada !== undefined;
 
     if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("O post não pode estar vazio!");
+        if (typeof mostrarAviso === "function") {
+            mostrarAviso("O post não pode estar vazio!");
+        }
         return;
     }
 
+    // Pega a foto mais atualizada do localStorage para garantir sincronia no post
+    const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || user.photoURL || null;
+
     const novoPost = {
         uid: user.uid,
-        nomeAtleta: nomeUsuarioAtual, // usa o nome do firestone
-        fotoPerfil: user.photoURL || null, // para salvar a foto do perfil atrelado ao post da pagina de feed
+        nomeAtleta: nomeUsuarioAtual, 
+        fotoPerfil: fotoPerfilAtual, 
         texto: texto,
         midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
         criadoEm: firebase.firestore.FieldValue.serverTimestamp()
@@ -2757,17 +2768,26 @@ async function postarNoFeed() {
         await db.collection('feed').add(novoPost);
         
         if (inputTexto) inputTexto.value = "";
-        removerMidia();
+        if (typeof removerMidia === "function") {
+            removerMidia();
+        }
 
-        await carregarFeedDoBanco();
+        if (typeof carregarFeedDoBanco === "function") {
+            await carregarFeedDoBanco();
+        }
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("Postagem realizada com sucesso!");
+        if (typeof mostrarAviso === "function") {
+            mostrarAviso("Postagem realizada com sucesso!");
+        }
     } catch (error) {
         console.error("Erro ao publicar no feed:", error);
-        mostrarAviso("Erro ao salvar a postagem.");
+        if (typeof mostrarAviso === "function") {
+            mostrarAviso("Erro ao salvar a postagem.");
+        }
     }
 }
+window.postarNoFeed = postarNoFeed;
 
 let nomeUsuarioAtual = "ATLETA";
 let fotoUsuarioAtual = null; // variavel global para armazenar a foto do Firestore.
