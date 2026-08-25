@@ -888,12 +888,7 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 
 window.carregarDadosPerfil = carregarDadosPerfil;
 window.salvarDadosPerfil = salvarDadosPerfil;
-window.processarisTrocaEmail = processarTrocaEmail;
 window.processarTrocaSenha = processarTrocaSenha;
-
-
-
-
 
 
 // --- NOVO SISTEMA DE NOTIFICAÇÃO (MODAL) ---
