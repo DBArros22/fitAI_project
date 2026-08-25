@@ -252,76 +252,49 @@ async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // TRAVA DEFINITIVA DO E-MAIL
-    const inputEmail = document.getElementById('perfil-email');
-    if (inputEmail) {
-        inputEmail.value = user.email || "";
-        inputEmail.disabled = true;
-        inputEmail.style.opacity = "0.6";
-        inputEmail.style.cursor = "not-allowed";
-    }
+    // 1. Pinta a tela com o cache local (velocidade instantânea)
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    let nomeFinal = dadosLocais.nome || user.displayName || "";
+    let telFinal = dadosLocais.tel || "";
+    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || "";
 
-    let nomeFinal = "";
-    let telFinal = "";
-    let fotoFinal = "";
-
+    // 2. Busca na nuvem (Fonte oficial da verdade)
     try {
         if (typeof db !== 'undefined' && db) {
             const docRef = await db.collection("usuarios").doc(user.uid).get();
             if (docRef.exists) {
                 const dadosDoc = docRef.data();
-                nomeFinal = dadosDoc.nome || "";
-                telFinal = dadosDoc.tel || dadosDoc.telefone || "";
-                fotoFinal = dadosDoc.fotoPerfil || "";
+                if (dadosDoc.nome) nomeFinal = dadosDoc.nome;
+                if (dadosDoc.tel || dadosDoc.telefone) telFinal = dadosDoc.tel || dadosDoc.telefone;
+                
+                if (dadosDoc.fotoPerfil) {
+                    fotoFinal = dadosDoc.fotoPerfil;
+                    // Atualiza o cache local com o dado fresco da nuvem
+                    localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+                    localStorage.setItem('user_foto', fotoFinal);
+                }
             }
         }
     } catch (error) {
-        console.error("Erro ao buscar dados do perfil no Firestore:", error);
+        console.error("Erro ao buscar dados na nuvem:", error);
     }
 
-    if (!nomeFinal || !telFinal) {
-        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
-        telFinal = telFinal || dadosLocais.tel || "";
-    }
-
-    if (fotoFinal) {
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-    }
-
+    // Aplica nos inputs e na interface...
     const inputNome = document.getElementById('perfil-nome');
-    if (inputNome) {
-        inputNome.value = nomeFinal;
-        inputNome.disabled = true;
-        inputNome.classList.remove('input-pendente');
-    }
+    if (inputNome) inputNome.value = nomeFinal;
     
     const inputTel = document.getElementById('perfil-tel');
-    if (inputTel) {
-        inputTel.value = telFinal;
-        inputTel.disabled = true;
-        inputTel.classList.remove('input-pendente');
-    }
+    if (inputTel) inputTel.value = telFinal;
 
-    // Carrega a foto de perfil na interface
-    const foto = localStorage.getItem(`user_foto_${user.uid}`);
-    const preview = document.getElementById('perfil-foto-preview');
-    const navIcon = document.getElementById('nav-perfil-icon');
-
-    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-
-    if (foto) {
-        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
-    } else {
-        if (preview) preview.innerHTML = svgBonecoGrande;
-        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
+    // Aplica a foto na interface
+    if (fotoFinal) {
+        const preview = document.getElementById('perfil-foto-preview');
+        const navIcon = document.getElementById('nav-perfil-icon');
+        if (preview) preview.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">`;
+        if (navIcon) navIcon.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
     }
 }
 window.carregarDadosPerfil = carregarDadosPerfil;
-
 // Função peril // código OTP simulado 
 
 async function persistirDadosPerfilFinal(nome, telefone, btn) {
