@@ -249,14 +249,6 @@ function limparCacheLocalSessao() {
     // Remova também outras chaves locais que pertencem ao usuário, se houver
 }
 
-
-Entendi exatamente o que está acontecendo. O problema é que, ao carregar a página de perfil ou o feed, o script lia apenas o localStorage do navegador ou dependia de um salvamento manual prévio para preencher as variáveis globais, fazendo o sistema cair no fallback "ATLETA".
-
-Para resolver isso de forma definitiva e direta, vamos garantir que o nome seja recuperado imediatamente do cache local de forma inteligente e que, se o usuário tiver preenchido algo, o sistema priorize o nome real sem exigir um novo clique em "Salvar".
-
-Aqui está a função carregarDadosPerfil definitiva e corrigida para você substituir no seu código. Ela resolve o bug do "ATLETA" tanto no perfil quanto na hora de montar os posts do feed:
-
-JavaScript
 let dadosOriginaisPerfil = {};
 
 async function carregarDadosPerfil() {
