@@ -2787,36 +2787,42 @@ async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
 
-    // 1. TENTATIVA IMEDIATA VIA LOCALSTORAGE (Garante que exibe a foto mesmo se o Firestore estiver offline)
+    // 1. CARREGAMENTO INSTANTÂNEO VIA LOCALSTORAGE (Zero delay para a miniatura)
     const fotoLocalStorage = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
-    const nomeLocalStorage = localStorage.getItem('user_nome');
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+    const nomeLocalStorage = dadosLocais.nome || localStorage.getItem('user_nome');
     
     if (fotoLocalStorage) fotoUsuarioAtual = fotoLocalStorage;
     if (nomeLocalStorage) nomeUsuarioAtual = nomeLocalStorage.trim().split(" ")[0].toUpperCase();
 
+    // Atualiza a interface imediatamente com o cache local
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
+
+    // 2. BUSCA NO FIRESTORE EM SEGUNDO PLANO (Apenas para sincronizar se mudou em outro lugar)
     try {
-        // 2. TENTA BUSCAR NO FIRESTORE (Se houver conexão)
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
-        
         if (userDoc.exists) {
             const dados = userDoc.data();
             const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
             if (nomeCompleto) {
                 nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
-                localStorage.setItem('user_nome', nomeUsuarioAtual); // Atualiza cache
+                localStorage.setItem('user_nome', nomeUsuarioAtual);
             }
 
-            const fotoFirestore = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || user.photoURL || null;
+            const fotoFirestore = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || null;
             if (fotoFirestore) {
                 fotoUsuarioAtual = fotoFirestore;
-                localStorage.setItem(`user_foto_${user.uid}`, fotoFirestore); // Atualiza cache
+                localStorage.setItem(`user_foto_${user.uid}`, fotoFirestore);
+                localStorage.setItem('user_foto', fotoFirestore);
             }
         }
     } catch (error) {
-        console.warn("Aviso: Firestore offline, utilizando dados em cache local.", error);
+        console.warn("Aviso: Sincronização em segundo plano indisponível.", error);
     }
 
-    // 3. BUSCA O FEED NO BANCO (Com tratamento para caso falhe)
+    // 3. BUSCA OS POSTS DO FEED NO BANCO
     try {
         const snapshot = await db.collection('feed')
             .where('uid', '==', user.uid)
@@ -2837,8 +2843,13 @@ async function carregarFeedDoBanco() {
         console.error("Erro ao carregar posts do feed:", feedError);
     }
 
-    atualizarFeedUI();
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
 }
+
+
+window.carregarFeedDoBanco = carregarFeedDoBanco;
 
 
 function atualizarFeedUI() {
