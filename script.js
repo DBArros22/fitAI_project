@@ -600,7 +600,7 @@ async function carregarDadosPerfil() {
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     let nomeFinal = dadosLocais.nome || user.displayName || "";
     let telFinal = dadosLocais.tel || "";
-    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || "";
+    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || "";
 
     // 2. Busca no Firestore para sincronizar com o servidor em segundo plano
     try {
@@ -659,8 +659,7 @@ async function carregarDadosPerfil() {
 window.carregarDadosPerfil = carregarDadosPerfil;
 
 
-// Atualização de foto de perfil
-
+// Atualização de foto de perfil (Otimizada para feedback visual instantâneo)
 if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
@@ -672,17 +671,25 @@ function atualizarFotoPerfil(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            // Usa explicitamente a propriedade global do window
             window.novaFotoBase64Temp = e.target.result; 
             
-            // Mostra a pré-visualização na tela para o usuário ver como ficou
             const imgHtml = `<img src="${window.novaFotoBase64Temp}" style="width:100%; height:100%; object-fit:cover;">`;
             
-            if (document.getElementById('perfil-foto-preview')) {
-                document.getElementById('perfil-foto-preview').innerHTML = imgHtml;
+            // 1. Atualiza o preview grande na página de perfil na hora
+            const preview = document.getElementById('perfil-foto-preview');
+            if (preview) {
+                preview.innerHTML = imgHtml;
+            }
+
+            // 2. ATUALIZAÇÃO INSTANTÂNEA DA MINIATURA NO TOPO E NO FEED (Sem delay)
+            localStorage.setItem(`user_foto_${user.uid}`, window.novaFotoBase64Temp);
+            localStorage.setItem('user_foto', window.novaFotoBase64Temp);
+            
+            if (typeof aplicarFotoNaInterface === "function") {
+                aplicarFotoNaInterface(user.uid, window.novaFotoBase64Temp);
             }
             
-            // Adiciona a classe de pendência para o usuário saber que há alteração não salva
+            // Adiciona a classe de pendência nos inputs
             ['perfil-nome', 'perfil-tel'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.classList.add('input-pendente');
@@ -706,6 +713,11 @@ function aplicarFotoNaInterface(uid, fotoUrl) {
     document.querySelectorAll(`img[data-user-avatar="${uid}"], .avatar-usuario-atual`).forEach(imgEl => {
         imgEl.src = fotoUrl;
     });
+
+    // Atualiza também o feed se ele já estiver carregado na tela
+    if (typeof atualizarFeedUI === "function") {
+        atualizarFeedUI();
+    }
 }
 
 window.aplicarFotoNaInterface = aplicarFotoNaInterface;
@@ -716,18 +728,16 @@ function iniciarMonitoramentoPendenciaPerfil() {
 
     [inputNome, inputTel].forEach(el => {
         if (el && !el._monitorPendenciaAtivo) {
-            el._monitorPendenciaAtivo = true; // Evita duplicar ouvintes
+            el._monitorPendenciaAtivo = true; 
             
             el.addEventListener('input', () => {
                 const user = auth.currentUser;
                 if (!user) return;
                 
-                // Pega os dados originais salvos
                 const dadosAtuais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
                 const valorOriginal = el.id === 'perfil-nome' ? (dadosAtuais.nome || "") : (dadosAtuais.tel || "");
                 const valorAtual = el.value.trim();
 
-                // Se o que foi digitado for diferente do original, adiciona o alerta âmbar
                 if (valorAtual !== valorOriginal) {
                     el.classList.add('input-pendente');
                 } else {
@@ -751,6 +761,9 @@ function exibirFeedbackSucessoBotao(btn) {
         btn.style.transform = "";
     }, 2000);
 }
+
+window.exibirFeedbackSucessoBotao = exibirFeedbackSucessoBotao;
+
 
 function alterarSenhaPerfil() {
     const nova = document.getElementById('pass-nova').value;
