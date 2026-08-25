@@ -68,6 +68,10 @@ let milissegundosTotais = 0;
 let isTimerRunning = false;
 let isCountdownMode = false;
 
+ // váriaveis blog evolução.
+let nomeUsuarioAtual = "ATLETA";
+let fotoUsuarioAtual = null; 
+
 const getSeries = () => parseInt(document.getElementById('series-ex')?.value) || 0;
 const getReps = () => parseInt(document.getElementById('reps-ex')?.value) || 0;
 const getCarga = () => parseFloat(document.getElementById('carga-ex')?.value) || 0;
@@ -2780,8 +2784,6 @@ async function postarNoFeed() {
 
 window.postarNoFeed = postarNoFeed;
 
-let nomeUsuarioAtual = "ATLETA";
-let fotoUsuarioAtual = null; // variavel global para armazenar a foto do Firestore.
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
