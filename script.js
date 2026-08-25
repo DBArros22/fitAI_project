@@ -3009,6 +3009,13 @@ function gerarSugestaoComModal() {
     gerarSugestao(true); // Informa explicitamente que foi acionado pelo clique do usuário
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    const modalAviso = document.getElementById('modal-aviso');
+    if (modalAviso) {
+        modalAviso.classList.add('hidden');
+    }
+});
+
 window.gerarSugestao = gerarSugestao;
 window.carregarExerciciosSubOcupado = carregarExerciciosSubOcupado;
 window.mostrarAvisoAparelhoOcupado = mostrarAvisoAparelhoOcupado;
