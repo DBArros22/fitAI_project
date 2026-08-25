@@ -252,53 +252,83 @@ function limparCacheLocalSessao() {
 
 let dadosOriginaisPerfil = {};
 
+let dadosOriginaisPerfil = {};
+
 async function carregarDadosPerfil() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // 1. Pinta a tela com o cache local (velocidade instantânea)
+    // TRAVA DEFINITIVA DO E-MAIL
+    const inputEmail = document.getElementById('perfil-email');
+    if (inputEmail) {
+        inputEmail.value = user.email || "";
+        inputEmail.disabled = true;
+        inputEmail.style.opacity = "0.6";
+        inputEmail.style.cursor = "not-allowed";
+    }
+
+    // 1. Pega primeiro o que está no localStorage (resposta instantânea)
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     let nomeFinal = dadosLocais.nome || user.displayName || "";
     let telFinal = dadosLocais.tel || "";
-    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || "";
+    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || "";
 
-    // 2. Busca na nuvem (Fonte oficial da verdade)
+    // 2. Busca no Firestore para sincronizar com o servidor em segundo plano
     try {
         if (typeof db !== 'undefined' && db) {
             const docRef = await db.collection("usuarios").doc(user.uid).get();
             if (docRef.exists) {
                 const dadosDoc = docRef.data();
+                
+                // Se o banco tiver dados válidos, atualiza as variáveis
                 if (dadosDoc.nome) nomeFinal = dadosDoc.nome;
                 if (dadosDoc.tel || dadosDoc.telefone) telFinal = dadosDoc.tel || dadosDoc.telefone;
                 
+                // Se o banco tiver foto salva, prioriza ela e atualiza o localStorage
                 if (dadosDoc.fotoPerfil) {
                     fotoFinal = dadosDoc.fotoPerfil;
-                    // Atualiza o cache local com o dado fresco da nuvem
                     localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
                     localStorage.setItem('user_foto', fotoFinal);
                 }
             }
         }
     } catch (error) {
-        console.error("Erro ao buscar dados na nuvem:", error);
+        console.error("Erro ao buscar dados do perfil no Firestore:", error);
     }
 
-    // Aplica nos inputs e na interface...
+    // Preenche os inputs de texto e aplica as travas de estado
     const inputNome = document.getElementById('perfil-nome');
-    if (inputNome) inputNome.value = nomeFinal;
+    if (inputNome) {
+        inputNome.value = nomeFinal;
+        inputNome.disabled = true;
+        inputNome.classList.remove('input-pendente');
+    }
     
     const inputTel = document.getElementById('perfil-tel');
-    if (inputTel) inputTel.value = telFinal;
+    if (inputTel) {
+        inputTel.value = telFinal;
+        inputTel.disabled = true;
+        inputTel.classList.remove('input-pendente');
+    }
 
-    // Aplica a foto na interface
-    if (fotoFinal) {
-        const preview = document.getElementById('perfil-foto-preview');
-        const navIcon = document.getElementById('nav-perfil-icon');
+    // 3. Aplica a foto de perfil na interface de forma definitiva (com SVGs de fallback)
+    const preview = document.getElementById('perfil-foto-preview');
+    const navIcon = document.getElementById('nav-perfil-icon');
+
+    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+    if (fotoFinal && fotoFinal.trim() !== "") {
         if (preview) preview.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">`;
         if (navIcon) navIcon.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+    } else {
+        if (preview) preview.innerHTML = svgBonecoGrande;
+        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
     }
-}
+}  
+
 window.carregarDadosPerfil = carregarDadosPerfil;
+
 // Função peril // código OTP simulado 
 
 async function persistirDadosPerfilFinal(nome, telefone, btn) {
@@ -391,81 +421,6 @@ if (typeof window.novaFotoBase64Temp === 'undefined') {
 }
 
 window.habilitarEdicaoCampo = habilitarEdicaoCampo;
-
-
-async function carregarDadosPerfil() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    // TRAVA DEFINITIVA DO E-MAIL
-    const inputEmail = document.getElementById('perfil-email');
-    if (inputEmail) {
-        inputEmail.value = user.email || "";
-        inputEmail.disabled = true;
-        inputEmail.style.opacity = "0.6";
-        inputEmail.style.cursor = "not-allowed";
-    }
-
-    let nomeFinal = "";
-    let telFinal = "";
-    let fotoFinal = "";
-
-    try {
-        if (typeof db !== 'undefined' && db) {
-            const docRef = await db.collection("usuarios").doc(user.uid).get();
-            if (docRef.exists) {
-                const dadosDoc = docRef.data();
-                nomeFinal = dadosDoc.nome || "";
-                telFinal = dadosDoc.tel || dadosDoc.telefone || "";
-                fotoFinal = dadosDoc.fotoPerfil || "";
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao buscar dados do perfil no Firestore:", error);
-    }
-
-    if (!nomeFinal || !telFinal) {
-        const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-        nomeFinal = nomeFinal || dadosLocais.nome || user.displayName || "";
-        telFinal = telFinal || dadosLocais.tel || "";
-    }
-
-    if (fotoFinal) {
-        localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-        localStorage.setItem('user_foto', fotoFinal);
-    }
-
-    const inputNome = document.getElementById('perfil-nome');
-    if (inputNome) {
-        inputNome.value = nomeFinal;
-        inputNome.disabled = true;
-        inputNome.classList.remove('input-pendente');
-    }
-    
-    const inputTel = document.getElementById('perfil-tel');
-    if (inputTel) {
-        inputTel.value = telFinal;
-        inputTel.disabled = true;
-        inputTel.classList.remove('input-pendente');
-    }
-
-    // Carrega a foto de perfil na interface
-    const foto = localStorage.getItem(`user_foto_${user.uid}`);
-    const preview = document.getElementById('perfil-foto-preview');
-    const navIcon = document.getElementById('nav-perfil-icon');
-
-    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-
-    if (foto) {
-        if (preview) preview.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">`;
-        if (navIcon) navIcon.innerHTML = `<img src="${foto}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
-    } else {
-        if (preview) preview.innerHTML = svgBonecoGrande;
-        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
-    }
-}
-window.carregarDadosPerfil = carregarDadosPerfil;
 
 
 async function salvarDadosPerfil(event) {
@@ -582,81 +537,6 @@ window.executarTrocaTelefoneDefinitiva = executarTrocaTelefoneDefinitiva;
 if (typeof window.novaFotoBase64Temp === 'undefined') {
     window.novaFotoBase64Temp = null;
 }
-
-async function carregarDadosPerfil() {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    // TRAVA DEFINITIVA DO E-MAIL
-    const inputEmail = document.getElementById('perfil-email');
-    if (inputEmail) {
-        inputEmail.value = user.email || "";
-        inputEmail.disabled = true;
-        inputEmail.style.opacity = "0.6";
-        inputEmail.style.cursor = "not-allowed";
-    }
-
-    // 1. Pega primeiro o que está no localStorage (resposta instantânea)
-    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    let nomeFinal = dadosLocais.nome || user.displayName || "";
-    let telFinal = dadosLocais.tel || "";
-    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || "";
-
-    // 2. Busca no Firestore para sincronizar com o servidor em segundo plano
-    try {
-        if (typeof db !== 'undefined' && db) {
-            const docRef = await db.collection("usuarios").doc(user.uid).get();
-            if (docRef.exists) {
-                const dadosDoc = docRef.data();
-                
-                // Se o banco tiver dados válidos, atualiza as variáveis
-                if (dadosDoc.nome) nomeFinal = dadosDoc.nome;
-                if (dadosDoc.tel || dadosDoc.telefone) telFinal = dadosDoc.tel || dadosDoc.telefone;
-                
-                // Se o banco tiver foto salva, prioriza ela e atualiza o localStorage
-                if (dadosDoc.fotoPerfil) {
-                    fotoFinal = dadosDoc.fotoPerfil;
-                    localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
-                    localStorage.setItem('user_foto', fotoFinal);
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Erro ao buscar dados do perfil no Firestore:", error);
-    }
-
-    // Preenche os inputs de texto
-    const inputNome = document.getElementById('perfil-nome');
-    if (inputNome) {
-        inputNome.value = nomeFinal;
-        inputNome.disabled = true;
-        inputNome.classList.remove('input-pendente');
-    }
-    
-    const inputTel = document.getElementById('perfil-tel');
-    if (inputTel) {
-        inputTel.value = telFinal;
-        inputTel.disabled = true;
-        inputTel.classList.remove('input-pendente');
-    }
-
-    // 3. Aplica a foto de perfil na interface de forma definitiva
-    const preview = document.getElementById('perfil-foto-preview');
-    const navIcon = document.getElementById('nav-perfil-icon');
-
-    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
-
-    if (fotoFinal && fotoFinal.trim() !== "") {
-        if (preview) preview.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">`;
-        if (navIcon) navIcon.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
-    } else {
-        if (preview) preview.innerHTML = svgBonecoGrande;
-        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
-    }
-}  
-
-window.carregarDadosPerfil = carregarDadosPerfil;
 
 
 // Atualização de foto de perfil (Otimizada para feedback visual instantâneo)
