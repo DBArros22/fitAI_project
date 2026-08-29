@@ -2997,29 +2997,27 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
     if (textoModal && modalAviso) {
         textoModal.innerText = mensagem; 
         modalAviso.classList.remove('hidden');
+        modalAviso.style.display = 'flex'; // Exibe o modal na tela
     }
 }
 
 function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) {
-        // Remove a classe hidden e força o display none via style para sumir na marra
         modalAviso.classList.add('hidden');
-        modalAviso.style.display = 'none';
+        modalAviso.style.display = 'none'; // Oculta o modal completamente
     }
 }
-window.fecharModalAviso = fecharModalAviso;
 
-function gerarSugestaoComModal() {
-    gerarSugestao(true); // Informa explicitamente que foi acionado pelo clique do usuário
-}
-
+// Garante que o modal comece oculto assim que o documento carregar
 document.addEventListener('DOMContentLoaded', () => {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) {
         modalAviso.classList.add('hidden');
+        modalAviso.style.display = 'none';
     }
 });
+
 
 window.gerarSugestao = gerarSugestao;
 window.carregarExerciciosSubOcupado = carregarExerciciosSubOcupado;
