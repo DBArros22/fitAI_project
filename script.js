@@ -3005,9 +3005,11 @@ function fecharModalAviso() {
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) {
         modalAviso.classList.add('hidden');
-        modalAviso.style.display = 'none'; // Oculta o modal completamente
+        modalAviso.style.display = 'none';
     }
 }
+
+window.fecharModalAviso = fecharModalAviso;
 
 // Garante que o modal comece oculto assim que o documento carregar
 document.addEventListener('DOMContentLoaded', () => {
