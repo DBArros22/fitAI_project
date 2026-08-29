@@ -3018,6 +3018,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function gerarSugestaoComModal() {
+    gerarSugestao(true);
+}
 
 window.gerarSugestao = gerarSugestao;
 window.carregarExerciciosSubOcupado = carregarExerciciosSubOcupado;
