@@ -3026,6 +3026,8 @@ window.carregarExerciciosSubOcupado = carregarExerciciosSubOcupado;
 window.mostrarAvisoAparelhoOcupado = mostrarAvisoAparelhoOcupado;
 window.fecharModalAviso = fecharModalAviso;
 window.gerarSugestaoComModal = gerarSugestaoComModal;
+
+
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções timer wods crossfit xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
