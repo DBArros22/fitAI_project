@@ -3002,13 +3002,15 @@ function mostrarAvisoAparelhoOcupado(mensagem) {
 }
 
 function fecharModalAviso() {
+    console.log("Tentando fechar o modal..."); // Se aparecer no console, o botão está funcionando
     const modalAviso = document.getElementById('modal-aviso');
     if (modalAviso) {
         modalAviso.classList.add('hidden');
-        modalAviso.style.display = 'none';
+        modalAviso.style.setProperty('display', 'none', 'important');
+    } else {
+        console.error("Elemento #modal-aviso não foi encontrado no DOM!");
     }
 }
-
 window.fecharModalAviso = fecharModalAviso;
 
 // Garante que o modal comece oculto assim que o documento carregar
