@@ -831,6 +831,17 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
+    const modalAvisoGlobal = document.getElementById('modal-aviso');
+    if (modalAvisoGlobal) {
+        modalAvisoGlobal.classList.add('hidden');
+        modalAvisoGlobal.style.display = 'none';
+    }
+
+    // Reseta o scroll imediatamente para o topo
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
     // Reseta o scroll imediatamente para o topo
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
