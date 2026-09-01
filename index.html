@@ -421,21 +421,21 @@
         </div>
     </div> 
 
-    <div id="modal-aviso" class="modal-overlay hidden" style="display: none;">
-        <div class="modal-confirm" style="max-width: 350px;">
-            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-                <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                 </svg>
-            </div>
-                <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
-            <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
-                Selecione o grupo e o aparelho ocupado!
-            </p>    
-            <button onclick="const m = document.getElementById('modal-aviso'); if(m) { m.classList.add('hidden'); m.style.display='none'; }" class="btn-primary" style="width: 100%; padding: 12px; position: relative; z-index: 99999;">ENTENDI</button>
-        </div>
+     <div id="modal-aviso" class="modal-overlay hidden" style="display: none !important;">
+          <div class="modal-confirm" style="max-width: 350px;">
+             <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+                  <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                       <line x1="12" y1="8" x2="12" y2="12"></line>
+                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+              </div>
+              <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
+               <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
+            Selecione o grupo e o aparelho ocupado!
+                </p>
+                <button onclick="const m = document.getElementById('modal-aviso'); m.classList.add('hidden'); m.style.setProperty('display', 'none', 'important'); m.remove();" class="btn-primary" style="width: 100%; padding: 12px; position: relative; z-index: 999999;">ENTENDI</button>
+         </div>
     </div>
 
 <div id="view-crossfit-lobby" class="page-container hidden">
