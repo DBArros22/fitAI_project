@@ -434,7 +434,7 @@
             <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
                 Selecione o grupo e o aparelho ocupado!
             </p>    
-            <button onclick="document.getElementById('modal-aviso').style.display='none'; document.getElementById('modal-aviso').classList.add('hidden');" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
+            <button onclick="const m = document.getElementById('modal-aviso'); if(m) { m.classList.add('hidden'); m.style.display='none'; }" class="btn-primary" style="width: 100%; padding: 12px; position: relative; z-index: 99999;">ENTENDI</button>
         </div>
     </div>
 
