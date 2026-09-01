@@ -798,10 +798,6 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     }, 3500);
 }
 
-window.carregarDadosPerfil = carregarDadosPerfil;
-window.salvarDadosPerfil = salvarDadosPerfil;
-window.processarTrocaSenha = processarTrocaSenha;
-
 
 // Dicionário exercicios 
 
