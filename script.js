@@ -912,6 +912,13 @@ function showView(viewId) {
 
 window.showView = showView;
 
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('modal-aviso');
+    if (modal) {
+        modal.remove(); // Remove o modal quebrado direto da árvore do DOM ao iniciar
+    }
+});
+
 // Função para alternar as abas de autenticação (Com o cabeçalho correto!)
 window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
