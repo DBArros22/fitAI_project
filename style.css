@@ -42,6 +42,19 @@ body {
     display: none !important; 
 }
 
+/* Adição para melhorar showView*/
+
+.page-container, #view-perfil {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Garante que qualquer view ativa dentro do app-shell ocupe o espaço corretamente */
+#app-shell > *:not(.hidden) {
+    display: block;
+    flex: 1;
+}
+
 /* --- ESTRUTURA GERAL E GERENCIAMENTO DE VIEWS --- */
 #app-shell { 
     min-height: 100vh; 
