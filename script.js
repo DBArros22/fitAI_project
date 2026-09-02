@@ -943,14 +943,14 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Limpeza de segurança do modal sem destruí-lo do DOM
+    // Limpeza de segurança do modal
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) {
         modalAvisoGlobal.classList.add('hidden');
         modalAvisoGlobal.style.display = 'none';
     }
 
-    // Reseta o scroll para o topo
+    // Reseta o scroll
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
@@ -959,22 +959,46 @@ function showView(viewId) {
     const viewLogin = document.getElementById('view-login');
 
     if (cleanId === 'login') {
-        if (viewLogin) viewLogin.classList.remove('hidden');
+        if (viewLogin) {
+            viewLogin.classList.remove('hidden');
+            viewLogin.style.display = 'block';
+        }
         document.querySelectorAll('main, .page-container').forEach(el => {
-            if (el.id !== 'view-login') el.classList.add('hidden');
+            if (el.id !== 'view-login') {
+                el.classList.add('hidden');
+                el.style.display = 'none';
+            }
         });
+        window.currentView = cleanId;
         return;
     }
 
-    if (viewLogin) viewLogin.classList.add('hidden');
+    if (viewLogin) {
+        viewLogin.classList.add('hidden');
+        viewLogin.style.display = 'none';
+    }
 
+    // Oculta todas as telas genéricas (garantindo classe e display)
     document.querySelectorAll('main, .page-container').forEach(tela => {
         tela.classList.add('hidden');
+        tela.style.display = 'none';
     });
 
-    const viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
+    // Tenta encontrar o elemento alvo de forma flexível
+    let viewAlvo = document.getElementById(viewId) || 
+                   document.getElementById(`view-${cleanId}`) || 
+                   document.getElementById(cleanId);
+
+    // Tratamento especial para variações de CrossFit caso o ID exato mude
+    if (!viewAlvo && cleanId.includes('crossfit')) {
+        viewAlvo = document.getElementById('crossfit') || 
+                   document.getElementById('crossfit-lobby') || 
+                   document.getElementById('crossfit-timers');
+    }
+
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
+        viewAlvo.style.display = 'block'; // Força a exibição visual
     } else {
         console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
     }
@@ -989,19 +1013,11 @@ function showView(viewId) {
     } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
         renderizarPaginaCronograma();
     } 
-    // Correção do Perfil (aceita diferentes nomes de funções comuns)
-    else if (cleanId === 'perfil') {
+    else if (cleanId === 'perfil' || cleanId.includes('perfil')) {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
     } 
-    // Correções da Zona CrossFit (garante que qualquer variação de ID abra a tela)
     else if (cleanId.includes('crossfit')) {
-        const viewCrossFitAlvo = document.getElementById(viewId) || 
-                                 document.getElementById(`view-${cleanId}`) || 
-                                 document.getElementById('crossfit') || 
-                                 document.getElementById('crossfit-lobby');
-        if (viewCrossFitAlvo) viewCrossFitAlvo.classList.remove('hidden');
-
         if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
             atualizarListaRecordsCF();
         } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
