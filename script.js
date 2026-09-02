@@ -943,21 +943,20 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
+    // Fecha o modal de aviso se estiver aberto
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) {
         modalAvisoGlobal.classList.add('hidden');
     }
 
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
 
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
 
     if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('main, .page-container').forEach(el => {
+        document.querySelectorAll('#app-shell > section, #app-shell > main, .page-container').forEach(el => {
             if (el.id !== 'view-login') el.classList.add('hidden');
         });
         window.currentView = cleanId;
@@ -966,17 +965,17 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Oculta todas as telas usando apenas a classe hidden (preserva grid/flex do CSS)
-    document.querySelectorAll('main, .page-container').forEach(tela => {
+    // Oculta todas as telas principais da aplicação de forma segura (sem quebrar grids)
+    document.querySelectorAll('#app-shell > section, #app-shell > main, .page-container').forEach(tela => {
         tela.classList.add('hidden');
     });
 
-    // Busca o elemento alvo de forma flexível para Perfil, CrossFit e demais
+    // Mapeamento exato dos IDs das views (Perfil, CrossFit e demais)
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
-    // Mapeamento de segurança para seções de CrossFit
+    // Tratamento coringa para qualquer aba dentro da Zona CrossFit
     if (!viewAlvo && cleanId.includes('crossfit')) {
         viewAlvo = document.getElementById('crossfit') || 
                    document.getElementById('crossfit-lobby') || 
@@ -984,18 +983,19 @@ function showView(viewId) {
                    document.getElementById('view-crossfit');
     }
 
-    // Mapeamento de segurança para Perfil
-    if (!viewAlvo && cleanId === 'perfil') {
-        viewAlvo = document.getElementById('perfil') || document.getElementById('view-perfil');
+    // Tratamento coringa para Perfil
+    if (!viewAlvo && (cleanId === 'perfil' || cleanId.includes('perfil'))) {
+        viewAlvo = document.getElementById('perfil') || 
+                   document.getElementById('view-perfil');
     }
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
     } else {
-        console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
+        console.error(`ERRO: A view '${viewId}' (${cleanId}) não existe no HTML! Verifique o ID do elemento.`);
     }
 
-    // Callbacks de renderização
+    // Executa as funções de carregamento de dados correspondentes
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
