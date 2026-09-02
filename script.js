@@ -952,7 +952,7 @@ function showView(viewId) {
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
 
-    if (cleanId === 'login') {
+    if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(el => {
             if (el.id !== 'view-login') el.classList.add('hidden');
@@ -972,19 +972,19 @@ function showView(viewId) {
     });
 
     // Mapeamento direto e inteligente baseado nos IDs reais fornecidos no seu HTML
-    let viewAlvo = null;
-
-    if (cleanId === 'perfil' || viewId === 'perfil') {
-        viewAlvo = document.getElementById('view-perfil') || document.getElementById('perfil');
-    } else if (cleanId === 'crossfit' || cleanId === 'crossfit-lobby' || viewId === 'crossfit-lobby') {
-        // ID exato do seu HTML para o lobby do crossfit: view-crossfit-lobby
-        viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('crossfit-lobby') || document.getElementById('crossfit');
-    } else {
-        // Busca padrão para as demais telas (timers, calculadoras, recordes, etc)
-        viewAlvo = document.getElementById(viewId) || 
-                   document.getElementById(`view-${cleanId}`) || 
-                   document.getElementById(cleanId) ||
-                   document.getElementById(`crossfit-${cleanId}`);
+    let viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${viewId}`);
+    
+    if (!viewAlvo) {
+        if (cleanId === 'perfil' || viewId === 'perfil') {
+            viewAlvo = document.getElementById('view-perfil') || document.getElementById('perfil');
+        } else if (cleanId === 'crossfit' || cleanId === 'crossfit-lobby' || viewId === 'crossfit-lobby') {
+            viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('crossfit-lobby') || document.getElementById('crossfit');
+        } else {
+            viewAlvo = document.getElementById(viewId) || 
+                       document.getElementById(`view-${cleanId}`) || 
+                       document.getElementById(cleanId) ||
+                       document.getElementById(`crossfit-${cleanId}`);
+        }
     }
 
     if (viewAlvo) {
@@ -1019,7 +1019,6 @@ function showView(viewId) {
 
     window.currentView = cleanId;
     
-    // Força absoluta o reset do scroll para o topo da janela ao trocar de aba, evitando abertura no pé da página
     setTimeout(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         document.documentElement.scrollTop = 0;
