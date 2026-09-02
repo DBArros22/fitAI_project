@@ -671,3 +671,13 @@ body:has(#view-login:not(.hidden)) .navbar {
         padding-bottom: 30px;
     }
 }
+
+/* Regras de ajuste */ 
+
+#app-shell main:not(.hidden), 
+#app-shell .page-container:not(.hidden) {
+    display: block !important;
+    position: relative !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+}
