@@ -988,20 +988,29 @@ function showView(viewId) {
         renderizarFichasConsulta();
     } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
         renderizarPaginaCronograma();
-    } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
-        carregarDadosPerfil();
     } 
-    else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
-        atualizarListaRecordsCF();
-    } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
-        atualizarListaBenchmarksCF();
-    } else if (cleanId === 'crossfit-lobby' || cleanId === 'crossfit') {
-        console.log("Zona CrossFit aberta com sucesso!");
-    }
-    else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
-        atualizarListaRecordsCF('gymnastic');
-    } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
-        atualizarListaRecordsCF('endurance');
+    // Correção do Perfil (aceita diferentes nomes de funções comuns)
+    else if (cleanId === 'perfil') {
+        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
+        if (typeof renderizarPerfil === 'function') renderizarPerfil();
+    } 
+    // Correções da Zona CrossFit (garante que qualquer variação de ID abra a tela)
+    else if (cleanId.includes('crossfit')) {
+        const viewCrossFitAlvo = document.getElementById(viewId) || 
+                                 document.getElementById(`view-${cleanId}`) || 
+                                 document.getElementById('crossfit') || 
+                                 document.getElementById('crossfit-lobby');
+        if (viewCrossFitAlvo) viewCrossFitAlvo.classList.remove('hidden');
+
+        if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+            atualizarListaRecordsCF();
+        } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
+            atualizarListaBenchmarksCF();
+        } else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
+            atualizarListaRecordsCF('gymnastic');
+        } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
+            atualizarListaRecordsCF('endurance');
+        }
     }
 
     window.currentView = cleanId;
