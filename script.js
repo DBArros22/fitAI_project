@@ -202,6 +202,8 @@ const dicionarioExercicios = {
     ]
 };
 
+window.dicionarioExercicios = dicionarioExercicios;
+
 // 3. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Configuração das abas de Login e Cadastro
