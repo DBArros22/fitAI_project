@@ -943,39 +943,40 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) return;
 
-    // Fecha o modal de aviso se estiver aberto
+    // Fecha modal global se houver
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) {
         modalAvisoGlobal.classList.add('hidden');
     }
-
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
 
     if (cleanId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('#app-shell > section, #app-shell > main, .page-container').forEach(el => {
+        document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(el => {
             if (el.id !== 'view-login') el.classList.add('hidden');
         });
         window.currentView = cleanId;
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         return;
     }
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Oculta todas as telas principais da aplicação de forma segura (sem quebrar grids)
-    document.querySelectorAll('#app-shell > section, #app-shell > main, .page-container').forEach(tela => {
-        tela.classList.add('hidden');
+    // Oculta absolutamente todas as seções e containers da aplicação para evitar empilhamento
+    document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(tela => {
+        if (tela.id !== 'view-login') {
+            tela.classList.add('hidden');
+        }
     });
 
-    // Mapeamento exato dos IDs das views (Perfil, CrossFit e demais)
+    // Mapeamento exato e seguro do elemento alvo
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
-    // Tratamento coringa para qualquer aba dentro da Zona CrossFit
+    // Tratamentos de segurança específicos para CrossFit e Perfil
     if (!viewAlvo && cleanId.includes('crossfit')) {
         viewAlvo = document.getElementById('crossfit') || 
                    document.getElementById('crossfit-lobby') || 
@@ -983,19 +984,17 @@ function showView(viewId) {
                    document.getElementById('view-crossfit');
     }
 
-    // Tratamento coringa para Perfil
     if (!viewAlvo && (cleanId === 'perfil' || cleanId.includes('perfil'))) {
-        viewAlvo = document.getElementById('perfil') || 
-                   document.getElementById('view-perfil');
+        viewAlvo = document.getElementById('perfil') || document.getElementById('view-perfil');
     }
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
     } else {
-        console.error(`ERRO: A view '${viewId}' (${cleanId}) não existe no HTML! Verifique o ID do elemento.`);
+        console.error(`ERRO CRÍTICO: A view '${viewId}' (${cleanId}) não foi encontrada no DOM.`);
     }
 
-    // Executa as funções de carregamento de dados correspondentes
+    // Callbacks de inicialização de dados de cada tela
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
@@ -1020,7 +1019,13 @@ function showView(viewId) {
     }
 
     window.currentView = cleanId;
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    
+    // Força absoluta o reset do scroll para o topo da janela ao trocar de aba
+    setTimeout(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+    }, 10);
 }
 
 window.showView = showView;
