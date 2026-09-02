@@ -3066,21 +3066,6 @@ function gerarSugestao(foiDisparadoPeloUsuario = false) {
 }
 
 // (Dicionário de exercícios mantido compactado/completo para funcionamento perfeito)
-const dicionarioExercicios = {
-   "Peitoral": ["Supino Reto (Barra)", "Supino Reto (Halteres)", "Supino Reto (Máquina)", "Supino Inclinado (Barra)", "Supino Inclinado (Halteres)", "Supino Inclinado (Máquina)", "Cross Over Polia Alta", "Crucifixo Reto", "Flexão de Braços"],
-   "Dorsais": ["Puxada Aberta (Polia)", "Puxada Triângulo", "Remada Curvada", "Remada Baixa", "Remada Unilateral (Serrote)", "Barra Fixa", "Pull-Down"],
-   "Trapézio": ["Encolhimento de Ombros (Halteres)", "Encolhimento com Barra", "Remada Alta"],
-   "Deltoides (Ombros)": ["Desenvolvimento com Halteres", "Desenvolvimento Militar", "Elevação Lateral", "Elevação Frontal", "Crucifixo Inverso"],
-   "Quadríceps": ["Agachamento Livre", "Leg Press 45", "Cadeira Extensora", "Agachamento Hack", "Agachamento Búlgaro"],
-   "Posteriores de Coxa": ["Mesa Flexora", "Cadeira Flexora", "Stiff", "RDL (Romanian Deadlift)"],
-   "Glúteos": ["Elevação Pélvica", "Glúteo Coice na Polia", "Abdução de Quadril"],
-   "Bíceps/Braquial": ["Rosca Direta", "Rosca Alternada", "Rosca Martelo", "Rosca Scott"],
-   "Tríceps Braquial": ["Tríceps Pulley (Corda)", "Tríceps Testa", "Tríceps Francês", "Mergulho (Paralelas)"],
-   "Antebraço": ["Flexão de Punho", "Rosca Inversa"],
-   "Core/Abdominal": ["Abdominal Supra", "Elevação de Pernas", "Prancha Isométrica", "Russian Twist"],
-   "Panturrilhas": ["Gêmeos em Pé", "Gêmeos Sentado", "Panturrilha no Leg Press"],
-   "Cardio & Aeróbico": ["Esteira", "Bike Ergométrica", "Elíptico", "Pular Corda"]
-};
 
 function carregarExerciciosSubOcupado() {
     const selectGrupo = document.getElementById('select-grupo-sub-ocupado');
