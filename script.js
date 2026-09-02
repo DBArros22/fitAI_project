@@ -964,34 +964,33 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Oculta absolutamente todas as seções e containers da aplicação para evitar empilhamento
+    // Oculta absolutamente todas as seções, mains e page-containers da aplicação
     document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(tela => {
         if (tela.id !== 'view-login') {
             tela.classList.add('hidden');
         }
     });
 
-    // Mapeamento exato e seguro do elemento alvo
-    let viewAlvo = document.getElementById(viewId) || 
+    // Mapeamento direto e inteligente baseado nos IDs reais fornecidos no seu HTML
+    let viewAlvo = null;
+
+    if (cleanId === 'perfil' || viewId === 'perfil') {
+        viewAlvo = document.getElementById('view-perfil') || document.getElementById('perfil');
+    } else if (cleanId === 'crossfit' || cleanId === 'crossfit-lobby' || viewId === 'crossfit-lobby') {
+        // ID exato do seu HTML para o lobby do crossfit: view-crossfit-lobby
+        viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('crossfit-lobby') || document.getElementById('crossfit');
+    } else {
+        // Busca padrão para as demais telas (timers, calculadoras, recordes, etc)
+        viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
-                   document.getElementById(cleanId);
-
-    // Tratamentos de segurança específicos para CrossFit e Perfil
-    if (!viewAlvo && cleanId.includes('crossfit')) {
-        viewAlvo = document.getElementById('crossfit') || 
-                   document.getElementById('crossfit-lobby') || 
-                   document.getElementById('crossfit-timers') ||
-                   document.getElementById('view-crossfit');
-    }
-
-    if (!viewAlvo && (cleanId === 'perfil' || cleanId.includes('perfil'))) {
-        viewAlvo = document.getElementById('perfil') || document.getElementById('view-perfil');
+                   document.getElementById(cleanId) ||
+                   document.getElementById(`crossfit-${cleanId}`);
     }
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
     } else {
-        console.error(`ERRO CRÍTICO: A view '${viewId}' (${cleanId}) não foi encontrada no DOM.`);
+        console.error(`ERRO CRÍTICO: A view '${viewId}' (cleanId: '${cleanId}') não foi encontrada no DOM.`);
     }
 
     // Callbacks de inicialização de dados de cada tela
@@ -1003,7 +1002,7 @@ function showView(viewId) {
         renderizarFichasConsulta();
     } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
         renderizarPaginaCronograma();
-    } else if (cleanId === 'perfil' || cleanId.includes('perfil')) {
+    } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
     } else if (cleanId.includes('crossfit')) {
@@ -1020,7 +1019,7 @@ function showView(viewId) {
 
     window.currentView = cleanId;
     
-    // Força absoluta o reset do scroll para o topo da janela ao trocar de aba
+    // Força absoluta o reset do scroll para o topo da janela ao trocar de aba, evitando abertura no pé da página
     setTimeout(() => {
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         document.documentElement.scrollTop = 0;
