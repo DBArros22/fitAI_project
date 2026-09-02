@@ -941,76 +941,148 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
+
 if (!viewId) return;
-const modalAvisoGlobal = document.getElementById('modal-aviso');
-if (modalAvisoGlobal) {
-modalAvisoGlobal.classList.add('hidden');
-modalAvisoGlobal.style.display = 'none';
-}
+
+
+
 // Reseta o scroll imediatamente para o topo
+
 window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
 document.documentElement.scrollTop = 0;
+
 document.body.scrollTop = 0;
-// Reseta o scroll imediatamente para o topo
-window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-document.documentElement.scrollTop = 0;
-document.body.scrollTop = 0;
+
+
+
 const cleanId = viewId.replace('view-', '');
+
 const viewLogin = document.getElementById('view-login');
+
+
+
 // 1. Caso Login
+
 if (cleanId === 'login') {
+
 if (viewLogin) viewLogin.classList.remove('hidden');
+
 document.querySelectorAll('main, .page-container').forEach(el => {
+
 if (el.id !== 'view-login') el.classList.add('hidden');
+
 });
-return;}
-// 2. Oculta a tela de login se estiver navegando pelo app
-if (viewLogin) viewLogin.classList.add('hidden');
-// 3. Oculta rigorosamente TODAS as telas (main e page-container)
-const todasAsTelas = document.querySelectorAll('main, .page-container');
-todasAsTelas.forEach(tela => {
-tela.classList.add('hidden');
-});
-// 4. Mostra exclusivamente a view alvo solicitada (Tratando IDs diretos como o do CrossFit)
-const viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
-if (viewAlvo) {
-viewAlvo.classList.remove('hidden');
-} else {
-console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
+
+return;
+
 }
 
+
+
+// 2. Oculta a tela de login se estiver navegando pelo app
+
+if (viewLogin) viewLogin.classList.add('hidden');
+
+
+
+// 3. Oculta rigorosamente TODAS as telas (main e page-container)
+
+const todasAsTelas = document.querySelectorAll('main, .page-container');
+
+todasAsTelas.forEach(tela => {
+
+tela.classList.add('hidden');
+
+});
+
+
+
+// 4. Mostra exclusivamente a view alvo solicitada (Tratando IDs diretos como o do CrossFit)
+
+const viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${cleanId}`) || document.getElementById(cleanId);
+
+if (viewAlvo) {
+
+viewAlvo.classList.remove('hidden');
+
+} else {
+
+console.warn(`A view '${viewId}' ou '${cleanId}' não foi encontrada no HTML.`);
+
+}
+
+
+
 // 5. callbacks de renderização para CrossFit e Planilhas
+
 if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
+
 renderizarFichas();
+
 } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+
 renderizarFichas();
+
 } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
+
 renderizarFichasConsulta();
+
 } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
+
 renderizarPaginaCronograma();
+
 } else if (cleanId === 'perfil' && typeof carregarDadosPerfil === 'function') {
+
 carregarDadosPerfil();
+
 }
+
 // === SEÇÃO CROSSFIT ===
+
 else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+
 atualizarListaRecordsCF();
+
 } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
+
 atualizarListaBenchmarksCF();
+
 } else if (cleanId === 'crossfit-lobby' || cleanId === 'crossfit') {
+
 console.log("Zona CrossFit aberta com sucesso!");
+
 }
+
 else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
+
 atualizarListaRecordsCF('gymnastic');
+
 } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
+
 atualizarListaRecordsCF('endurance');
+
 } else if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
+
 atualizarListaRecordsCF(window.currentRecordType || 'barbell');
+
 }
+
+
+
 window.currentView = cleanId;
+
+
+
 // Segundo comando de segurança para garantir o topo
+
 window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
 }
-window.showView = showView
+
+
+
+window.showView = showView;
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
