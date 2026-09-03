@@ -967,6 +967,12 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
+    // Garante que o container principal `#app-shell` fique visível na tela
+    const appShell = document.getElementById('app-shell');
+    if (appShell) {
+        appShell.classList.remove('hidden');
+    }
+
     // Oculta absolutamente todas as seções, mains e page-containers da aplicação
     document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(tela => {
         if (tela.id !== 'view-login') {
@@ -1037,11 +1043,10 @@ window.showView = showView;
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
     if (modal) {
-        modal.remove(); // Remove o modal quebrado direto da árvore do DOM ao iniciar
+        modal.remove();
     }
 });
 
-// Função para alternar as abas de autenticação (Com o cabeçalho correto!)
 window.toggleAuthTab = function(tab) {
     const formLogin = document.getElementById('form-login');
     const formCadastro = document.getElementById('form-cadastro');
