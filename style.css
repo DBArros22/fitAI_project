@@ -682,11 +682,3 @@ body:has(#view-login:not(.hidden)) .navbar {
     width: 100% !important;
     min-height: 100vh !important;
 }
-
-main[id^="view-"]:not(.hidden),
-section[id^="view-"]:not(.hidden),
-.page-container:not(.hidden) {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
