@@ -674,13 +674,11 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 /* Regras de ajuste */ 
 
-#app-shell main:not(.hidden), 
-#app-shell .page-container:not(.hidden),
-#app-shell section:not(.hidden) {
-    display: block !important;
+#app-shell > main:not(.hidden),
+#app-shell > div:not(.hidden),
+#app-shell > section:not(.hidden) {
     visibility: visible !important;
     opacity: 1 !important;
-    position: relative !important;
     width: 100% !important;
     min-height: 100vh !important;
 }
