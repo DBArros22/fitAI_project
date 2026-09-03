@@ -941,12 +941,10 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    // Fallback inteligente: se viewId não for passado, define 'view-crossfit-lobby' por padrão
     if (!viewId) {
         viewId = 'view-crossfit-lobby';
     }
 
-    // Fecha modal global se houver
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) {
         modalAvisoGlobal.classList.add('hidden');
@@ -957,7 +955,7 @@ function showView(viewId) {
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(el => {
+        document.querySelectorAll('section, main, .page-container').forEach(el => {
             if (el.id !== 'view-login') el.classList.add('hidden');
         });
         window.currentView = cleanId;
@@ -967,20 +965,14 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Garante que o container principal `#app-shell` fique visível na tela
-    const appShell = document.getElementById('app-shell');
-    if (appShell) {
-        appShell.classList.remove('hidden');
-    }
-
-    // Oculta absolutamente todas as seções, mains e page-containers da aplicação
-    document.querySelectorAll('#app-shell section, #app-shell main, .page-container, main').forEach(tela => {
-        if (tela.id !== 'view-login') {
+    // Oculta todas as telas da aplicação de forma segura sem depender de um seletor pai inexistente
+    document.querySelectorAll('section, main, .page-container').forEach(tela => {
+        if (tela.id && tela.id !== 'view-login') {
             tela.classList.add('hidden');
         }
     });
 
-    // Mapeamento direto e inteligente baseado nos IDs reais fornecidos no seu HTML
+    // Mapeamento assertivo baseado nos IDs reais
     let viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${viewId}`);
     
     if (!viewAlvo) {
@@ -996,16 +988,16 @@ function showView(viewId) {
         }
     }
 
-    // Se mesmo assim não achar, força o lobby para evitar tela em branco
+    // Fallback de segurança para nunca deixar em branco
     if (!viewAlvo) {
-        viewAlvo = document.getElementById('view-crossfit-lobby');
+        viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
     }
 
-    // Callbacks de inicialização de dados de cada tela
+    // Callbacks de inicialização de dados
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
@@ -1039,7 +1031,6 @@ function showView(viewId) {
 }
 
 window.showView = showView;
-
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
     if (modal) {
