@@ -941,7 +941,10 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) return;
+    // Fallback inteligente: se viewId não for passado, define 'view-crossfit-lobby' por padrão
+    if (!viewId) {
+        viewId = 'view-crossfit-lobby';
+    }
 
     // Fecha modal global se houver
     const modalAvisoGlobal = document.getElementById('modal-aviso');
@@ -987,10 +990,13 @@ function showView(viewId) {
         }
     }
 
+    // Se mesmo assim não achar, força o lobby para evitar tela em branco
+    if (!viewAlvo) {
+        viewAlvo = document.getElementById('view-crossfit-lobby');
+    }
+
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
-    } else {
-        console.error(`ERRO CRÍTICO: A view '${viewId}' (cleanId: '${cleanId}') não foi encontrada no DOM.`);
     }
 
     // Callbacks de inicialização de dados de cada tela
