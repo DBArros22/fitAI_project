@@ -999,6 +999,10 @@ function showView(viewId) {
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
+        viewAlvo.removeAttribute('hidden'); // Remove caso haja atributo nativo
+        // Força a remoção via className caso o classList esteja travado por algum motivo
+        viewAlvo.className = viewAlvo.className.replace('hidden', '').trim();
+        console.log("Classes forçadas após remoção:", viewAlvo.className);
     }
 
     // Callbacks de inicialização de dados
