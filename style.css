@@ -677,8 +677,23 @@ body:has(#view-login:not(.hidden)) .navbar {
 #app-shell > main:not(.hidden),
 #app-shell > div:not(.hidden),
 #app-shell > section:not(.hidden) {
+    display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     width: 100% !important;
     min-height: 100vh !important;
+}
+
+
+.page-container.hidden,
+#view-perfil.hidden {
+    display: none !important;
+}
+
+/* Força a exibição correta quando o hidden é removido pelo JavaScript */
+.page-container:not(.hidden),
+#view-perfil:not(.hidden) {
+    display: block !important;
+    width: 100%;
+    box-sizing: border-box;
 }
