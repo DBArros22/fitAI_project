@@ -988,6 +988,10 @@ function showView(viewId) {
         }
     }
 
+    console.log("Tentando exibir a view:", viewId);
+    console.log("Elemento encontrado no DOM:", viewAlvo);
+    console.log("Classes atuais do elemento:", viewAlvo ? viewAlvo.className : "Não existe");
+
     // Fallback de segurança para nunca deixar em branco
     if (!viewAlvo) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
@@ -1031,6 +1035,7 @@ function showView(viewId) {
 }
 
 window.showView = showView;
+
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
     if (modal) {
