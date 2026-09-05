@@ -2832,6 +2832,7 @@ async function carregarPerfilPublico(uidAlvo) {
         container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
     }
 }
+
 window.carregarPerfilPublico = carregarPerfilPublico;
 
 function ativarEdicaoBio() {
@@ -2869,28 +2870,6 @@ async function salvarNovaBio() {
     }
 }
 
-window.salvarNovaBio = salvarNovaBio;
-
-async function salvarNovaBio() {
-    const input = document.getElementById('input-nova-bio');
-    if (!input) return;
-    const novaBio = input.value.trim();
-    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-    if (!user) return;
-
-    try {
-        await db.collection('usuarios').doc(user.uid).set({
-            bio: novaBio
-        }, { merge: true });
-
-        if (typeof mostrarAviso === 'function') mostrarAviso("Bio atualizada com sucesso!");
-        carregarPerfilPublico(user.uid);
-    } catch (e) {
-        console.error("Erro ao salvar bio:", e);
-        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar bio.");
-    }
-}
-window.salvarNovaBio = salvarNovaBio;
 
 window.mudarAbaBlog = mudarAbaBlog;
 
