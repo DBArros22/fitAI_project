@@ -2697,23 +2697,29 @@ function renderizarBlog() {
 
 window.renderizarBlog = renderizarBlog;
 
-function mudarAbaBlog(aba, uidEspecifico = null) {
+async function mudarAbaBlog(aba, uidEspecifico = null) {
     window.abaAtivaBlog = aba;
-    
-    // Atualiza o visual dos botões de abas
+
+    // Seletores dos botões de abas do topo do blog
     const btnFeed = document.getElementById('tab-btn-feed');
     const btnExplorar = document.getElementById('tab-btn-explorar');
     const btnPerfil = document.getElementById('tab-btn-perfil');
-    
-    if(btnFeed) btnFeed.style.background = aba === 'feed' ? '#3b82f6' : 'transparent';
-    if(btnExplorar) btnExplorar.style.background = aba === 'explorar' ? '#3b82f6' : 'transparent';
-    if(btnPerfil) btnPerfil.style.background = aba === 'perfil' ? '#3b82f6' : 'transparent';
+
+    // Reseta o estilo de todos os botões para transparente
+    if (btnFeed) btnFeed.style.background = 'transparent';
+    if (btnExplorar) btnExplorar.style.background = 'transparent';
+    if (btnPerfil) btnPerfil.style.background = 'transparent';
+
+    // Destaca a aba ativa com a cor azul característica (#3b82f6)
+    if (aba === 'feed' && btnFeed) btnFeed.style.background = '#3b82f6';
+    if (aba === 'explorar' && btnExplorar) btnExplorar.style.background = '#3b82f6';
+    if (aba === 'perfil' && btnPerfil) btnPerfil.style.background = '#3b82f6';
 
     const conteudoDinamico = document.getElementById('blog-conteudo-dinamico');
     if (!conteudoDinamico) return;
 
     if (aba === 'feed') {
-        // Restaura a estrutura padrão do Feed com o campo de postagem e o container do feed
+        // Restaura exatamente o layout padrão do feed que você enviou no HTML
         conteudoDinamico.innerHTML = `
             <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
 
@@ -2740,22 +2746,32 @@ function mudarAbaBlog(aba, uidEspecifico = null) {
             </div>
 
             <div id="preview-container" style="margin-top: 15px;"></div>
+            
             <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+            
             <div id="feed-container"></div>
         `;
-        carregarFeedDoBanco();
-    } else if (aba === 'perfil') {
-        const targetUid = uidEspecifico || (auth && auth.currentUser ? auth.currentUser.uid : null);
-        if (targetUid) {
-            window.perfilVisualizadoUid = targetUid;
-            carregarPerfilPublico(targetUid);
+        // Carrega os posts do banco logo em seguida
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
         }
-    } else if (aba === 'explorar') {
-        // Caso tenha a lógica de explorar amigos
+    } 
+    else if (aba === 'explorar') {
+        // Chama a sua função original de explorar que já estava implementada no seu projeto
         if (typeof carregarExplorar === 'function') {
-            carregarExplorar();
+            await carregarExplorar();
         } else {
-            conteudoDinamico.innerHTML = `<p style="color: #64748b; text-align: center; padding: 40px;">Área de explorar em breve.</p>`;
+            conteudoDinamico.innerHTML = `<div id="explorar-container"></div>`;
+            if (typeof carregarUsuariosExplorar === 'function') carregarUsuariosExplorar();
+        }
+    } 
+    else if (aba === 'perfil') {
+        const uidAlvo = uidEspecifico || (auth && auth.currentUser ? auth.currentUser.uid : null);
+        if (uidAlvo) {
+            window.perfilVisualizadoUid = uidAlvo;
+            if (typeof carregarPerfilPublico === 'function') {
+                await carregarPerfilPublico(uidAlvo);
+            }
         }
     }
 }
