@@ -2688,7 +2688,6 @@ function renderizarBlog() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
                 </button>
                 
-                <!-- Abas Visuais Grandes e Estilizadas -->
                 <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
                     <button onclick="mudarAbaBlog('feed')" style="background: ${window.abaAtivaBlog === 'feed' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'feed' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">📰 Feed</button>
                     <button onclick="mudarAbaBlog('explorar')" style="background: ${window.abaAtivaBlog === 'explorar' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'explorar' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">🔍 Explorar</button>
@@ -2705,17 +2704,45 @@ function renderizarBlog() {
 
 function mudarAbaBlog(aba, uidAlvo = null) {
     window.abaAtivaBlog = aba;
-    if (aba === 'perfil') {
+    const conteudoDinamico = document.getElementById('blog-conteudo-dinamico');
+    if (!conteudoDinamico) return;
+
+    if (aba === 'feed') {
+        conteudoDinamico.innerHTML = `
+            <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+                <button id="btn-mic" onclick="toggleGravacao()" class="btn-action" title="Gravar Áudio">
+                    <svg id="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <span id="timer-gravacao" class="hidden" style="color: var(--accent-blue); font-weight: bold; font-family: monospace;">00:00</span>
+                <input type="file" id="input-media" accept="image/*,video/*,audio/*" style="display:none" onchange="previewMidia(event)">
+                <button onclick="document.getElementById('input-media').click()" class="btn-action" title="Adicionar Mídia">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </button>
+                <button onclick="postarNoFeed()" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    POSTAR
+                </button>
+            </div>
+            <div id="preview-container" style="margin-top: 15px;"></div>
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+            <div id="feed-container"></div>
+        `;
+        if (typeof carregarFeed === 'function') carregarFeed();
+    } else if (aba === 'perfil') {
         const user = typeof auth !== 'undefined' ? auth.currentUser : null;
         window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
+        conteudoDinamico.innerHTML = `<div id="perfil-publico-container">Carregando perfil...</div>`;
+        if (window.perfilVisualizadoUid) carregarPerfilPublico(window.perfilVisualizadoUid);
+    } else if (aba === 'explorar') {
+        conteudoDinamico.innerHTML = `<div id="explorar-container"></div>`;
+        if (typeof carregarExplorar === 'function') carregarExplorar();
     }
-    renderizarBlog();
 }
 window.mudarAbaBlog = mudarAbaBlog;
 
-// Função para carregar perfil com Bio Editável via Ícone de Lápis e Galeria Aprimorada
 async function carregarPerfilPublico(uidAlvo) {
-    const container = document.getElementById('perfil-publico-container');
+    const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
     if (!container) return;
 
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
@@ -2726,7 +2753,7 @@ async function carregarPerfilPublico(uidAlvo) {
         const dados = userDoc.exists ? userDoc.data() : {};
         const nome = dados.nome || dados.nomeCompleto || "ATLETA";
         const foto = dados.fotoPerfil || dados.foto || null;
-        const bio = dados.bio || "Buscando evolução constante no treino!";
+        const bio = dados.bio || "";
 
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
         let totalPosts = postsSnap.size;
@@ -2746,6 +2773,34 @@ async function carregarPerfilPublico(uidAlvo) {
             }
         });
 
+        let blocoBioHtml = '';
+        if (bio.trim() !== "") {
+            blocoBioHtml = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px; word-break: break-word;">${bio}</p>
+                    ${ehMeuPerfil ? `
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            if (ehMeuPerfil) {
+                blocoBioHtml = `
+                    <div style="margin-bottom: 18px;">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Adicionar bio ao perfil
+                        </button>
+                        <div id="texto-bio-usuario" style="display:none;"></div>
+                    </div>
+                `;
+            } else {
+                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`;
+            }
+        }
+
         container.innerHTML = `
             <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                 <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
@@ -2753,15 +2808,7 @@ async function carregarPerfilPublico(uidAlvo) {
                 </div>
                 <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
                 
-                <!-- Bloco da Bio com Lápis de Edição Condicional -->
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
-                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px;">${bio}</p>
-                    ${ehMeuPerfil ? `
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                    ` : ''}
-                </div>
+                ${blocoBioHtml}
 
                 <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
                     <div>
@@ -2785,16 +2832,16 @@ async function carregarPerfilPublico(uidAlvo) {
         container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
     }
 }
+window.carregarPerfilPublico = carregarPerfilPublico;
 
-// Funções de suporte para edição dinâmica da Bio
 function ativarEdicaoBio() {
     const pBio = document.getElementById('texto-bio-usuario');
     if (!pBio) return;
-    const bioAtual = pBio.innerText;
+    const bioAtual = pBio.innerText || "";
 
     pBio.outerHTML = `
         <div id="container-edicao-bio" style="display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 400px; margin: 0 auto;">
-            <input type="text" id="input-nova-bio" value="${bioAtual}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.5); padding: 8px 12px; border-radius: 10px; color: white; font-size: 13px; outline: none;">
+            <input type="text" id="input-nova-bio" value="${bioAtual}" placeholder="Escreva sua bio..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.5); padding: 8px 12px; border-radius: 10px; color: white; font-size: 13px; outline: none;">
             <button onclick="salvarNovaBio()" style="background: #3b82f6; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: bold; font-size: 11px; cursor: pointer;">Salvar</button>
         </div>
     `;
@@ -2805,7 +2852,7 @@ async function salvarNovaBio() {
     const input = document.getElementById('input-nova-bio');
     if (!input) return;
     const novaBio = input.value.trim();
-    const user = auth.currentUser;
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
     if (!user) return;
 
     try {
