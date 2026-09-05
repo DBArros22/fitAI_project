@@ -2698,12 +2698,37 @@ function renderizarBlog() {
 window.renderizarBlog = renderizarBlog;
 
 function mudarAbaBlog(aba, uidAlvo = null) {
-    abaAtivaBlog = aba;
+    window.abaAtivaBlog = aba;
     if (aba === 'perfil') {
         const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-        perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
+        window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
     }
-    renderizarBlog();
+    
+    // Atualiza imediatamente o destaque visual de todos os botões de abas
+    const botoes = {
+        'feed': document.querySelector('button[onclick*="mudarAbaBlog(\'feed\'"]'),
+        'explorar': document.querySelector('button[onclick*="mudarAbaBlog(\'explorar\'"]'),
+        'perfil': document.querySelector('button[onclick*="mudarAbaBlog(\'perfil\'"]')
+    };
+
+    const estiloAtivo = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    const sombraAtiva = '0 4px 15px rgba(59,130,246,0.4)';
+
+    for (const [chave, btn] of Object.entries(botoes)) {
+        if (btn) {
+            if (chave === aba) {
+                btn.style.background = estiloAtivo;
+                btn.style.boxShadow = sombraAtiva;
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.boxShadow = 'none';
+            }
+        }
+    }
+
+    if (typeof renderizarBlog === 'function') {
+        renderizarBlog();
+    }
 }
 
 window.mudarAbaBlog = mudarAbaBlog;
