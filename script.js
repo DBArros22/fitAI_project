@@ -3136,7 +3136,7 @@ async function postarNoFeed() {
         await db.collection('feed').add(novoPost);
         
         if (inputTexto) inputTexto.value = "";
-        removerMidia();
+        if (typeof removerMidia === 'function') removerMidia();
 
         if (typeof carregarFeedDoBanco === 'function') await carregarFeedDoBanco();
         
@@ -3190,9 +3190,9 @@ function atualizarFeedUI() {
             const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
 
             if (tipo === 'foto' || tipo === 'image') {
-                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><img src="${urlMidia}" style="width: 100%; max-height: 280px; display: block; object-fit: cover;"></div>`;
+                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2);"><img src="${urlMidia}" style="width: 100%; max-height: 280px; display: block; object-fit: cover;"></div>`;
             } else if (tipo === 'video') {
-                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><video src="${urlMidia}" controls style="width: 100%; max-height: 280px; display: block;"></video></div>`;
+                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2);"><video src="${urlMidia}" controls style="width: 100%; max-height: 280px; display: block;"></video></div>`;
             } else if (tipo === 'audio') {
                 midiaHTML = `<div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px;"><audio src="${urlMidia}" controls style="width: 100%;"></audio></div>`;
             }
@@ -3256,7 +3256,6 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
-
 window.atualizarFeedUI = atualizarFeedUI;
 
 async function curtirPost(postId) {
@@ -3332,7 +3331,6 @@ async function comentarPost(postId) {
         input.value = "";
         await carregarFeedDoBanco();
         
-        // Mantém a caixa de comentários aberta após postar
         setTimeout(() => {
             const el = document.getElementById(`comentarios-container-${postId}`);
             if (el) el.style.display = 'block';
