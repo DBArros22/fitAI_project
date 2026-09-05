@@ -2704,13 +2704,45 @@ function renderizarBlog() {
 }
 
 function mudarAbaBlog(aba, uidAlvo = null) {
-    abaAtivaBlog = aba;
-    if (aba === 'perfil') {
+    window.abaAtivaBlog = aba;
+    const conteudoDinamico = document.getElementById('blog-conteudo-dinamico');
+    if (!conteudoDinamico) return;
+
+    if (aba === 'feed') {
+        conteudoDinamico.innerHTML = `
+            <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+                <button id="btn-mic" onclick="toggleGravacao()" class="btn-action" title="Gravar Áudio">
+                    <svg id="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                <span id="timer-gravacao" class="hidden" style="color: var(--accent-blue); font-weight: bold; font-family: monospace;">00:00</span>
+                <input type="file" id="input-media" accept="image/*,video/*,audio/*" style="display:none" onchange="previewMidia(event)">
+                <button onclick="document.getElementById('input-media').click()" class="btn-action" title="Adicionar Mídia">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </button>
+                <button onclick="postarNoFeed()" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    POSTAR
+                </button>
+            </div>
+            <div id="preview-container" style="margin-top: 15px;"></div>
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+            <div id="feed-container"></div>
+        `;
+        if (typeof carregarFeed === 'function') carregarFeed();
+    } else if (aba === 'perfil') {
         const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-        perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
+        const targetUid = uidAlvo || (user ? user.uid : null);
+        window.perfilVisualizadoUid = targetUid;
+        
+        conteudoDinamico.innerHTML = `<div id="perfil-publico-container">Carregando perfil...</div>`;
+        if (targetUid) carregarPerfilPublico(targetUid);
+    } else if (aba === 'explorar') {
+        conteudoDinamico.innerHTML = `<div id="explorar-container"></div>`;
+        if (typeof carregarExplorar === 'function') carregarExplorar();
     }
-    renderizarBlog();
 }
+window.mudarAbaBlog = mudarAbaBlog;
 
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container');
