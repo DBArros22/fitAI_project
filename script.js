@@ -2867,6 +2867,8 @@ async function salvarNovaBio() {
     }
 }
 
+window.salvarNovaBio = salvarNovaBio;
+
 
 window.mudarAbaBlog = mudarAbaBlog;
 
