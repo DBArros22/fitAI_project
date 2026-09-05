@@ -2789,22 +2789,23 @@ async function carregarPerfilPublico(uidAlvo) {
 
         postsSnap.forEach(doc => {
             const p = doc.data();
+            const postId = doc.id; // ID real do documento no Firestore
             const dataPostFormatada = p.criadoEm && p.criadoEm.toDate ? p.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente";
             const ehMeuPost = user && p.uid === user.uid;
 
-            // Monta a Galeria Visual de Fotos
+            // Monta a Galeria Visual de Fotos (com o ID do post para garantir o controle)
             if (p.midia) {
                 const tipo = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
                 const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
                 if (tipo === 'foto' || tipo === 'image') {
                     gridMidiasHtml += `
-                        <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4);">
+                        <div id="galeria-item-${postId}" style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4);">
                             <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
                         </div>`;
                 }
             }
 
-            // Monta a listagem de posts detalhados (texto + mídia) do perfil com botão de exclusão
+            // Monta a listagem de posts detalhados (texto + mídia) do perfil com botão de exclusão discreto
             let midiaPostHtml = '';
             if (p.midia) {
                 const tipoM = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
@@ -2813,14 +2814,16 @@ async function carregarPerfilPublico(uidAlvo) {
                     midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><img src="${urlM}" style="width: 100%; max-height: 220px; object-fit: contain;"></div>`;
                 } else if (tipoM === 'video') {
                     midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><video src="${urlM}" controls style="width: 100%; max-height: 220px;"></video></div>`;
+                } else if (tipoM === 'audio') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px;"><audio src="${urlM}" controls style="width: 100%;"></audio></div>`;
                 }
             }
 
             listaPostsPerfilHtml += `
-                <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
+                <div id="post-perfil-${postId}" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
                         <p style="color: #64748b; font-size: 10px; margin: 0;">${dataPostFormatada}</p>
-                        ${ehMeuPost ? `<button onclick="excluirPost('${doc.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; line-height: 1;" title="Excluir post">&times;</button>` : ''}
+                        ${ehMeuPost ? `<button onclick="excluirPost('${postId}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 20px; font-weight: bold; line-height: 1; padding: 0 4px;" title="Excluir post">&times;</button>` : ''}
                     </div>
                     ${p.texto ? `<p style="color: white; font-size: 13px; margin-bottom: 8px; line-height: 1.4;">${p.texto}</p>` : ''}
                     ${midiaPostHtml}
@@ -2909,7 +2912,6 @@ async function carregarPerfilPublico(uidAlvo) {
 }
 
 window.carregarPerfilPublico = carregarPerfilPublico;
-
 
 function ativarEdicaoBio() {
     const pBio = document.getElementById('texto-bio-usuario');
