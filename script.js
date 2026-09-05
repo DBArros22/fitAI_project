@@ -2745,7 +2745,7 @@ function mudarAbaBlog(aba, uidAlvo = null) {
 window.mudarAbaBlog = mudarAbaBlog;
 
 async function carregarPerfilPublico(uidAlvo) {
-    const container = document.getElementById('perfil-publico-container');
+    const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
     if (!container) return;
 
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
@@ -2756,8 +2756,6 @@ async function carregarPerfilPublico(uidAlvo) {
         const dados = userDoc.exists ? userDoc.data() : {};
         const nome = dados.nome || dados.nomeCompleto || "ATLETA";
         const foto = dados.fotoPerfil || dados.foto || null;
-        
-        // Se a bio não existir ou estiver vazia, tratamos como string vazia para iniciar limpa
         const bio = dados.bio || "";
 
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
@@ -2771,14 +2769,13 @@ async function carregarPerfilPublico(uidAlvo) {
                 const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
                 if (tipo === 'foto' || tipo === 'image') {
                     gridMidiasHtml += `
-                        <div style="aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                             <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
                         </div>`;
                 }
             }
         });
 
-        // Montagem do HTML da Bio seguindo o padrão Instagram (vazia se não preenchida, com gatilho de edição)
         let blocoBioHtml = '';
         if (bio.trim() !== "") {
             blocoBioHtml = `
@@ -2795,7 +2792,7 @@ async function carregarPerfilPublico(uidAlvo) {
             if (ehMeuPerfil) {
                 blocoBioHtml = `
                     <div style="margin-bottom: 18px;">
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             Adicionar bio ao perfil
                         </button>
@@ -2803,34 +2800,33 @@ async function carregarPerfilPublico(uidAlvo) {
                     </div>
                 `;
             } else {
-                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`; // Perfil de terceiros sem bio não exibe nada
+                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`;
             }
         }
 
         container.innerHTML = `
-            <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
-                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 28px; font-weight:bold;">${nome.charAt(0)}</span>`}
-                </div>
-                <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
-                
-                ${blocoBioHtml}
+            <div style="padding: 10px 0;">
+                <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6;">
+                        ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 28px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                    </div>
+                    <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
+                    
+                    ${blocoBioHtml}
 
-                <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
-                    <div>
-                        <p style="color: white; font-size: 16px; font-weight: bold; margin: 0;">${totalPosts}</p>
-                        <p style="color: #64748b; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Posts de Treino</p>
+                    <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+                        <div>
+                            <p style="color: white; font-size: 16px; font-weight: bold; margin: 0;">${totalPosts}</p>
+                            <p style="color: #64748b; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Posts de Treino</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <h4 style="color: white; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                Galeria de Evolução Visual
-            </h4>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
-                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: 1 / -1; text-align: center; padding: 30px 0; background: rgba(255,255,255,0.01); border-radius: 14px;">Nenhuma arte ou foto postada ainda.</p>`}
+                <h4 style="color: white; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase;">Galeria de Evolução Visual</h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
+                    ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: 1 / -1; text-align: center; padding: 30px 0;">Nenhuma foto postada ainda.</p>`}
+                </div>
             </div>
         `;
     } catch (e) {
@@ -2838,6 +2834,8 @@ async function carregarPerfilPublico(uidAlvo) {
         container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
     }
 }
+window.carregarPerfilPublico = carregarPerfilPublico;
+
 
 // Funções de suporte para edição dinâmica da Bio
 function ativarEdicaoBio() {
