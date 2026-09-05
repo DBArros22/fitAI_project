@@ -2950,45 +2950,118 @@ async function salvarNovaBio() {
 
 window.salvarNovaBio = salvarNovaBio;
 
+window.abaAtivaBlog = window.abaAtivaBlog || 'feed';
+window.perfilVisualizadoUid = window.perfilVisualizadoUid || null;
+window.midiaAnexada = window.midiaAnexada || null;
+window.feedEvolucao = window.feedEvolucao || [];
+
+function mudarAbaBlog(aba, uidEspecifico = null) {
+    window.abaAtivaBlog = aba;
+    if (uidEspecifico) {
+        window.perfilVisualizadoUid = uidEspecifico;
+    } else if (aba === 'perfil' && auth && auth.currentUser) {
+        window.perfilVisualizadoUid = auth.currentUser.uid;
+    }
+
+    const botoesAba = document.querySelectorAll('.aba-blog-btn');
+    botoesAba.forEach(btn => {
+        if (btn.dataset.aba === aba) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    renderizarConteudoAbaBlog();
+}
+window.mudarAbaBlog = mudarAbaBlog;
+
+function renderizarConteudoAbaBlog() {
+    const containerConteudo = document.getElementById('blog-conteudo-dinamico') || document.getElementById('conteudo-aba-blog');
+    if (!containerConteudo) return;
+
+    if (window.abaAtivaBlog === 'feed') {
+        containerConteudo.innerHTML = `
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08);">
+                <textarea id="post-texto" placeholder="Compartilhe sua evolução, treino ou conquista de hoje..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; color: white; font-size: 14px; resize: none; height: 90px; outline: none;"></textarea>
+                <div id="preview-midia" style="margin-top: 10px;"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                    <label style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: white; padding: 8px 14px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        📷 Anexar Mídia
+                        <input type="file" id="input-media" accept="image/*,video/*,audio/*" onchange="previewMidia(event)" style="display: none;">
+                    </label>
+                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 9px 20px; border-radius: 10px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">Publicar</button>
+                </div>
+            </div>
+            <div id="feed-container"></div>
+        `;
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
+    } else if (window.abaAtivaBlog === 'explorar') {
+        containerConteudo.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="input-pesquisa-atleta" placeholder="Pesquisar atleta por nome..." oninput="pesquisarAtletas(this.value)" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 14px; color: white; font-size: 14px; outline: none;">
+            </div>
+            <div id="resultados-pesquisa-atletas" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite o nome de um atleta para buscar.</p>
+            </div>
+        `;
+    } else if (window.abaAtivaBlog === 'perfil') {
+        containerConteudo.innerHTML = `<div id="perfil-publico-container">Carregando perfil...</div>`;
+        const uidAlvo = window.perfilVisualizadoUid || (auth && auth.currentUser ? auth.currentUser.uid : null);
+        if (uidAlvo && typeof carregarPerfilPublico === 'function') {
+            carregarPerfilPublico(uidAlvo);
+        }
+    }
+}
+window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
+
 async function pesquisarAtletas(termo) {
-    const container = document.getElementById('lista-resultados-busca');
+    const container = document.getElementById('resultados-pesquisa-atletas');
     if (!container) return;
     if (!termo || termo.trim().length < 2) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px;">Digite pelo menos 2 letras.</p>`;
+        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite pelo menos 2 letras para buscar.</p>`;
         return;
     }
+
     try {
         const snapshot = await db.collection('usuarios').get();
-        let html = '';
-        const user = auth.currentUser;
+        let htmlResultados = '';
+        const termoBusca = termo.toLowerCase().trim();
+
         snapshot.forEach(doc => {
             const dados = doc.data();
-            const nome = dados.nome || dados.nomeCompleto || dados.name || "Atleta";
-            if (nome.toLowerCase().includes(termo.toLowerCase()) && (!user || doc.id !== user.uid)) {
-                const foto = dados.fotoPerfil || dados.foto || dados.avatar || '';
-                html += `
-                    <div class="glass-panel" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.03);">
-                        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${doc.id}')">
-                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                                ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${nome.charAt(0)}</span>`}
-                            </div>
-                            <div>
-                                <p style="color: white; font-size: 13px; font-weight: bold; margin: 0;">${nome.toUpperCase()}</p>
-                                <p style="color: #64748b; font-size: 10px; margin: 0;">Atleta</p>
-                            </div>
+            const nome = (dados.nome || dados.nomeCompleto || dados.name || "").toLowerCase();
+            if (nome.includes(termoBusca)) {
+                const uidAtleta = doc.id;
+                const nomeExibicao = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").toUpperCase();
+                const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
+                const inicial = nomeExibicao.charAt(0);
+
+                htmlResultados += `
+                    <div onclick="mudarAbaBlog('perfil', '${uidAtleta}')" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;">
+                        <div style="width: 45px; height: 45px; border-radius: 50%; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${inicial}</span>`}
                         </div>
-                        <button onclick="mudarAbaBlog('perfil', '${doc.id}')" style="background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.4); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">VER PERFIL</button>
+                        <div>
+                            <p style="color: white; font-weight: 800; font-size: 14px; margin: 0; text-transform: uppercase;">${nomeExibicao}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 2px 0 0 0;">Ver perfil e evoluções</p>
+                        </div>
                     </div>
                 `;
             }
         });
-        container.innerHTML = html || `<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhum atleta encontrado.</p>`;
+
+        container.innerHTML = htmlResultados || `<p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Nenhum atleta encontrado.</p>`;
     } catch (e) {
-        console.error("Erro na busca:", e);
+        console.error("Erro na pesquisa:", e);
     }
 }
-
 window.pesquisarAtletas = pesquisarAtletas;
+
+
+// ==========================================
+// PARTE 2: MÍDIA, POSTAGEM E FEED PRINCIPAL
+// ==========================================
 
 function previewMidia(event) {
     const file = event.target.files[0];
@@ -3033,7 +3106,6 @@ function previewMidia(event) {
     };
     reader.readAsDataURL(file);
 }
-
 window.previewMidia = previewMidia;
 
 function removerMidia() {
@@ -3043,7 +3115,6 @@ function removerMidia() {
     if (previewContainer) previewContainer.innerHTML = "";
     if (inputMedia) inputMedia.value = "";
 }
-
 window.removerMidia = removerMidia;
 
 async function postarNoFeed() {
@@ -3093,7 +3164,6 @@ async function postarNoFeed() {
         if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar a postagem.");
     }
 }
-
 window.postarNoFeed = postarNoFeed;
 
 async function carregarFeedDoBanco() {
@@ -3119,7 +3189,6 @@ async function carregarFeedDoBanco() {
         atualizarFeedUI();
     }
 }
-
 window.carregarFeedDoBanco = carregarFeedDoBanco;
 
 function atualizarFeedUI() {
@@ -3202,6 +3271,7 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
+
 window.atualizarFeedUI = atualizarFeedUI;
 
 async function curtirPost(postId) {
@@ -3227,6 +3297,12 @@ async function curtirPost(postId) {
 
         await postRef.update({ curtidas });
         await carregarFeedDoBanco();
+        
+        // Atualiza o perfil caso esteja visível para refletir as curtidas instantaneamente
+        const userAtivo = auth.currentUser;
+        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+            carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
+        }
     } catch (e) {
         console.error("Erro ao curtir:", e);
     }
@@ -3276,6 +3352,11 @@ async function comentarPost(postId) {
         await postRef.update({ comentarios });
         input.value = "";
         await carregarFeedDoBanco();
+
+        const userAtivo = auth.currentUser;
+        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+            await carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
+        }
         
         setTimeout(() => {
             const el = document.getElementById(`comentarios-container-${postId}`);
@@ -3317,6 +3398,12 @@ async function compartilharPost(postId) {
 
         await db.collection('feed').add(repost);
         await carregarFeedDoBanco();
+
+        const userAtivo = auth.currentUser;
+        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+            carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
+        }
+
         if (typeof mostrarAviso === 'function') mostrarAviso("Post compartilhado no seu feed com sucesso!");
     } catch (e) {
         console.error("Erro ao compartilhar:", e);
@@ -3325,6 +3412,201 @@ async function compartilharPost(postId) {
 
 window.compartilharPost = compartilharPost;
 
+async function carregarPerfilPublico(uidAlvo) {
+    const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
+    if (!container) return;
+
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    const ehMeuPerfil = user && user.uid === uidAlvo;
+
+    try {
+        const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nome = dados.nome || dados.nomeCompleto || dados.name || "ATLETA";
+        const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
+        const bio = dados.bio || "";
+
+        const seguidoresSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguidores').get();
+        const seguindoSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguindo').get();
+        const totalSeguidores = seguidoresSnap.size;
+        const totalSeguindo = seguindoSnap.size;
+
+        let jaSegue = false;
+        if (user && !ehMeuPerfil) {
+            const checkSeguindo = await db.collection('usuarios').doc(user.uid).collection('seguindo').doc(uidAlvo).get();
+            jaSegue = checkSeguindo.exists;
+        }
+
+        const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).orderBy('criadoEm', 'desc').get();
+        let totalPosts = postsSnap.size;
+        let gridMidiasHtml = '';
+        let listaPostsPerfilHtml = '';
+
+        postsSnap.forEach(doc => {
+            const p = doc.data();
+            const postId = doc.id;
+            const dataPostFormatada = p.criadoEm && p.criadoEm.toDate ? p.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente";
+            const ehMeuPost = user && p.uid === user.uid;
+
+            if (p.midia) {
+                const tipo = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
+                const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
+                if (tipo === 'foto' || tipo === 'image') {
+                    gridMidiasHtml += `
+                        <div id="galeria-item-${postId}" style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4);">
+                            <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
+                        </div>`;
+                }
+            }
+
+            let midiaPostHtml = '';
+            if (p.midia) {
+                const tipoM = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
+                const urlM = typeof p.midia === 'object' ? p.midia.data : p.midia;
+                if (tipoM === 'foto' || tipoM === 'image') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><img src="${urlM}" style="width: 100%; max-height: 280px; object-fit: cover; display: block;"></div>`;
+                } else if (tipoM === 'video') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><video src="${urlM}" controls style="width: 100%; max-height: 280px; display: block;"></video></div>`;
+                } else if (tipoM === 'audio') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px;"><audio src="${urlM}" controls style="width: 100%;"></audio></div>`;
+                }
+            }
+
+            const totalCurtidas = p.curtidas ? Object.keys(p.curtidas).length : 0;
+            const jaCurtiu = user && p.curtidas && p.curtidas[user.uid];
+            const comentarios = p.comentarios || [];
+
+            // O histórico de publicações do perfil agora possui exatamente a mesma interatividade do feed principal
+            listaPostsPerfilHtml += `
+                <div id="post-perfil-${postId}" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="width: 35px; height: 35px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${nome.charAt(0)}</span>`}
+                            </div>
+                            <div>
+                                <p style="color: white; font-size: 12px; font-weight: 800; margin: 0; text-transform: uppercase;">${nome.toUpperCase()}</p>
+                                <p style="color: #64748b; font-size: 10px; margin: 0;">${dataPostFormatada}</p>
+                            </div>
+                        </div>
+                        ${ehMeuPost ? `<button onclick="excluirPost('${postId}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 20px; font-weight: bold; line-height: 1;" title="Excluir post">&times;</button>` : ''}
+                    </div>
+
+                    ${p.texto ? `<p style="color: white; font-size: 13px; margin-bottom: 10px; line-height: 1.4;">${p.texto}</p>` : ''}
+                    ${midiaPostHtml}
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 14px; padding-top: 12px;">
+                        <button onclick="curtirPost('${postId}')" style="background: ${jaCurtiu ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${jaCurtiu ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.1)'}; color: ${jaCurtiu ? '#3b82f6' : 'white'}; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                            ❤️ ${totalCurtidas}
+                        </button>
+                        
+                        <button onclick="toggleSecaoComentarios('${postId}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;">
+                            💬 ${comentarios.length} Comentários
+                        </button>
+
+                        <button onclick="compartilharPost('${postId}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;" title="Compartilhar">
+                            🔄 Repost
+                        </button>
+                    </div>
+
+                    <div id="comentarios-container-${postId}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 10px;">
+                        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                            <input type="text" id="input-comentario-${postId}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 10px; color: white; font-size: 12px; outline: none;">
+                            <button onclick="comentarPost('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 11px; cursor: pointer;">Enviar</button>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
+                            ${comentarios.map(c => `
+                                <div style="background: rgba(255,255,255,0.02); padding: 8px 10px; border-radius: 8px; font-size: 11px;">
+                                    <strong style="color: #3b82f6; text-transform: uppercase;">${c.nomeAtleta || 'ATLETA'}:</strong> <span style="color: #cbd5e1;">${c.texto}</span>
+                                </div>
+                            `).join('') || '<p style="color: #64748b; font-size: 11px; text-align: center; margin: 4px 0;">Nenhum comentário ainda.</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        let blocoBioHtml = '';
+        if (bio.trim() !== "") {
+            blocoBioHtml = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.6; max-width: 450px; word-break: break-word;">${bio}</p>
+                    ${ehMeuPerfil ? `
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer;" title="Editar Bio">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        } else if (ehMeuPerfil) {
+            blocoBioHtml = `
+                <div style="margin-bottom: 24px;">
+                    <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                        Adicionar bio ao perfil
+                    </button>
+                    <div id="texto-bio-usuario" style="display:none;"></div>
+                </div>
+            `;
+        }
+
+        let botaoAcaoSocial = '';
+        if (!ehMeuPerfil && user) {
+            if (jaSegue) {
+                botaoAcaoSocial = `<button onclick="deixarDeSeguirAtleta('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
+            } else {
+                botaoAcaoSocial = `<button onclick="seguirAtleta('${uidAlvo}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
+            }
+        }
+
+        container.innerHTML = `
+            <div style="padding: 10px 0;">
+                <div class="glass-panel" style="padding: 35px 25px; border-radius: 30px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08);">
+                    <div style="width: 105px; height: 105px; border-radius: 50%; background: #3b82f6; margin: 0 auto 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5);">
+                        ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 36px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                    </div>
+                    <h3 style="color: white; font-size: 1.4rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
+                    
+                    ${blocoBioHtml}
+                    ${botaoAcaoSocial}
+
+                    <div style="display: flex; justify-content: center; gap: 35px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalPosts}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Posts</p>
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalSeguidores}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Seguidores</p>
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalSeguindo}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Seguindo</p>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase;">
+                    Galeria de Evolução Visual
+                </h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 30px;">
+                    ${gridMidiasHtml || `<p style="color: #64748b; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 30px 0; background: rgba(255,255,255,0.01); border-radius: 16px;">Nenhuma foto postada ainda.</p>`}
+                </div>
+
+                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase;">
+                    Histórico de Publicações
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${listaPostsPerfilHtml || `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 30px 0;">Nenhum post publicado ainda.</p>`}
+                </div>
+            </div>
+        `;
+    } catch (e) {
+        console.error("Erro ao carregar perfil:", e);
+        container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
+    }
+}
+
+window.carregarPerfilPublico = carregarPerfilPublico;
 
 function excluirPost(id) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3371,7 +3653,6 @@ function excluirPost(id) {
             }
             modalConfirm.remove();
             
-            // Atualiza a UI do feed e também recarrega o perfil caso esteja nele
             atualizarFeedUI(); 
             const userAtivo = auth.currentUser;
             if (window.abaAtivaBlog === 'perfil' && userAtivo) {
