@@ -2666,10 +2666,6 @@ window.addEventListener('fitaiFotoAtualizada', (e) => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
-
-let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
-let perfilVisualizadoUid = null; 
-
 let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
 let perfilVisualizadoUid = null; 
 
