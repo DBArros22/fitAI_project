@@ -2846,6 +2846,7 @@ function ativarEdicaoBio() {
         </div>
     `;
 }
+
 window.ativarEdicaoBio = ativarEdicaoBio;
 
 async function salvarNovaBio() {
