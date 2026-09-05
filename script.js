@@ -3118,13 +3118,14 @@ function removerMidia() {
 window.removerMidia = removerMidia;
 
 async function postarNoFeed() {
-    const user = auth.currentUser;
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
     if (!user) {
         if (typeof mostrarAviso === 'function') mostrarAviso("Você precisa estar logado para postar!");
         return;
     }
 
-    const inputTexto = document.getElementById('post-texto') || document.getElementById('texto-evolucao');
+    // Busca o texto do input de forma abrangente para evitar falhas de ID
+    const inputTexto = document.getElementById('post-texto') || document.getElementById('texto-evolucao') || document.querySelector('textarea');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     const temTexto = texto.length > 0;
     const temMidia = typeof window.midiaAnexada !== 'undefined' && window.midiaAnexada !== null;
@@ -3150,11 +3151,13 @@ async function postarNoFeed() {
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         };
 
+        // Salva na coleção raiz 'feed'
         await db.collection('feed').add(novoPost);
         
         if (inputTexto) inputTexto.value = "";
         if (typeof removerMidia === 'function') removerMidia();
 
+        // Recarrega o feed imediatamente
         if (typeof carregarFeedDoBanco === 'function') await carregarFeedDoBanco();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3164,13 +3167,19 @@ async function postarNoFeed() {
         if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar a postagem.");
     }
 }
+
 window.postarNoFeed = postarNoFeed;
 
 async function carregarFeedDoBanco() {
     try {
-        const snapshot = await db.collection('feed')
-            .orderBy('criadoEm', 'desc')
-            .get();
+        let snapshot;
+        try {
+            // Tenta buscar ordenado por data decrescente
+            snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
+        } catch (ordemErr) {
+            console.warn("Aviso: Índice orderBy ainda não criado no Firestore. Buscando sem ordenação...", ordemErr);
+            snapshot = await db.collection('feed').get();
+        }
         
         window.feedEvolucao = [];
         snapshot.forEach(doc => {
@@ -3181,14 +3190,23 @@ async function carregarFeedDoBanco() {
                 data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
+
+        // Ordenação manual de segurança caso o banco venha sem ordenação
+        window.feedEvolucao.sort((a, b) => {
+            const tempoA = a.criadoEm && a.criadoEm.toMillis ? a.criadoEm.toMillis() : 0;
+            const tempoB = b.criadoEm && b.criadoEm.toMillis ? b.criadoEm.toMillis() : 0;
+            return tempoB - tempoA;
+        });
+
     } catch (feedError) {
-        console.error("Erro ao carregar posts do feed:", feedError);
+        console.error("Erro fatal ao carregar posts do feed:", feedError);
     }
 
     if (typeof atualizarFeedUI === "function") {
         atualizarFeedUI();
     }
 }
+
 window.carregarFeedDoBanco = carregarFeedDoBanco;
 
 function atualizarFeedUI() {
@@ -3197,6 +3215,11 @@ function atualizarFeedUI() {
 
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     const listaPosts = typeof feedEvolucao !== 'undefined' ? feedEvolucao : [];
+
+    if (listaPosts.length === 0) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
+        return;
+    }
 
     container.innerHTML = listaPosts.map(post => {
         let midiaHTML = '';
@@ -3269,7 +3292,7 @@ function atualizarFeedUI() {
                 </div>
             </div>
         `;
-    }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
+    }).join('');
 }
 
 window.atualizarFeedUI = atualizarFeedUI;
@@ -3437,7 +3460,13 @@ async function carregarPerfilPublico(uidAlvo) {
             jaSegue = checkSeguindo.exists;
         }
 
-        const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).orderBy('criadoEm', 'desc').get();
+        let postsSnap;
+        try {
+            postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).orderBy('criadoEm', 'desc').get();
+        } catch (e) {
+            postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
+        }
+
         let totalPosts = postsSnap.size;
         let gridMidiasHtml = '';
         let listaPostsPerfilHtml = '';
@@ -3476,7 +3505,7 @@ async function carregarPerfilPublico(uidAlvo) {
             const jaCurtiu = user && p.curtidas && p.curtidas[user.uid];
             const comentarios = p.comentarios || [];
 
-            // O histórico de publicações do perfil agora possui exatamente a mesma interatividade do feed principal
+            // O histórico de publicações do perfil agora possui exatamente a mesma interatividade completa
             listaPostsPerfilHtml += `
                 <div id="post-perfil-${postId}" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
