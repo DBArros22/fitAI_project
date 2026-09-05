@@ -2736,6 +2736,7 @@ function mudarAbaBlog(aba, uidAlvo = null) {
         if (typeof carregarExplorar === 'function') carregarExplorar();
     }
 }
+
 window.mudarAbaBlog = mudarAbaBlog;
 
 async function carregarPerfilPublico(uidAlvo) {
@@ -2763,7 +2764,7 @@ async function carregarPerfilPublico(uidAlvo) {
                 const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
                 if (tipo === 'foto' || tipo === 'image') {
                     gridMidiasHtml += `
-                        <div style="aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4); transition: transform 0.25s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
                             <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
                         </div>`;
                 }
@@ -2773,11 +2774,11 @@ async function carregarPerfilPublico(uidAlvo) {
         let blocoBioHtml = '';
         if (bio.trim() !== "") {
             blocoBioHtml = `
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
-                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px; word-break: break-word;">${bio}</p>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.6; max-width: 450px; word-break: break-word;">${bio}</p>
                     ${ehMeuPerfil ? `
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'; this.style.borderColor='rgba(59,130,246,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.15)'" title="Editar Bio">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                     ` : ''}
                 </div>
@@ -2785,9 +2786,9 @@ async function carregarPerfilPublico(uidAlvo) {
         } else {
             if (ehMeuPerfil) {
                 blocoBioHtml = `
-                    <div style="margin-bottom: 18px;">
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    <div style="margin-bottom: 24px;">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.22)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'; this.style.transform='translateY(0)'">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             Adicionar bio ao perfil
                         </button>
                         <div id="texto-bio-usuario" style="display:none;"></div>
@@ -2799,29 +2800,31 @@ async function carregarPerfilPublico(uidAlvo) {
         }
 
         container.innerHTML = `
-            <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
-                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 28px; font-weight:bold;">${nome.charAt(0)}</span>`}
-                </div>
-                <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
-                
-                ${blocoBioHtml}
+            <div style="padding: 10px 0;">
+                <div class="glass-panel" style="padding: 35px 25px; border-radius: 30px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 12px 35px rgba(0,0,0,0.3);">
+                    <div style="width: 105px; height: 105px; border-radius: 50%; background: #3b82f6; margin: 0 auto 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5);">
+                        ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 36px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                    </div>
+                    <h3 style="color: white; font-size: 1.4rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
+                    
+                    ${blocoBioHtml}
 
-                <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
-                    <div>
-                        <p style="color: white; font-size: 16px; font-weight: bold; margin: 0;">${totalPosts}</p>
-                        <p style="color: #64748b; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Posts de Treino</p>
+                    <div style="display: flex; justify-content: center; gap: 35px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalPosts}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Posts de Treino</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <h4 style="color: white; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                Galeria de Evolução Visual
-            </h4>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
-                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: 1 / -1; text-align: center; padding: 30px 0; background: rgba(255,255,255,0.01); border-radius: 14px;">Nenhuma arte ou foto postada ainda.</p>`}
+                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    Galeria de Evolução Visual
+                </h4>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px;">
+                    ${gridMidiasHtml || `<p style="color: #64748b; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 45px 0; background: rgba(255,255,255,0.01); border-radius: 16px; border: 1px solid rgba(255,255,255,0.04);">Nenhuma foto postada ainda.</p>`}
+                </div>
             </div>
         `;
     } catch (e) {
