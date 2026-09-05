@@ -3136,9 +3136,9 @@ function atualizarFeedUI() {
             const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
 
             if (tipo === 'foto' || tipo === 'image') {
-                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><img src="${urlMidia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;"></div>`;
+                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><img src="${urlMidia}" style="width: 100%; max-height: 280px; display: block; object-fit: cover;"></div>`;
             } else if (tipo === 'video') {
-                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><video src="${urlMidia}" controls style="width: 100%; max-height: 250px; display: block;"></video></div>`;
+                midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><video src="${urlMidia}" controls style="width: 100%; max-height: 280px; display: block;"></video></div>`;
             } else if (tipo === 'audio') {
                 midiaHTML = `<div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 12px;"><audio src="${urlMidia}" controls style="width: 100%;"></audio></div>`;
             }
@@ -3149,11 +3149,15 @@ function atualizarFeedUI() {
         const fotoPost = post.fotoPerfil || null;
         const ehMeuPost = user && post.uid === user.uid;
 
+        const totalCurtidas = post.curtidas ? Object.keys(post.curtidas).length : 0;
+        const jaCurtiu = user && post.curtidas && post.curtidas[user.uid];
+        const comentarios = post.comentarios || [];
+
         return `
-            <div id="post-feed-${post.id}" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
+            <div id="post-feed-${post.id}" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 22px; margin-bottom: 15px; position: relative; border: 1px solid rgba(255,255,255,0.08);">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">
                             ${fotoPost ? `<img src="${fotoPost}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${inicial}</span>`}
                         </div>
                         <div>
@@ -3163,14 +3167,166 @@ function atualizarFeedUI() {
                     </div>
                     ${ehMeuPost ? `<button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; line-height: 1;" title="Excluir post">&times;</button>` : ''}
                 </div>
-                ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
+                
+                ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.5;">${post.texto}</p>` : ''}
                 ${midiaHTML}
+
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); margin-top: 14px; padding-top: 12px;">
+                    <button onclick="curtirPost('${post.id}')" style="background: ${jaCurtiu ? 'rgba(59,130,246,0.2)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${jaCurtiu ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.1)'}; color: ${jaCurtiu ? '#3b82f6' : 'white'}; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        ❤️ ${totalCurtidas}
+                    </button>
+                    
+                    <button onclick="toggleSecaoComentarios('${post.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;">
+                        💬 ${comentarios.length} Comentários
+                    </button>
+
+                    <button onclick="compartilharPost('${post.id}')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 14px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer;" title="Compartilhar">
+                        🔄 Repost
+                    </button>
+                </div>
+
+                <div id="comentarios-container-${post.id}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 10px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <input type="text" id="input-comentario-${post.id}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 10px; color: white; font-size: 12px; outline: none;">
+                        <button onclick="comentarPost('${post.id}')" style="background: #3b82f6; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: 800; font-size: 11px; cursor: pointer;">Enviar</button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto;">
+                        ${comentarios.map(c => `
+                            <div style="background: rgba(255,255,255,0.02); padding: 8px 10px; border-radius: 8px; font-size: 11px;">
+                                <strong style="color: #3b82f6; text-transform: uppercase;">${c.nomeAtleta || 'ATLETA'}:</strong> <span style="color: #cbd5e1;">${c.texto}</span>
+                            </div>
+                        `).join('') || '<p style="color: #64748b; font-size: 11px; text-align: center; margin: 4px 0;">Nenhum comentário ainda.</p>'}
+                    </div>
+                </div>
             </div>
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
 
 window.atualizarFeedUI = atualizarFeedUI;
+
+async function curtirPost(postId) {
+    const user = auth.currentUser;
+    if (!user) {
+        if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para curtir!");
+        return;
+    }
+
+    try {
+        const postRef = db.collection('feed').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+
+        const data = doc.data();
+        let curtidas = data.curtidas || {};
+
+        if (curtidas[user.uid]) {
+            delete curtidas[user.uid];
+        } else {
+            curtidas[user.uid] = true;
+        }
+
+        await postRef.update({ curtidas });
+        await carregarFeedDoBanco();
+    } catch (e) {
+        console.error("Erro ao curtir:", e);
+    }
+}
+
+window.curtirPost = curtirPost;
+
+function toggleSecaoComentarios(postId) {
+    const el = document.getElementById(`comentarios-container-${postId}`);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+window.toggleSecaoComentarios = toggleSecaoComentarios;
+
+async function comentarPost(postId) {
+    const user = auth.currentUser;
+    if (!user) {
+        if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para comentar!");
+        return;
+    }
+
+    const input = document.getElementById(`input-comentario-${postId}`);
+    if (!input || !input.value.trim()) return;
+    const textoComentario = input.value.trim();
+
+    try {
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
+
+        const postRef = db.collection('feed').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+
+        const data = doc.data();
+        let comentarios = data.comentarios || [];
+
+        comentarios.push({
+            uid: user.uid,
+            nomeAtleta: nomeAtleta,
+            texto: textoComentario,
+            criadoEm: new Date().toISOString()
+        });
+
+        await postRef.update({ comentarios });
+        input.value = "";
+        await carregarFeedDoBanco();
+        
+        // Mantém a caixa de comentários aberta após postar
+        setTimeout(() => {
+            const el = document.getElementById(`comentarios-container-${postId}`);
+            if (el) el.style.display = 'block';
+        }, 100);
+    } catch (e) {
+        console.error("Erro ao comentar:", e);
+    }
+}
+
+window.comentarPost = comentarPost;
+
+async function compartilharPost(postId) {
+    try {
+        const postRef = db.collection('feed').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+
+        const p = doc.data();
+        const user = auth.currentUser;
+        if (!user) {
+            if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para compartilhar!");
+            return;
+        }
+
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
+        const fotoPerfil = dados.fotoPerfil || dados.foto || dados.avatar || user.photoURL || null;
+
+        const repost = {
+            uid: user.uid,
+            nomeAtleta: nomeAtleta,
+            fotoPerfil: fotoPerfil,
+            texto: `🔄 Repost de ${p.nomeAtleta || 'Atleta'}:\n\n${p.texto || ''}`,
+            midia: p.midia || null,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('feed').add(repost);
+        await carregarFeedDoBanco();
+        if (typeof mostrarAviso === 'function') mostrarAviso("Post compartilhado no seu feed com sucesso!");
+    } catch (e) {
+        console.error("Erro ao compartilhar:", e);
+    }
+}
+
+window.compartilharPost = compartilharPost;
+
 
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
