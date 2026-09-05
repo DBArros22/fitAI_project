@@ -2667,25 +2667,69 @@ window.addEventListener('fitaiFotoAtualizada', (e) => {
 
 
 
+let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
+let perfilVisualizadoUid = null; 
+
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
     
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    const meuUid = user ? user.uid : null;
+
     container.innerHTML = `
         <div class="glass-panel" style="padding: 16px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                 <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 5px; vertical-align: middle;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
                 </button>
-                <div style="text-align: right;">
-                    <h2 class="italic-bold" style="color: white; margin: 0; font-size: 1.1rem; letter-spacing: 2px; text-transform: uppercase;">Meu Feed</h2>
-                    <p style="color: #3b82f6; font-size: 9px; margin: 0; font-weight: 900; letter-spacing: 1px;">EVOLUÇÃO PRO</p>
+                
+                <div style="display: flex; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
+                    <button onclick="mudarAbaBlog('feed')" style="background: ${abaAtivaBlog === 'feed' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Feed</button>
+                    <button onclick="mudarAbaBlog('explorar')" style="background: ${abaAtivaBlog === 'explorar' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Explorar</button>
+                    <button onclick="mudarAbaBlog('perfil', '${meuUid}')" style="background: ${abaAtivaBlog === 'perfil' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Meu Perfil</button>
                 </div>
             </div>
-            
-            <!-- Composer Unificado -->
+
+            <div id="blog-conteudo-dinamico"></div>
+        </div>
+    `;
+
+    renderizarConteudoAba();
+
+    if (!window._blogListenersAtivados) {
+        window._blogListenersAtivados = true;
+        window.addEventListener('fitaiPerfilAtualizado', () => {
+            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
+                if (abaAtivaBlog === 'feed') atualizarFeedUI();
+            }
+        });
+        window.addEventListener('fitaiFotoAtualizada', () => {
+            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
+                if (abaAtivaBlog === 'feed') atualizarFeedUI();
+            }
+        });
+    }
+}
+
+function mudarAbaBlog(aba, uidAlvo = null) {
+    abaAtivaBlog = aba;
+    if (aba === 'perfil') {
+        const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+        perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
+    }
+    renderizarBlog();
+}
+window.mudarAbaBlog = mudarAbaBlog;
+
+function renderizarConteudoAba() {
+    const area = document.getElementById('blog-conteudo-dinamico');
+    if (!area) return;
+
+    if (abaAtivaBlog === 'feed') {
+        area.innerHTML = `
             <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <textarea id="post-texto" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
+                <textarea id="texto-evolucao" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
                 
                 <div id="preview-midia" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
                 
@@ -2704,28 +2748,112 @@ function renderizarBlog() {
             </div>
             
             <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
-        </div>
-    `;
+        `;
+        carregarFeedDoBanco();
+    } else if (abaAtivaBlog === 'explorar') {
+        area.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="input-busca-atleta" placeholder="Pesquisar atleta por nome..." oninput="pesquisarAtletas(this.value)" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 14px; color: white; outline: none; font-size: 13px;">
+            </div>
+            <div id="lista-resultados-busca" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite para encontrar outros atletas.</p>
+            </div>
+        `;
+    } else if (abaAtivaBlog === 'perfil') {
+        area.innerHTML = `<div id="perfil-publico-container"><p style="color: #64748b; text-align: center; font-size: 13px;">Carregando perfil...</p></div>`;
+        if (perfilVisualizadoUid) {
+            carregarPerfilPublico(perfilVisualizadoUid);
+        }
+    }
+}
 
-    // Carrega o feed inicialmente
-    atualizarFeedUI();
+async function pesquisarAtletas(termo) {
+    const container = document.getElementById('lista-resultados-busca');
+    if (!container) return;
+    if (!termo || termo.trim().length < 2) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px;">Digite pelo menos 2 letras.</p>`;
+        return;
+    }
+    try {
+        const snapshot = await db.collection('usuarios').get();
+        let html = '';
+        const user = auth.currentUser;
+        snapshot.forEach(doc => {
+            const dados = doc.data();
+            const nome = dados.nome || dados.nomeCompleto || "Atleta";
+            if (nome.toLowerCase().includes(termo.toLowerCase()) && (!user || doc.id !== user.uid)) {
+                const foto = dados.fotoPerfil || dados.foto || '';
+                html += `
+                    <div class="glass-panel" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.03);">
+                        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${doc.id}')">
+                            <div style="width: 40px; height: 40px; border-radius: 50%; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${nome.charAt(0)}</span>`}
+                            </div>
+                            <div>
+                                <p style="color: white; font-size: 13px; font-weight: bold; margin: 0;">${nome.toUpperCase()}</p>
+                                <p style="color: #64748b; font-size: 10px; margin: 0;">Atleta</p>
+                            </div>
+                        </div>
+                        <button onclick="mudarAbaBlog('perfil', '${doc.id}')" style="background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.4); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">VER PERFIL</button>
+                    </div>
+                `;
+            }
+        });
+        container.innerHTML = html || `<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhum atleta encontrado.</p>`;
+    } catch (e) {
+        console.error("Erro na busca:", e);
+    }
+}
+window.pesquisarAtletas = pesquisarAtletas;
 
-    // --- ESCUTA REATIVA PARA O WEBAPP ---
-    // Se o usuário estiver com o blog aberto ou voltar para ele, atualiza automaticamente ao disparar os eventos
-    if (!window._blogListenersAtivados) {
-        window._blogListenersAtivados = true; // Evita duplicação de listeners globais
-        
-        window.addEventListener('fitaiPerfilAtualizado', () => {
-            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
-                atualizarFeedUI();
+async function carregarPerfilPublico(uidAlvo) {
+    const container = document.getElementById('perfil-publico-container');
+    if (!container) return;
+
+    try {
+        const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nome = dados.nome || dados.nomeCompleto || "ATLETA";
+        const foto = dados.fotoPerfil || dados.foto || null;
+        const bio = dados.bio || "Buscando evolução constante no treino!";
+
+        const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
+        let totalPosts = postsSnap.size;
+        let gridMidiasHtml = '';
+
+        postsSnap.forEach(doc => {
+            const p = doc.data();
+            if (p.midia) {
+                const tipo = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
+                const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
+                if (tipo === 'foto' || tipo === 'image') {
+                    gridMidiasHtml += `<div style="aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #000;"><img src="${url}" style="width:100%; height:100%; object-fit: cover;"></div>`;
+                }
             }
         });
 
-        window.addEventListener('fitaiFotoAtualizada', () => {
-            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
-                atualizarFeedUI();
-            }
-        });
+        container.innerHTML = `
+            <div class="glass-panel" style="padding: 20px; border-radius: 20px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 20px;">
+                <div style="width: 75px; height: 75px; border-radius: 50%; background: #3b82f6; margin: 0 auto 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #3b82f6;">
+                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 24px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                </div>
+                <h3 style="color: white; font-size: 1.1rem; margin: 0 0 5px 0; font-weight: 800;">${nome.toUpperCase()}</h3>
+                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 15px 0; line-height: 1.4;">${bio}</p>
+                <div style="display: flex; justify-content: center; gap: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+                    <div>
+                        <p style="color: white; font-size: 15px; font-weight: bold; margin: 0;">${totalPosts}</p>
+                        <p style="color: #64748b; font-size: 10px; margin: 0;">Posts</p>
+                    </div>
+                </div>
+            </div>
+            <h4 style="color: white; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase;">Galeria de Evolução</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: span 3; text-align: center; padding: 20px 0;">Nenhuma mídia postada ainda.</p>`}
+            </div>
+        `;
+    } catch (e) {
+        console.error("Erro ao carregar perfil:", e);
+        container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
     }
 }
 
@@ -2788,17 +2916,15 @@ async function postarNoFeed() {
         return;
     }
 
-    // ======= SUBSTITUA A LINHA ANTIGA POR ESTAS TRÊS ABAIXO =======
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const nomeBruto = dadosLocais.nome || localStorage.getItem('user_nome') || (typeof window.nomeUsuarioAtual !== 'undefined' ? window.nomeUsuarioAtual : "ATLETA");
     const nomeUsuarioAtual = nomeBruto.trim().split(" ")[0].toUpperCase();
-    // ===============================================================
 
-    const inputTexto = document.getElementById('texto-evolucao');
+    const inputTexto = document.getElementById('post-texto') || document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
     
     const temTexto = texto.length > 0;
-    const temMidia = midiaAnexada !== null && midiaAnexada !== undefined;
+    const temMidia = typeof midiaAnexada !== 'undefined' && midiaAnexada !== null && midiaAnexada !== undefined;
 
     if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -2806,7 +2932,6 @@ async function postarNoFeed() {
         return;
     }
 
-    // Pega a foto mais atualizada do localStorage para garantir sincronia no post
     const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || user.photoURL || null;
 
     const novoPost = {
@@ -2833,41 +2958,36 @@ async function postarNoFeed() {
         mostrarAviso("Erro ao salvar a postagem.");
     }
 }
-
 window.postarNoFeed = postarNoFeed;
-
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
 
-    // 1. CARREGAMENTO INSTANTÂNEO VIA LOCALSTORAGE (Zero delay para a miniatura)
     const fotoLocalStorage = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const nomeLocalStorage = dadosLocais.nome || localStorage.getItem('user_nome');
     
-    if (fotoLocalStorage) fotoUsuarioAtual = fotoLocalStorage;
-    if (nomeLocalStorage) nomeUsuarioAtual = nomeLocalStorage.trim().split(" ")[0].toUpperCase();
+    if (typeof fotoUsuarioAtual !== 'undefined' && fotoLocalStorage) fotoUsuarioAtual = fotoLocalStorage;
+    if (typeof nomeUsuarioAtual !== 'undefined' && nomeLocalStorage) nomeUsuarioAtual = nomeLocalStorage.trim().split(" ")[0].toUpperCase();
 
-    // Atualiza a interface imediatamente com o cache local
     if (typeof atualizarFeedUI === "function") {
         atualizarFeedUI();
     }
 
-    // 2. BUSCA NO FIRESTORE EM SEGUNDO PLANO (Apenas para sincronizar se mudou em outro lugar)
     try {
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
         if (userDoc.exists) {
             const dados = userDoc.data();
             const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
             if (nomeCompleto) {
-                nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
-                localStorage.setItem('user_nome', nomeUsuarioAtual);
+                if (typeof nomeUsuarioAtual !== 'undefined') nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
+                localStorage.setItem('user_nome', nomeCompleto.trim().split(" ")[0].toUpperCase());
             }
 
             const fotoFirestore = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || null;
             if (fotoFirestore) {
-                fotoUsuarioAtual = fotoFirestore;
+                if (typeof fotoUsuarioAtual !== 'undefined') fotoUsuarioAtual = fotoFirestore;
                 localStorage.setItem(`user_foto_${user.uid}`, fotoFirestore);
                 localStorage.setItem('user_foto', fotoFirestore);
             }
@@ -2876,20 +2996,19 @@ async function carregarFeedDoBanco() {
         console.warn("Aviso: Sincronização em segundo plano indisponível.", error);
     }
 
-    // 3. BUSCA OS POSTS DO FEED NO BANCO
     try {
         const snapshot = await db.collection('feed')
             .where('uid', '==', user.uid)
             .orderBy('criadoEm', 'desc')
             .get();
         
-        feedEvolucao = [];
+        window.feedEvolucao = [];
         snapshot.forEach(doc => {
             const postData = doc.data();
-            feedEvolucao.push({
+            window.feedEvolucao.push({
                 id: doc.id,
                 ...postData,
-                fotoPerfil: postData.fotoPerfil || fotoUsuarioAtual,
+                fotoPerfil: postData.fotoPerfil || (typeof fotoUsuarioAtual !== 'undefined' ? fotoUsuarioAtual : null),
                 data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
@@ -2901,10 +3020,7 @@ async function carregarFeedDoBanco() {
         atualizarFeedUI();
     }
 }
-
-
 window.carregarFeedDoBanco = carregarFeedDoBanco;
-
 
 function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
@@ -2913,12 +3029,10 @@ function atualizarFeedUI() {
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     if (!user) return;
 
-    // 1. Captura o nome atualizado do localStorage (igualzinho você já faz)
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
     const nomeSalvo = dadosLocais.nome || user.displayName || "ATLETA";
     const primeiroNome = nomeSalvo.trim().split(" ")[0].toUpperCase();
 
-    // 2. Captura a FOTO atualizada do localStorage do usuário (Chave exata do perfil)
     const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || null;
 
     const listaPosts = typeof feedEvolucao !== 'undefined' ? feedEvolucao : [];
@@ -2929,7 +3043,7 @@ function atualizarFeedUI() {
             const tipo = typeof post.midia === 'object' ? post.midia.tipo : (post.midia.startsWith('data:video') ? 'video' : (post.midia.startsWith('data:audio') ? 'audio' : 'foto'));
             const urlMidia = typeof post.midia === 'object' ? post.midia.data : post.midia;
 
-            if (tipo === 'foto') {
+            if (tipo === 'foto' || tipo === 'image') {
                 midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><img src="${urlMidia}" style="width: 100%; max-height: 250px; display: block; object-fit: contain;"></div>`;
             } else if (tipo === 'video') {
                 midiaHTML = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: rgba(0,0,0,0.2); position: relative;"><video src="${urlMidia}" controls style="width: 100%; max-height: 250px; display: block;"></video></div>`;
@@ -2938,18 +3052,17 @@ function atualizarFeedUI() {
             }
         }
 
-        // REGRA DEFINITIVA: Força a foto atual do perfil a dominar todos os posts (igual ao nome)
         const fotoFinal = fotoPerfilAtual;
 
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">
                             ${fotoFinal ? `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
                         </div>
                         <div>
-                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase;">${primeiroNome}</p>
+                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">${primeiroNome}</p>
                             <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
                         </div>
                     </div>
@@ -2961,7 +3074,6 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
-
 window.atualizarFeedUI = atualizarFeedUI;
 
 function excluirPost(id) {
@@ -3004,19 +3116,20 @@ function excluirPost(id) {
     document.getElementById('btn-confirmar-exclusao').onclick = async () => {
         try {
             await db.collection('feed').doc(id).delete();
-            feedEvolucao = feedEvolucao.filter(p => p.id !== id);
+            if (typeof feedEvolucao !== 'undefined') {
+                feedEvolucao = feedEvolucao.filter(p => p.id !== id);
+            }
             modalConfirm.remove();
             atualizarFeedUI(); 
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            mostrarAviso("Post removido com sucesso.");
+            if (typeof mostrarAviso === 'function') mostrarAviso("Post removido com sucesso.");
         } catch (error) {
             console.error("Erro ao excluir post no banco:", error);
             modalConfirm.remove();
-            mostrarAviso("Erro ao excluir. Verifique sua conexão.");
+            if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao excluir. Verifique sua conexão.");
         }
     };
 }
-
 
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxx Funções página sugestão (Plano B) xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
