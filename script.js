@@ -2666,8 +2666,13 @@ window.addEventListener('fitaiFotoAtualizada', (e) => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx Funções pagina blog de evolução  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 
-let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
-let perfilVisualizadoUid = null; 
+if (typeof window.abaAtivaBlog === 'undefined') {
+    window.abaAtivaBlog = 'feed';
+}
+
+if (typeof window.perfilVisualizadoUid === 'undefined') {
+    window.perfilVisualizadoUid = null;
+}
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
