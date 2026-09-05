@@ -2957,15 +2957,20 @@ async function pesquisarAtletas(termo) {
 window.pesquisarAtletas = pesquisarAtletas;
 
 async function carregarPerfilPublico(uidAlvo) {
-    const container = document.getElementById('perfil-publico-container');
+    const container = document.getElementById('blog-conteudo-dinamico') || document.getElementById('perfil-publico-container');
     if (!container) return;
+
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    const ehMeuPerfil = user && user.uid === uidAlvo;
 
     try {
         const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
         const dados = userDoc.exists ? userDoc.data() : {};
         const nome = dados.nome || dados.nomeCompleto || "ATLETA";
         const foto = dados.fotoPerfil || dados.foto || null;
-        const bio = dados.bio || "Buscando evolução constante no treino!";
+        
+        // Removido o texto estático: agora inicia vazio para contas novas
+        const bio = dados.bio || "";
 
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
         let totalPosts = postsSnap.size;
@@ -2982,23 +2987,55 @@ async function carregarPerfilPublico(uidAlvo) {
             }
         });
 
-        container.innerHTML = `
-            <div class="glass-panel" style="padding: 20px; border-radius: 20px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 20px;">
-                <div style="width: 75px; height: 75px; border-radius: 50%; background: #3b82f6; margin: 0 auto 12px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 2px solid #3b82f6;">
-                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 24px; font-weight:bold;">${nome.charAt(0)}</span>`}
+        let blocoBioHtml = '';
+        if (bio.trim() !== "") {
+            blocoBioHtml = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px; word-break: break-word;">${bio}</p>
+                    ${ehMeuPerfil ? `
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    ` : ''}
                 </div>
-                <h3 style="color: white; font-size: 1.1rem; margin: 0 0 5px 0; font-weight: 800;">${nome.toUpperCase()}</h3>
-                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 15px 0; line-height: 1.4;">${bio}</p>
-                <div style="display: flex; justify-content: center; gap: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+            `;
+        } else {
+            if (ehMeuPerfil) {
+                blocoBioHtml = `
+                    <div style="margin-bottom: 18px;">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Adicionar bio ao perfil
+                        </button>
+                        <div id="texto-bio-usuario" style="display:none;"></div>
+                    </div>
+                `;
+            } else {
+                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`;
+            }
+        }
+
+        container.innerHTML = `
+            <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08);">
+                <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6;">
+                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 28px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                </div>
+                <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800;">${nome.toUpperCase()}</h3>
+                
+                ${blocoBioHtml}
+
+                <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
                     <div>
-                        <p style="color: white; font-size: 15px; font-weight: bold; margin: 0;">${totalPosts}</p>
-                        <p style="color: #64748b; font-size: 10px; margin: 0;">Posts</p>
+                        <p style="color: white; font-size: 16px; font-weight: bold; margin: 0;">${totalPosts}</p>
+                        <p style="color: #64748b; font-size: 10px; margin: 0; text-transform: uppercase;">Posts de Treino</p>
                     </div>
                 </div>
             </div>
-            <h4 style="color: white; font-size: 12px; font-weight: bold; letter-spacing: 1px; margin-bottom: 10px; text-transform: uppercase;">Galeria de Evolução</h4>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: span 3; text-align: center; padding: 20px 0;">Nenhuma mídia postada ainda.</p>`}
+
+            <h4 style="color: white; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase;">Galeria de Evolução Visual</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
+                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: 1 / -1; text-align: center; padding: 30px 0;">Nenhuma foto postada ainda.</p>`}
             </div>
         `;
     } catch (e) {
@@ -3006,6 +3043,8 @@ async function carregarPerfilPublico(uidAlvo) {
         container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
     }
 }
+
+window.carregarPerfilPublico = carregarPerfilPublico;
 
 function previewMidia(event) {
     const file = event.target.files[0];
