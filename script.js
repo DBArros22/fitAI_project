@@ -988,10 +988,6 @@ function showView(viewId) {
         }
     }
 
-    console.log("Tentando exibir a view:", viewId);
-    console.log("Elemento encontrado no DOM:", viewAlvo);
-    console.log("Classes atuais do elemento:", viewAlvo ? viewAlvo.className : "Não existe");
-
     // Fallback de segurança para nunca deixar em branco
     if (!viewAlvo) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
@@ -1028,6 +1024,15 @@ function showView(viewId) {
             atualizarListaRecordsCF('endurance');
         }
     }
+            // verificações do blog.
+    if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    } else if (cleanId === 'blog' && typeof renderizarBlog === 'function') {
+        renderizarBlog(); // <-- Adicionado para carregar o blog perfeitamente no formato moderno ao abrir a tela
+    } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
+        renderizarFichasConsulta();
 
     window.currentView = cleanId;
     
