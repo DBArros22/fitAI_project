@@ -965,14 +965,12 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Oculta todas as telas da aplicação de forma segura sem depender de um seletor pai inexistente
     document.querySelectorAll('section, main, .page-container').forEach(tela => {
         if (tela.id && tela.id !== 'view-login') {
             tela.classList.add('hidden');
         }
     });
 
-    // Mapeamento assertivo baseado nos IDs reais
     let viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${viewId}`);
     
     if (!viewAlvo) {
@@ -988,24 +986,22 @@ function showView(viewId) {
         }
     }
 
-    // Fallback de segurança para nunca deixar em branco
     if (!viewAlvo) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
-        viewAlvo.removeAttribute('hidden'); // Remove caso haja atributo nativo
-        // Força a remoção via className caso o classList esteja travado por algum motivo
+        viewAlvo.removeAttribute('hidden');
         viewAlvo.className = viewAlvo.className.replace('hidden', '').trim();
-        console.log("Classes forçadas após remoção:", viewAlvo.className);
     }
 
-    // Callbacks de inicialização de dados
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
+    } else if (cleanId === 'blog' && typeof renderizarBlog === 'function') {
+        renderizarBlog();
     } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
         renderizarFichasConsulta();
     } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
@@ -1024,15 +1020,6 @@ function showView(viewId) {
             atualizarListaRecordsCF('endurance');
         }
     }
-            // verificações do blog.
-    if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    } else if (cleanId === 'blog' && typeof renderizarBlog === 'function') {
-        renderizarBlog(); // <-- Adicionado para carregar o blog perfeitamente no formato moderno ao abrir a tela
-    } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
-        renderizarFichasConsulta();
 
     window.currentView = cleanId;
     
@@ -1042,6 +1029,8 @@ function showView(viewId) {
         document.body.scrollTop = 0;
     }, 10);
 }
+
+window.showView = showView;
 
 window.showView = showView;
 
