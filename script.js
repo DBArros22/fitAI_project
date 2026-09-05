@@ -2770,6 +2770,18 @@ async function carregarPerfilPublico(uidAlvo) {
         const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
         const bio = dados.bio || "";
 
+        // Busca seguidores e seguindo
+        const seguidoresSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguidores').get();
+        const seguindoSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguindo').get();
+        const totalSeguidores = seguidoresSnap.size;
+        const totalSeguindo = seguindoSnap.size;
+
+        let jaSegue = false;
+        if (user && !ehMeuPerfil) {
+            const checkSeguindo = await db.collection('usuarios').doc(user.uid).collection('seguindo').doc(uidAlvo).get();
+            jaSegue = checkSeguindo.exists;
+        }
+
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
         let totalPosts = postsSnap.size;
         let gridMidiasHtml = '';
@@ -2778,6 +2790,7 @@ async function carregarPerfilPublico(uidAlvo) {
         postsSnap.forEach(doc => {
             const p = doc.data();
             const dataPostFormatada = p.criadoEm && p.criadoEm.toDate ? p.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente";
+            const ehMeuPost = user && p.uid === user.uid;
 
             // Monta a Galeria Visual de Fotos
             if (p.midia) {
@@ -2785,13 +2798,13 @@ async function carregarPerfilPublico(uidAlvo) {
                 const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
                 if (tipo === 'foto' || tipo === 'image') {
                     gridMidiasHtml += `
-                        <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4); transition: transform 0.25s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="aspect-ratio: 1; border-radius: 16px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 6px 16px rgba(0,0,0,0.4);">
                             <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
                         </div>`;
                 }
             }
 
-            // Monta a listagem de posts detalhados (texto + mídia) do perfil
+            // Monta a listagem de posts detalhados (texto + mídia) do perfil com botão de exclusão
             let midiaPostHtml = '';
             if (p.midia) {
                 const tipoM = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
@@ -2804,8 +2817,11 @@ async function carregarPerfilPublico(uidAlvo) {
             }
 
             listaPostsPerfilHtml += `
-                <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
-                    <p style="color: #64748b; font-size: 10px; margin-bottom: 6px;">${dataPostFormatada}</p>
+                <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08); position: relative;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                        <p style="color: #64748b; font-size: 10px; margin: 0;">${dataPostFormatada}</p>
+                        ${ehMeuPost ? `<button onclick="excluirPost('${doc.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold; line-height: 1;" title="Excluir post">&times;</button>` : ''}
+                    </div>
                     ${p.texto ? `<p style="color: white; font-size: 13px; margin-bottom: 8px; line-height: 1.4;">${p.texto}</p>` : ''}
                     ${midiaPostHtml}
                 </div>
@@ -2835,6 +2851,15 @@ async function carregarPerfilPublico(uidAlvo) {
             `;
         }
 
+        let botaoAcaoSocial = '';
+        if (!ehMeuPerfil && user) {
+            if (jaSegue) {
+                botaoAcaoSocial = `<button onclick="deixarDeSeguirAtleta('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
+            } else {
+                botaoAcaoSocial = `<button onclick="seguirAtleta('${uidAlvo}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
+            }
+        }
+
         container.innerHTML = `
             <div style="padding: 10px 0;">
                 <div class="glass-panel" style="padding: 35px 25px; border-radius: 30px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08);">
@@ -2844,11 +2869,20 @@ async function carregarPerfilPublico(uidAlvo) {
                     <h3 style="color: white; font-size: 1.4rem; margin: 0 0 10px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
                     
                     ${blocoBioHtml}
+                    ${botaoAcaoSocial}
 
                     <div style="display: flex; justify-content: center; gap: 35px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 20px;">
                         <div>
                             <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalPosts}</p>
-                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Posts de Treino</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Posts</p>
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalSeguidores}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Seguidores</p>
+                        </div>
+                        <div>
+                            <p style="color: white; font-size: 19px; font-weight: 800; margin: 0;">${totalSeguindo}</p>
+                            <p style="color: #64748b; font-size: 11px; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 1.2px;">Seguindo</p>
                         </div>
                     </div>
                 </div>
