@@ -2670,9 +2670,6 @@ if (typeof window.abaAtivaBlog === 'undefined') {
     window.abaAtivaBlog = 'feed';
 }
 
-if (typeof window.perfilVisualizadoUid === 'undefined') {
-    window.perfilVisualizadoUid = null;
-}
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
