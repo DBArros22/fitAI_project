@@ -2724,7 +2724,9 @@ async function carregarPerfilPublico(uidAlvo) {
         const dados = userDoc.exists ? userDoc.data() : {};
         const nome = dados.nome || dados.nomeCompleto || "ATLETA";
         const foto = dados.fotoPerfil || dados.foto || null;
-        const bio = dados.bio || "Buscando evolução constante no treino!";
+        
+        // Se a bio não existir ou estiver vazia, tratamos como string vazia para iniciar limpa
+        const bio = dados.bio || "";
 
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
         let totalPosts = postsSnap.size;
@@ -2744,6 +2746,35 @@ async function carregarPerfilPublico(uidAlvo) {
             }
         });
 
+        // Montagem do HTML da Bio seguindo o padrão Instagram (vazia se não preenchida, com gatilho de edição)
+        let blocoBioHtml = '';
+        if (bio.trim() !== "") {
+            blocoBioHtml = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px; word-break: break-word;">${bio}</p>
+                    ${ehMeuPerfil ? `
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+        } else {
+            if (ehMeuPerfil) {
+                blocoBioHtml = `
+                    <div style="margin-bottom: 18px;">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.1); border: 1px dashed rgba(59,130,246,0.4); color: #3b82f6; padding: 8px 14px; border-radius: 12px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'" onmouseout="this.style.background='rgba(59,130,246,0.1)'">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            Adicionar bio ao perfil
+                        </button>
+                        <div id="texto-bio-usuario" style="display:none;"></div>
+                    </div>
+                `;
+            } else {
+                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`; // Perfil de terceiros sem bio não exibe nada
+            }
+        }
+
         container.innerHTML = `
             <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
                 <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
@@ -2751,15 +2782,7 @@ async function carregarPerfilPublico(uidAlvo) {
                 </div>
                 <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
                 
-                <!-- Bloco da Bio com Lápis de Edição Condicional -->
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
-                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px;">${bio}</p>
-                    ${ehMeuPerfil ? `
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                    ` : ''}
-                </div>
+                ${blocoBioHtml}
 
                 <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
                     <div>
