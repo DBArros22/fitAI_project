@@ -2682,16 +2682,17 @@ function renderizarBlog() {
     const meuUid = user ? user.uid : null;
 
     container.innerHTML = `
-        <div class="glass-panel" style="padding: 16px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 0.7rem; font-weight: bold; letter-spacing: 1px;">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 5px; vertical-align: middle;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
+        <div class="glass-panel" style="padding: 20px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 18px; border-radius: 14px; cursor: pointer; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
                 </button>
                 
-                <div style="display: flex; gap: 5px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);">
-                    <button onclick="mudarAbaBlog('feed')" style="background: ${abaAtivaBlog === 'feed' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Feed</button>
-                    <button onclick="mudarAbaBlog('explorar')" style="background: ${abaAtivaBlog === 'explorar' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Explorar</button>
-                    <button onclick="mudarAbaBlog('perfil', '${meuUid}')" style="background: ${abaAtivaBlog === 'perfil' ? '#3b82f6' : 'transparent'}; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer;">Meu Perfil</button>
+                <!-- Abas Visuais Grandes e Estilizadas -->
+                <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
+                    <button onclick="mudarAbaBlog('feed')" style="background: ${window.abaAtivaBlog === 'feed' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'feed' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">📰 Feed</button>
+                    <button onclick="mudarAbaBlog('explorar')" style="background: ${window.abaAtivaBlog === 'explorar' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'explorar' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">🔍 Explorar</button>
+                    <button onclick="mudarAbaBlog('perfil', '${meuUid}')" style="background: ${window.abaAtivaBlog === 'perfil' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'perfil' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">👤 Meu Perfil</button>
                 </div>
             </div>
 
@@ -2700,20 +2701,6 @@ function renderizarBlog() {
     `;
 
     renderizarConteudoAba();
-
-    if (!window._blogListenersAtivados) {
-        window._blogListenersAtivados = true;
-        window.addEventListener('fitaiPerfilAtualizado', () => {
-            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
-                if (abaAtivaBlog === 'feed') atualizarFeedUI();
-            }
-        });
-        window.addEventListener('fitaiFotoAtualizada', () => {
-            if (document.getElementById('view-blog') && document.getElementById('view-blog').style.display !== 'none') {
-                if (abaAtivaBlog === 'feed') atualizarFeedUI();
-            }
-        });
-    }
 }
 
 function mudarAbaBlog(aba, uidAlvo = null) {
@@ -2724,6 +2711,115 @@ function mudarAbaBlog(aba, uidAlvo = null) {
     }
     renderizarBlog();
 }
+
+async function carregarPerfilPublico(uidAlvo) {
+    const container = document.getElementById('perfil-publico-container');
+    if (!container) return;
+
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    const ehMeuPerfil = user && user.uid === uidAlvo;
+
+    try {
+        const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nome = dados.nome || dados.nomeCompleto || "ATLETA";
+        const foto = dados.fotoPerfil || dados.foto || null;
+        const bio = dados.bio || "Buscando evolução constante no treino!";
+
+        const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
+        let totalPosts = postsSnap.size;
+        let gridMidiasHtml = '';
+
+        postsSnap.forEach(doc => {
+            const p = doc.data();
+            if (p.midia) {
+                const tipo = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
+                const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
+                if (tipo === 'foto' || tipo === 'image') {
+                    gridMidiasHtml += `
+                        <div style="aspect-ratio: 1; border-radius: 14px; overflow: hidden; background: #000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                            <img src="${url}" style="width:100%; height:100%; object-fit: cover;">
+                        </div>`;
+                }
+            }
+        });
+
+        container.innerHTML = `
+            <div class="glass-panel" style="padding: 25px; border-radius: 24px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="width: 85px; height: 85px; border-radius: 50%; background: #3b82f6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 20px rgba(59,130,246,0.4);">
+                    ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 28px; font-weight:bold;">${nome.charAt(0)}</span>`}
+                </div>
+                <h3 style="color: white; font-size: 1.2rem; margin: 0 0 8px 0; font-weight: 800; letter-spacing: 1px;">${nome.toUpperCase()}</h3>
+                
+                <!-- Bloco da Bio com Lápis de Edição Condicional -->
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+                    <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 13px; margin: 0; line-height: 1.4; max-width: 400px;">${bio}</p>
+                    ${ehMeuPerfil ? `
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 8px; padding: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Editar Bio">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                    ` : ''}
+                </div>
+
+                <div style="display: flex; justify-content: center; gap: 30px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 15px;">
+                    <div>
+                        <p style="color: white; font-size: 16px; font-weight: bold; margin: 0;">${totalPosts}</p>
+                        <p style="color: #64748b; font-size: 10px; margin: 0; text-transform: uppercase; letter-spacing: 1px;">Posts de Treino</p>
+                    </div>
+                </div>
+            </div>
+
+            <h4 style="color: white; font-size: 13px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 15px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                Galeria de Evolução Visual
+            </h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px;">
+                ${gridMidiasHtml || `<p style="color: #64748b; font-size: 12px; grid-column: 1 / -1; text-align: center; padding: 30px 0; background: rgba(255,255,255,0.01); border-radius: 14px;">Nenhuma arte ou foto postada ainda.</p>`}
+            </div>
+        `;
+    } catch (e) {
+        console.error("Erro ao carregar perfil:", e);
+        container.innerHTML = `<p style="color: #ef4444; text-align: center;">Erro ao carregar perfil.</p>`;
+    }
+}
+
+// Funções de suporte para edição dinâmica da Bio
+function ativarEdicaoBio() {
+    const pBio = document.getElementById('texto-bio-usuario');
+    if (!pBio) return;
+    const bioAtual = pBio.innerText;
+
+    pBio.outerHTML = `
+        <div id="container-edicao-bio" style="display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 400px; margin: 0 auto;">
+            <input type="text" id="input-nova-bio" value="${bioAtual}" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.5); padding: 8px 12px; border-radius: 10px; color: white; font-size: 13px; outline: none;">
+            <button onclick="salvarNovaBio()" style="background: #3b82f6; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: bold; font-size: 11px; cursor: pointer;">Salvar</button>
+        </div>
+    `;
+}
+window.ativarEdicaoBio = ativarEdicaoBio;
+
+async function salvarNovaBio() {
+    const input = document.getElementById('input-nova-bio');
+    if (!input) return;
+    const novaBio = input.value.trim();
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+        await db.collection('usuarios').doc(user.uid).set({
+            bio: novaBio
+        }, { merge: true });
+
+        if (typeof mostrarAviso === 'function') mostrarAviso("Bio atualizada com sucesso!");
+        carregarPerfilPublico(user.uid);
+    } catch (e) {
+        console.error("Erro ao salvar bio:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar bio.");
+    }
+}
+window.salvarNovaBio = salvarNovaBio;
+
 window.mudarAbaBlog = mudarAbaBlog;
 
 function renderizarConteudoAba() {
