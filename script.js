@@ -2670,6 +2670,9 @@ window.addEventListener('fitaiFotoAtualizada', (e) => {
 let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
 let perfilVisualizadoUid = null; 
 
+let abaAtivaBlog = 'feed'; // 'feed', 'explorar', 'perfil'
+let perfilVisualizadoUid = null; 
+
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
     if (!container) return;
