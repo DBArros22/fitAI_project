@@ -2664,8 +2664,13 @@ if (typeof window.abaAtivaBlog === 'undefined') {
     window.abaAtivaBlog = 'feed';
 }
 
+window.salvarNovaBio = salvarNovaBio;
 window.abaAtivaBlog = window.abaAtivaBlog || 'feed';
 window.perfilVisualizadoUid = window.perfilVisualizadoUid || null;
+window.midiaAnexada = window.midiaAnexada || null;
+window.feedEvolucao = window.feedEvolucao || [];
+window.abaAtivaBlog = window.abaAtivaBlog || 'feed';
+
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
@@ -2973,31 +2978,40 @@ async function salvarNovaBio() {
     }
 }
 
-window.salvarNovaBio = salvarNovaBio;
 
-window.abaAtivaBlog = window.abaAtivaBlog || 'feed';
-window.perfilVisualizadoUid = window.perfilVisualizadoUid || null;
-window.midiaAnexada = window.midiaAnexada || null;
-window.feedEvolucao = window.feedEvolucao || [];
-
-function mudarAbaBlog(aba, uidEspecifico = null) {
+function mudarAbaBlog(aba, uidAlvo = null) {
     window.abaAtivaBlog = aba;
-    if (uidEspecifico) {
-        window.perfilVisualizadoUid = uidEspecifico;
-    } else if (aba === 'perfil' && auth && auth.currentUser) {
-        window.perfilVisualizadoUid = auth.currentUser.uid;
+    if (aba === 'perfil') {
+        const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+        window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
     }
 
-    const botoesAba = document.querySelectorAll('.aba-blog-btn');
-    botoesAba.forEach(btn => {
-        if (btn.dataset.aba === aba) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+    // Atualiza o destaque visual dos botões de abas instantaneamente
+    const btnFeed = document.querySelector('button[onclick*="mudarAbaBlog(\'feed\'"]');
+    const btnExplorar = document.querySelector('button[onclick*="mudarAbaBlog(\'explorar\'"]');
+    const btnPerfil = document.querySelector('button[onclick*="mudarAbaBlog(\'perfil\'"]');
 
-    renderizarConteudoAbaBlog();
+    const estiloAtivo = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
+    const sombraAtiva = '0 4px 15px rgba(59,130,246,0.4)';
+
+    if (btnFeed) {
+        btnFeed.style.background = aba === 'feed' ? estiloAtivo : 'transparent';
+        btnFeed.style.boxShadow = aba === 'feed' ? sombraAtiva : 'none';
+    }
+    if (btnExplorar) {
+        btnExplorar.style.background = aba === 'explorar' ? estiloAtivo : 'transparent';
+        btnExplorar.style.boxShadow = aba === 'explorar' ? sombraAtiva : 'none';
+    }
+    if (btnPerfil) {
+        btnPerfil.style.background = aba === 'perfil' ? estiloAtivo : 'transparent';
+        btnPerfil.style.boxShadow = aba === 'perfil' ? sombraAtiva : 'none';
+    }
+
+    if (typeof renderizarConteudoAba === 'function') {
+        renderizarConteudoAba();
+    } else if (typeof renderizarBlog === 'function') {
+        renderizarBlog();
+    }
 }
 window.mudarAbaBlog = mudarAbaBlog;
 
