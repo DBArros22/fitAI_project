@@ -3210,16 +3210,19 @@ async function postarNoFeed() {
 window.postarNoFeed = postarNoFeed;
 
 async function carregarFeedDoBanco() {
+    const container = document.getElementById('feed-container');
+    if (container && (!window.feedEvolucao || window.feedEvolucao.length === 0)) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">Carregando feed...</p>`;
+    }
+
     try {
         let snapshot;
         try {
-            // Tenta buscar ordenado por data decrescente
             snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
-        } catch (ordemErr) {
-            console.warn("Aviso: Índice orderBy ainda não criado no Firestore. Buscando sem ordenação...", ordemErr);
+        } catch (e) {
             snapshot = await db.collection('feed').get();
         }
-        
+
         window.feedEvolucao = [];
         snapshot.forEach(doc => {
             const postData = doc.data();
@@ -3230,15 +3233,13 @@ async function carregarFeedDoBanco() {
             });
         });
 
-        // Ordenação manual de segurança caso o banco venha sem ordenação
         window.feedEvolucao.sort((a, b) => {
             const tempoA = a.criadoEm && a.criadoEm.toMillis ? a.criadoEm.toMillis() : 0;
             const tempoB = b.criadoEm && b.criadoEm.toMillis ? b.criadoEm.toMillis() : 0;
             return tempoB - tempoA;
         });
-
-    } catch (feedError) {
-        console.error("Erro fatal ao carregar posts do feed:", feedError);
+    } catch (err) {
+        console.error("Erro ao carregar feed:", err);
     }
 
     if (typeof atualizarFeedUI === "function") {
