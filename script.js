@@ -2670,6 +2670,8 @@ if (typeof window.abaAtivaBlog === 'undefined') {
     window.abaAtivaBlog = 'feed';
 }
 
+window.abaAtivaBlog = window.abaAtivaBlog || 'feed';
+window.perfilVisualizadoUid = window.perfilVisualizadoUid || null;
 
 function renderizarBlog() {
     const container = document.getElementById('view-blog');
@@ -2699,45 +2701,66 @@ function renderizarBlog() {
     renderizarConteudoAba();
 }
 
+window.renderizarBlog = renderizarBlog;
+
 function mudarAbaBlog(aba, uidAlvo = null) {
     window.abaAtivaBlog = aba;
-    const conteudoDinamico = document.getElementById('blog-conteudo-dinamico');
-    if (!conteudoDinamico) return;
-
-    if (aba === 'feed') {
-        conteudoDinamico.innerHTML = `
-            <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
-            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
-                <button id="btn-mic" onclick="toggleGravacao()" class="btn-action" title="Gravar Áudio">
-                    <svg id="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                </button>
-                <span id="timer-gravacao" class="hidden" style="color: var(--accent-blue); font-weight: bold; font-family: monospace;">00:00</span>
-                <input type="file" id="input-media" accept="image/*,video/*,audio/*" style="display:none" onchange="previewMidia(event)">
-                <button onclick="document.getElementById('input-media').click()" class="btn-action" title="Adicionar Mídia">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
-                </button>
-                <button onclick="postarNoFeed()" class="btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    POSTAR
-                </button>
-            </div>
-            <div id="preview-container" style="margin-top: 15px;"></div>
-            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
-            <div id="feed-container"></div>
-        `;
-        if (typeof carregarFeed === 'function') carregarFeed();
-    } else if (aba === 'perfil') {
-        const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-        window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
-        conteudoDinamico.innerHTML = `<div id="perfil-publico-container">Carregando perfil...</div>`;
-        if (window.perfilVisualizadoUid) carregarPerfilPublico(window.perfilVisualizadoUid);
-    } else if (aba === 'explorar') {
-        conteudoDinamico.innerHTML = `<div id="explorar-container"></div>`;
-        if (typeof carregarExplorar === 'function') carregarExplorar();
+    if (aba === 'perfil' && uidAlvo) {
+        window.perfilVisualizadoUid = uidAlvo;
     }
+    // Re-renderiza o blog inteiro para atualizar o destaque e animação dos botões superiores instantaneamente
+    renderizarBlog();
 }
 
 window.mudarAbaBlog = mudarAbaBlog;
+
+function renderizarConteudoAba() {
+    const area = document.getElementById('blog-conteudo-dinamico');
+    if (!area) return;
+
+    if (window.abaAtivaBlog === 'feed') {
+        area.innerHTML = `
+            <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <textarea id="texto-evolucao" placeholder="Como foi o treino de hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
+                
+                <div id="preview-midia" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 5px;">
+                    <div style="display: flex; gap: 10px;">
+                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
+                            <input type="file" id="input-media" accept="image/*,video/*,audio/*" onchange="previewMidia(event)" style="display: none;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        </label>
+                        <button id="btn-mic" onclick="toggleGravacao()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </button>
+                    </div>
+                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
+                </div>
+            </div>
+            
+            <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
+        `;
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
+    } else if (window.abaAtivaBlog === 'explorar') {
+        area.innerHTML = `
+            <div style="margin-bottom: 20px;">
+                <input type="text" id="input-busca-atleta" placeholder="Pesquisar atleta por nome..." oninput="pesquisarAtletas(this.value)" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 14px; color: white; outline: none; font-size: 13px;">
+            </div>
+            <div id="lista-resultados-busca" style="display: flex; flex-direction: column; gap: 10px;">
+                <p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite para encontrar outros atletas.</p>
+            </div>
+        `;
+    } else if (window.abaAtivaBlog === 'perfil') {
+        area.innerHTML = `<div id="perfil-publico-container"><p style="color: #64748b; text-align: center; font-size: 13px;">Carregando perfil...</p></div>`;
+        const targetUid = window.perfilVisualizadoUid || (auth.currentUser ? auth.currentUser.uid : null);
+        if (targetUid) {
+            carregarPerfilPublico(targetUid);
+        }
+    }
+}
+
+window.renderizarConteudoAba = renderizarConteudoAba;
 
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
@@ -2749,8 +2772,8 @@ async function carregarPerfilPublico(uidAlvo) {
     try {
         const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
         const dados = userDoc.exists ? userDoc.data() : {};
-        const nome = dados.nome || dados.nomeCompleto || "ATLETA";
-        const foto = dados.fotoPerfil || dados.foto || null;
+        const nome = dados.nome || dados.nomeCompleto || dados.name || "ATLETA";
+        const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
         const bio = dados.bio || "";
 
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
@@ -2777,7 +2800,7 @@ async function carregarPerfilPublico(uidAlvo) {
                 <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;">
                     <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.6; max-width: 450px; word-break: break-word;">${bio}</p>
                     ${ehMeuPerfil ? `
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.2)'; this.style.borderColor='rgba(59,130,246,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.15)'" title="Editar Bio">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Editar Bio">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                     ` : ''}
@@ -2787,7 +2810,7 @@ async function carregarPerfilPublico(uidAlvo) {
             if (ehMeuPerfil) {
                 blocoBioHtml = `
                     <div style="margin-bottom: 24px;">
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onmouseover="this.style.background='rgba(59,130,246,0.22)'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(59,130,246,0.12)'; this.style.transform='translateY(0)'">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             Adicionar bio ao perfil
                         </button>
@@ -2843,7 +2866,7 @@ function ativarEdicaoBio() {
     pBio.outerHTML = `
         <div id="container-edicao-bio" style="display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; max-width: 450px; margin: 0 auto 10px auto;">
             <input type="text" id="input-nova-bio" value="${bioAtual}" placeholder="Escreva sua bio (texto, números e emojis)..." style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(59,130,246,0.6); padding: 10px 14px; border-radius: 12px; color: white; font-size: 13px; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-            <button onclick="salvarNovaBio()" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Salvar</button>
+            <button onclick="salvarNovaBio()" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.4);">Salvar</button>
         </div>
     `;
 }
@@ -2872,54 +2895,6 @@ async function salvarNovaBio() {
 
 window.salvarNovaBio = salvarNovaBio;
 
-
-window.mudarAbaBlog = mudarAbaBlog;
-
-function renderizarConteudoAba() {
-    const area = document.getElementById('blog-conteudo-dinamico');
-    if (!area) return;
-
-    if (abaAtivaBlog === 'feed') {
-        area.innerHTML = `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 20px; margin-bottom: 25px; border: 1px solid rgba(59,130,246,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                <textarea id="texto-evolucao" placeholder="Como foi o treino hoje? Relate sua evolução..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; margin-bottom: 10px; font-size: 14px; min-height: 70px;"></textarea>
-                
-                <div id="preview-midia" style="margin-bottom: 12px; display: flex; flex-direction: column; gap: 10px;"></div>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 5px;">
-                    <div style="display: flex; gap: 10px;">
-                        <label style="cursor: pointer; background: rgba(255,255,255,0.05); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.1); transition: 0.3s;">
-                            <input type="file" id="input-media" accept="image/*,video/*,audio/*" onchange="previewMidia(event)" style="display: none;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                        </label>
-                        <button id="btn-mic" onclick="toggleGravacao()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-                        </button>
-                    </div>
-                    <button onclick="postarNoFeed()" style="background: #3b82f6; color: white; border: none; padding: 10px 24px; border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); text-transform: uppercase; letter-spacing: 1px;">POSTAR</button>
-                </div>
-            </div>
-            
-            <div id="feed-container" style="display: flex; flex-direction: column; gap: 15px;"></div>
-        `;
-        carregarFeedDoBanco();
-    } else if (abaAtivaBlog === 'explorar') {
-        area.innerHTML = `
-            <div style="margin-bottom: 20px;">
-                <input type="text" id="input-busca-atleta" placeholder="Pesquisar atleta por nome..." oninput="pesquisarAtletas(this.value)" style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 12px 16px; border-radius: 14px; color: white; outline: none; font-size: 13px;">
-            </div>
-            <div id="lista-resultados-busca" style="display: flex; flex-direction: column; gap: 10px;">
-                <p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite para encontrar outros atletas.</p>
-            </div>
-        `;
-    } else if (abaAtivaBlog === 'perfil') {
-        area.innerHTML = `<div id="perfil-publico-container"><p style="color: #64748b; text-align: center; font-size: 13px;">Carregando perfil...</p></div>`;
-        if (perfilVisualizadoUid) {
-            carregarPerfilPublico(perfilVisualizadoUid);
-        }
-    }
-}
-
 async function pesquisarAtletas(termo) {
     const container = document.getElementById('lista-resultados-busca');
     if (!container) return;
@@ -2933,9 +2908,9 @@ async function pesquisarAtletas(termo) {
         const user = auth.currentUser;
         snapshot.forEach(doc => {
             const dados = doc.data();
-            const nome = dados.nome || dados.nomeCompleto || "Atleta";
+            const nome = dados.nome || dados.nomeCompleto || dados.name || "Atleta";
             if (nome.toLowerCase().includes(termo.toLowerCase()) && (!user || doc.id !== user.uid)) {
-                const foto = dados.fotoPerfil || dados.foto || '';
+                const foto = dados.fotoPerfil || dados.foto || dados.avatar || '';
                 html += `
                     <div class="glass-panel" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.03);">
                         <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${doc.id}')">
@@ -2960,14 +2935,12 @@ async function pesquisarAtletas(termo) {
 
 window.pesquisarAtletas = pesquisarAtletas;
 
-
-
 function previewMidia(event) {
     const file = event.target.files[0];
     const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
     
     if (!file) {
-        midiaAnexada = null;
+        window.midiaAnexada = null;
         if (previewContainer) previewContainer.innerHTML = "";
         return;
     }
@@ -2979,7 +2952,7 @@ function previewMidia(event) {
         if (file.type.startsWith('video/')) tipoMidia = 'video';
         if (file.type.startsWith('audio/')) tipoMidia = 'audio';
         
-        midiaAnexada = { tipo: tipoMidia, data: base64Data };
+        window.midiaAnexada = { tipo: tipoMidia, data: base64Data };
         
         if (previewContainer) {
             if (tipoMidia === 'foto') {
@@ -3006,100 +2979,71 @@ function previewMidia(event) {
     reader.readAsDataURL(file);
 }
 
+window.previewMidia = previewMidia;
+
 function removerMidia() {
-    midiaAnexada = null;
+    window.midiaAnexada = null;
     const previewContainer = document.getElementById('preview-midia') || document.getElementById('preview-container');
     const inputMedia = document.getElementById('input-media');
     if (previewContainer) previewContainer.innerHTML = "";
     if (inputMedia) inputMedia.value = "";
 }
 
+window.removerMidia = removerMidia;
+
 async function postarNoFeed() {
     const user = auth.currentUser;
     if (!user) {
-        mostrarAviso("Você precisa estar logado para postar!");
+        if (typeof mostrarAviso === 'function') mostrarAviso("Você precisa estar logado para postar!");
         return;
     }
-
-    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const nomeBruto = dadosLocais.nome || localStorage.getItem('user_nome') || (typeof window.nomeUsuarioAtual !== 'undefined' ? window.nomeUsuarioAtual : "ATLETA");
-    const nomeUsuarioAtual = nomeBruto.trim().split(" ")[0].toUpperCase();
 
     const inputTexto = document.getElementById('post-texto') || document.getElementById('texto-evolucao');
     const texto = inputTexto ? inputTexto.value.trim() : "";
-    
     const temTexto = texto.length > 0;
-    const temMidia = typeof midiaAnexada !== 'undefined' && midiaAnexada !== null && midiaAnexada !== undefined;
+    const temMidia = typeof window.midiaAnexada !== 'undefined' && window.midiaAnexada !== null;
 
     if (!temTexto && !temMidia) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("O post não pode estar vazio!");
+        if (typeof mostrarAviso === 'function') mostrarAviso("O post não pode estar vazio!");
         return;
     }
 
-    const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || user.photoURL || null;
-
-    const novoPost = {
-        uid: user.uid,
-        nomeAtleta: nomeUsuarioAtual, 
-        fotoPerfil: fotoPerfilAtual, 
-        texto: texto,
-        midia: temMidia ? { tipo: midiaAnexada.tipo, data: midiaAnexada.data } : null,
-        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
     try {
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
+        const fotoPerfil = dados.fotoPerfil || dados.foto || dados.avatar || user.photoURL || null;
+
+        const novoPost = {
+            uid: user.uid,
+            nomeAtleta: nomeAtleta, 
+            fotoPerfil: fotoPerfil, 
+            texto: texto,
+            midia: temMidia ? { tipo: window.midiaAnexada.tipo, data: window.midiaAnexada.data } : null,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
         await db.collection('feed').add(novoPost);
         
         if (inputTexto) inputTexto.value = "";
         removerMidia();
 
-        await carregarFeedDoBanco();
+        if (typeof carregarFeedDoBanco === 'function') await carregarFeedDoBanco();
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        mostrarAviso("Postagem realizada com sucesso!");
+        if (typeof mostrarAviso === 'function') mostrarAviso("Postagem realizada com sucesso!");
     } catch (error) {
         console.error("Erro ao publicar no feed:", error);
-        mostrarAviso("Erro ao salvar a postagem.");
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar a postagem.");
     }
 }
+
 window.postarNoFeed = postarNoFeed;
 
 async function carregarFeedDoBanco() {
     const user = auth.currentUser;
     if (!user) return; 
-
-    const fotoLocalStorage = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto');
-    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const nomeLocalStorage = dadosLocais.nome || localStorage.getItem('user_nome');
-    
-    if (typeof fotoUsuarioAtual !== 'undefined' && fotoLocalStorage) fotoUsuarioAtual = fotoLocalStorage;
-    if (typeof nomeUsuarioAtual !== 'undefined' && nomeLocalStorage) nomeUsuarioAtual = nomeLocalStorage.trim().split(" ")[0].toUpperCase();
-
-    if (typeof atualizarFeedUI === "function") {
-        atualizarFeedUI();
-    }
-
-    try {
-        const userDoc = await db.collection('usuarios').doc(user.uid).get();
-        if (userDoc.exists) {
-            const dados = userDoc.data();
-            const nomeCompleto = dados.nome || dados.nomeCompleto || dados.name || user.displayName || "";
-            if (nomeCompleto) {
-                if (typeof nomeUsuarioAtual !== 'undefined') nomeUsuarioAtual = nomeCompleto.trim().split(" ")[0].toUpperCase();
-                localStorage.setItem('user_nome', nomeCompleto.trim().split(" ")[0].toUpperCase());
-            }
-
-            const fotoFirestore = dados.fotoPerfil || dados.foto || dados.avatar || dados.urlFoto || null;
-            if (fotoFirestore) {
-                if (typeof fotoUsuarioAtual !== 'undefined') fotoUsuarioAtual = fotoFirestore;
-                localStorage.setItem(`user_foto_${user.uid}`, fotoFirestore);
-                localStorage.setItem('user_foto', fotoFirestore);
-            }
-        }
-    } catch (error) {
-        console.warn("Aviso: Sincronização em segundo plano indisponível.", error);
-    }
 
     try {
         const snapshot = await db.collection('feed')
@@ -3113,7 +3057,6 @@ async function carregarFeedDoBanco() {
             window.feedEvolucao.push({
                 id: doc.id,
                 ...postData,
-                fotoPerfil: postData.fotoPerfil || (typeof fotoUsuarioAtual !== 'undefined' ? fotoUsuarioAtual : null),
                 data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
@@ -3125,6 +3068,7 @@ async function carregarFeedDoBanco() {
         atualizarFeedUI();
     }
 }
+
 window.carregarFeedDoBanco = carregarFeedDoBanco;
 
 function atualizarFeedUI() {
