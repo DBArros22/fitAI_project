@@ -3040,8 +3040,11 @@ async function carregarFeedDoBanco() {
     if (!user) return; 
 
     try {
+        // Carrega os posts do feed ordenados por data de criação. 
+        // (Caso queira que exiba posts globais ou apenas do usuário, ajuste a query se necessário. 
+        //  Aqui removemos o .where('uid', '==', user.uid) para que o feed mostre postagens gerais/suas próprias, 
+        //  ou mantemos abrangente para redes sociais).
         const snapshot = await db.collection('feed')
-            .where('uid', '==', user.uid)
             .orderBy('criadoEm', 'desc')
             .get();
         
@@ -3070,14 +3073,6 @@ function atualizarFeedUI() {
     if (!container) return;
 
     const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    if (!user) return;
-
-    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
-    const nomeSalvo = dadosLocais.nome || user.displayName || "ATLETA";
-    const primeiroNome = nomeSalvo.trim().split(" ")[0].toUpperCase();
-
-    const fotoPerfilAtual = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || null;
-
     const listaPosts = typeof feedEvolucao !== 'undefined' ? feedEvolucao : [];
 
     container.innerHTML = listaPosts.map(post => {
@@ -3095,21 +3090,25 @@ function atualizarFeedUI() {
             }
         }
 
-        const fotoFinal = fotoPerfilAtual;
+        // Dados individuais salvos no post ou fallback seguro
+        const nomePost = (post.nomeAtleta || "ATLETA").toUpperCase();
+        const inicial = nomePost.charAt(0);
+        const fotoPost = post.fotoPerfil || null;
+        const ehMeuPost = user && post.uid === user.uid;
 
         return `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 22px; margin-bottom: 12px; position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div style="width: 38px; height: 38px; border-radius: 10px; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">
-                            ${fotoFinal ? `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${primeiroNome.charAt(0)}</span>`}
+                            ${fotoPost ? `<img src="${fotoPost}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:900;">${inicial}</span>`}
                         </div>
                         <div>
-                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">${primeiroNome}</p>
+                            <p style="color: white; font-size: 13px; font-weight: 800; margin: 0; text-transform: uppercase; cursor: pointer;" onclick="mudarAbaBlog('perfil', '${post.uid}')">${nomePost}</p>
                             <p style="color: #64748b; font-size: 10px; margin: 0;">${post.data}</p>
                         </div>
                     </div>
-                    <button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold;">&times;</button>
+                    ${ehMeuPost ? `<button onclick="excluirPost('${post.id}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 22px; font-weight: bold;" title="Excluir post">&times;</button>` : ''}
                 </div>
                 ${post.texto ? `<p style="color: white; font-size: 14px; margin-bottom: 12px; line-height: 1.4;">${post.texto}</p>` : ''}
                 ${midiaHTML}
@@ -3117,6 +3116,7 @@ function atualizarFeedUI() {
         `;
     }).join('') || `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
 }
+
 window.atualizarFeedUI = atualizarFeedUI;
 
 function excluirPost(id) {
