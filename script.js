@@ -2840,13 +2840,35 @@ function ativarEdicaoBio() {
     const bioAtual = pBio.innerText || "";
 
     pBio.outerHTML = `
-        <div id="container-edicao-bio" style="display: flex; gap: 8px; justify-content: center; width: 100%; max-width: 400px; margin: 0 auto;">
-            <input type="text" id="input-nova-bio" value="${bioAtual}" placeholder="Escreva sua bio..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.5); padding: 8px 12px; border-radius: 10px; color: white; font-size: 13px; outline: none;">
-            <button onclick="salvarNovaBio()" style="background: #3b82f6; color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: bold; font-size: 11px; cursor: pointer;">Salvar</button>
+        <div id="container-edicao-bio" style="display: flex; gap: 10px; justify-content: center; align-items: center; width: 100%; max-width: 450px; margin: 0 auto 10px auto;">
+            <input type="text" id="input-nova-bio" value="${bioAtual}" placeholder="Escreva sua bio (texto, números e emojis)..." style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(59,130,246,0.6); padding: 10px 14px; border-radius: 12px; color: white; font-size: 13px; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            <button onclick="salvarNovaBio()" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.4); transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Salvar</button>
         </div>
     `;
 }
 window.ativarEdicaoBio = ativarEdicaoBio;
+
+async function salvarNovaBio() {
+    const input = document.getElementById('input-nova-bio');
+    if (!input) return;
+    const novaBio = input.value.trim();
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    if (!user) return;
+
+    try {
+        await db.collection('usuarios').doc(user.uid).set({
+            bio: novaBio
+        }, { merge: true });
+
+        if (typeof mostrarAviso === 'function') mostrarAviso("Bio atualizada com sucesso!");
+        carregarPerfilPublico(user.uid);
+    } catch (e) {
+        console.error("Erro ao salvar bio:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao salvar bio.");
+    }
+}
+
+window.salvarNovaBio = salvarNovaBio;
 
 async function salvarNovaBio() {
     const input = document.getElementById('input-nova-bio');
