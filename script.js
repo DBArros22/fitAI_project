@@ -2773,9 +2773,13 @@ async function carregarPerfilPublico(uidAlvo) {
         const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
         let totalPosts = postsSnap.size;
         let gridMidiasHtml = '';
+        let listaPostsPerfilHtml = '';
 
         postsSnap.forEach(doc => {
             const p = doc.data();
+            const dataPostFormatada = p.criadoEm && p.criadoEm.toDate ? p.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente";
+
+            // Monta a Galeria Visual de Fotos
             if (p.midia) {
                 const tipo = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
                 const url = typeof p.midia === 'object' ? p.midia.data : p.midia;
@@ -2786,6 +2790,26 @@ async function carregarPerfilPublico(uidAlvo) {
                         </div>`;
                 }
             }
+
+            // Monta a listagem de posts detalhados (texto + mídia) do perfil
+            let midiaPostHtml = '';
+            if (p.midia) {
+                const tipoM = typeof p.midia === 'object' ? p.midia.tipo : 'foto';
+                const urlM = typeof p.midia === 'object' ? p.midia.data : p.midia;
+                if (tipoM === 'foto' || tipoM === 'image') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><img src="${urlM}" style="width: 100%; max-height: 220px; object-fit: contain;"></div>`;
+                } else if (tipoM === 'video') {
+                    midiaPostHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><video src="${urlM}" controls style="width: 100%; max-height: 220px;"></video></div>`;
+                }
+            }
+
+            listaPostsPerfilHtml += `
+                <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 20px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                    <p style="color: #64748b; font-size: 10px; margin-bottom: 6px;">${dataPostFormatada}</p>
+                    ${p.texto ? `<p style="color: white; font-size: 13px; margin-bottom: 8px; line-height: 1.4;">${p.texto}</p>` : ''}
+                    ${midiaPostHtml}
+                </div>
+            `;
         });
 
         let blocoBioHtml = '';
@@ -2794,31 +2818,26 @@ async function carregarPerfilPublico(uidAlvo) {
                 <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px;">
                     <p id="texto-bio-usuario" style="color: #94a3b8; font-size: 14px; margin: 0; line-height: 1.6; max-width: 450px; word-break: break-word;">${bio}</p>
                     ${ehMeuPerfil ? `
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" title="Editar Bio">
+                        <button onclick="ativarEdicaoBio()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #3b82f6; border-radius: 10px; padding: 8px; cursor: pointer;" title="Editar Bio">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
                     ` : ''}
                 </div>
             `;
-        } else {
-            if (ehMeuPerfil) {
-                blocoBioHtml = `
-                    <div style="margin-bottom: 24px;">
-                        <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            Adicionar bio ao perfil
-                        </button>
-                        <div id="texto-bio-usuario" style="display:none;"></div>
-                    </div>
-                `;
-            } else {
-                blocoBioHtml = `<div id="texto-bio-usuario" style="display:none;"></div>`;
-            }
+        } else if (ehMeuPerfil) {
+            blocoBioHtml = `
+                <div style="margin-bottom: 24px;">
+                    <button onclick="ativarEdicaoBio()" style="background: rgba(59,130,246,0.12); border: 1px dashed rgba(59,130,246,0.5); color: #3b82f6; padding: 10px 18px; border-radius: 14px; font-size: 13px; font-weight: 700; cursor: pointer;">
+                        Adicionar bio ao perfil
+                    </button>
+                    <div id="texto-bio-usuario" style="display:none;"></div>
+                </div>
+            `;
         }
 
         container.innerHTML = `
             <div style="padding: 10px 0;">
-                <div class="glass-panel" style="padding: 35px 25px; border-radius: 30px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 12px 35px rgba(0,0,0,0.3);">
+                <div class="glass-panel" style="padding: 35px 25px; border-radius: 30px; background: rgba(255,255,255,0.03); text-align: center; margin-bottom: 30px; border: 1px solid rgba(255,255,255,0.08);">
                     <div style="width: 105px; height: 105px; border-radius: 50%; background: #3b82f6; margin: 0 auto 18px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 3px solid #3b82f6; box-shadow: 0 0 25px rgba(59,130,246,0.5);">
                         ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-size: 36px; font-weight:bold;">${nome.charAt(0)}</span>`}
                     </div>
@@ -2834,13 +2853,18 @@ async function carregarPerfilPublico(uidAlvo) {
                     </div>
                 </div>
 
-                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase; display: flex; align-items: center; gap: 8px;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase;">
                     Galeria de Evolução Visual
                 </h4>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px;">
-                    ${gridMidiasHtml || `<p style="color: #64748b; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 45px 0; background: rgba(255,255,255,0.01); border-radius: 16px; border: 1px solid rgba(255,255,255,0.04);">Nenhuma foto postada ainda.</p>`}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 14px; margin-bottom: 30px;">
+                    ${gridMidiasHtml || `<p style="color: #64748b; font-size: 13px; grid-column: 1 / -1; text-align: center; padding: 30px 0; background: rgba(255,255,255,0.01); border-radius: 16px;">Nenhuma foto postada ainda.</p>`}
+                </div>
+
+                <h4 style="color: white; font-size: 14px; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 18px; text-transform: uppercase;">
+                    Histórico de Publicações
+                </h4>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${listaPostsPerfilHtml || `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 30px 0;">Nenhum post publicado ainda.</p>`}
                 </div>
             </div>
         `;
@@ -2851,6 +2875,7 @@ async function carregarPerfilPublico(uidAlvo) {
 }
 
 window.carregarPerfilPublico = carregarPerfilPublico;
+
 
 function ativarEdicaoBio() {
     const pBio = document.getElementById('texto-bio-usuario');
