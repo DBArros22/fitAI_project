@@ -1086,25 +1086,27 @@ window.alternarAbaAuth = window.toggleAuthTab;
 async function handleCadastro(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    // Captura os elementos com garantia
     const inputNome = document.getElementById('reg-nome');
+    const inputUsername = document.getElementById('reg-username'); // Novo campo para o @
     const inputEmail = document.getElementById('reg-email');
     const inputTel = document.getElementById('reg-tel');
     const inputPass = document.getElementById('reg-pass');
     const inputPassConf = document.getElementById('reg-pass-conf');
 
     const nome = inputNome ? inputNome.value.trim() : "";
+    let username = inputUsername ? inputUsername.value.trim().toLowerCase() : "";
     const email = inputEmail ? inputEmail.value.trim() : "";
     const tel = inputTel ? inputTel.value.trim() : "";
     const pass = inputPass ? inputPass.value : "";
     const passConf = inputPassConf ? inputPassConf.value : "";
 
-    // Validações
-    if (!nome || !email || !pass) {
-        return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios!");
+    if (!nome || !username || !email || !pass) {
+        return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios, incluindo o @username!");
     }
 
-    // RegEx para validar formato de e-mail e evitar erro 400 no Firebase
+    // Normaliza o username (remove o @ se o usuário digitou e troca espaços por underline)
+    username = username.replace('@', '').replace(/\s+/g, '_');
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
         return mostrarAvisoNotificacao("Digite um e-mail válido (ex: usuario@email.com)!");
@@ -1115,16 +1117,27 @@ async function handleCadastro(e) {
     }
 
     try {
-        // Cria a conta
+        // Verifica se o username já existe no Firestore antes de criar o Auth
+        const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
+        if (!usernameQuery.empty) {
+            return mostrarAvisoNotificacao("Este @username já está em uso. Escolha outro!");
+        }
+
+        // Cria a conta no Firebase Auth
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
-        // Salva os dados no Firestore
+        // Salva os dados completos no Firestore com o username e estruturas de rede social
         await db.collection("usuarios").doc(user.uid).set({
+            uid: user.uid,
             nome: nome,
+            username: username, // Ex: "joaocrossfit"
+            usernameLower: username.toLowerCase(),
             email: email,
             tel: tel || "",
-            criadoEm: new Date()
+            fotoPerfil: "",
+            bio: "",
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         });
 
         mostrarAvisoNotificacao("CONTA CRIADA COM SUCESSO!", "sucesso");
@@ -1147,8 +1160,8 @@ async function handleCadastro(e) {
     }
 }
 
-// Torna a função acessível ao onclick do HTML
 window.handleCadastro = handleCadastro;
+
 
 function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
     const existente = document.getElementById('toast-notificacao');
