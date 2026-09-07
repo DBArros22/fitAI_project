@@ -3072,8 +3072,8 @@ async function pesquisarAtletas(termo) {
     if (!container) return;
     
     const termoLimpo = termo ? termo.trim().toLowerCase().replace('@', '') : "";
-    if (!termoLimpo || termoLimpo.length < 2) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px;">Digite pelo menos 2 letras ou um @username.</p>`;
+    if (!termoLimpo || termoLimpo.length < 1) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px;">Digite um nome ou @username para buscar.</p>`;
         return;
     }
 
@@ -3086,15 +3086,17 @@ async function pesquisarAtletas(termo) {
             const dados = doc.data();
             const uidAtleta = doc.id;
             
-            if (user && uidAtleta === user.uid) return; // Oculta o próprio usuário da busca
+            if (user && uidAtleta === user.uid) return; // Oculta o próprio usuário
 
             const nome = (dados.nome || "").toLowerCase();
-            const username = (dados.username || "").toLowerCase();
+            // Fallback inteligente caso o usuário antigo não tenha username salvo
+            const usernameSalvo = dados.username || (dados.email ? dados.email.split('@')[0] : "atleta");
+            const username = usernameSalvo.toLowerCase();
 
-            // Verifica se o termo bate com o nome ou com o username (@)
+            // Verifica correspondência no nome ou no username
             if (nome.includes(termoLimpo) || username.includes(termoLimpo)) {
                 const nomeExibicao = (dados.nome || "ATLETA").toUpperCase();
-                const handleUser = dados.username ? `@${dados.username}` : '@atleta';
+                const handleUser = `@${username}`;
                 const foto = dados.fotoPerfil || '';
                 const inicial = nomeExibicao.charAt(0);
 
@@ -3115,9 +3117,10 @@ async function pesquisarAtletas(termo) {
             }
         });
 
-        container.innerHTML = htmlResultados || `<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhum atleta encontrado.</p>`;
+        container.innerHTML = htmlResultados || `<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhum atleta encontrado com "${termo}".</p>`;
     } catch (e) {
         console.error("Erro na busca de atletas:", e);
+        container.innerHTML = `<p style="color: #ef4444; text-align: center; font-size: 13px;">Erro ao buscar atletas. Tente novamente.</p>`;
     }
 }
 
