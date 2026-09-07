@@ -3065,6 +3065,7 @@ function renderizarConteudoAbaBlog() {
         }
     }
 }
+
 window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
 
 async function pesquisarAtletas(termo) {
@@ -3086,14 +3087,14 @@ async function pesquisarAtletas(termo) {
             const dados = doc.data();
             const uidAtleta = doc.id;
             
-            if (user && uidAtleta === user.uid) return; // Oculta o próprio usuário
+            if (user && uidAtleta === user.uid) return; // Oculta o próprio usuário da busca
 
             const nome = (dados.nome || "").toLowerCase();
-            // Fallback inteligente caso o usuário antigo não tenha username salvo
+            // Fallback para contas antigas que não possuíam o username gravado
             const usernameSalvo = dados.username || (dados.email ? dados.email.split('@')[0] : "atleta");
             const username = usernameSalvo.toLowerCase();
 
-            // Verifica correspondência no nome ou no username
+            // Verifica correspondência no nome ou no handle @username
             if (nome.includes(termoLimpo) || username.includes(termoLimpo)) {
                 const nomeExibicao = (dados.nome || "ATLETA").toUpperCase();
                 const handleUser = `@${username}`;
@@ -3125,6 +3126,16 @@ async function pesquisarAtletas(termo) {
 }
 
 window.pesquisarAtletas = pesquisarAtletas;
+
+// Função auxiliar para injetar o username na tela de perfil ao carregar
+function preencherUsernamePerfil(dadosDoc, dadosLocais) {
+    const inputUsername = document.getElementById('perfil-username');
+    if (inputUsername) {
+        inputUsername.value = dadosDoc.username || dadosLocais.username || "";
+        inputUsername.disabled = true;
+    }
+}
+window.preencherUsernamePerfil = preencherUsernamePerfil;
 
 
 // ==========================================
