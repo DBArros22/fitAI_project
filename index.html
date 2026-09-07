@@ -844,6 +844,14 @@
                 </button>
             </div>
 
+            <!-- NOVO CAMPO ADICIONADO PARA O @USERNAME NO PERFIL -->
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="text" id="perfil-username" placeholder="@username" class="input-field input-perfil-muted" disabled style="flex: 1;">
+                <button type="button" onclick="habilitarEdicaoCampo('perfil-username', this)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center;" title="Editar Username">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+            </div>
+
             <div style="display: flex; align-items: center; gap: 8px;">
                 <input type="text" id="perfil-tel" placeholder="Telefone" class="input-field input-perfil-muted" disabled style="flex: 1;">
                 <button type="button" onclick="habilitarEdicaoCampo('perfil-tel', this)" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 12px; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center;" title="Editar Telefone">
@@ -881,6 +889,22 @@
             </button>
         </div>
     </div>
+    
+    <div id="modal-confirmar-senha" class="hidden" style="position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 999999 !important; display: none; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;">
+        <div class="glass-panel" style="width: 90%; max-width: 400px; padding: 30px; text-align: center; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 20px;">
+             <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1rem;">CONFIRMAR ALTERAÇÃO</h3>
+             <p style="color: #64748b; font-size: 0.8rem; margin-bottom: 20px;">Por segurança, digite sua <b>senha atual duas vezes</b> para prosseguir:</p>
+            
+             <input type="password" id="confirm-pass-atual" placeholder="Senha Atual" class="input-field" style="margin-bottom: 12px; text-align: center;">
+             <input type="password" id="confirm-pass-atual-2" placeholder="Confirme a Senha Atual" class="input-field" style="margin-bottom: 20px; text-align: center;">
+            
+             <div style="display: flex; gap: 10px;">
+                <button onclick="fecharModalSenha()" class="btn-action" style="flex: 1; background: rgba(255,255,255,0.1); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
+                <button id="btn-modal-confirmar-acao" class="btn-primary" style="flex: 1;">CONFIRMAR</button>
+            </div>
+        </div>
+    </div>
+</main>
 
     
     <div id="modal-confirmar-senha" class="hidden" style="position: fixed !important; inset: 0 !important; background: rgba(0,0,0,0.85) !important; z-index: 999999 !important; display: none; align-items: center !important; justify-content: center !important; backdrop-filter: blur(5px) !important;">
