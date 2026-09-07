@@ -3337,8 +3337,6 @@ function atualizarFeedUI() {
 
 window.atualizarFeedUI = atualizarFeedUI;
 
-window.atualizarFeedUI = atualizarFeedUI;
-
 async function curtirPost(postId) {
     const user = auth.currentUser;
     if (!user) {
