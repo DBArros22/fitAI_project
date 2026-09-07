@@ -3068,46 +3068,59 @@ function renderizarConteudoAbaBlog() {
 window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
 
 async function pesquisarAtletas(termo) {
-    const container = document.getElementById('resultados-pesquisa-atletas');
+    const container = document.getElementById('lista-resultados-busca') || document.getElementById('resultados-pesquisa-atletas');
     if (!container) return;
-    if (!termo || termo.trim().length < 2) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Digite pelo menos 2 letras para buscar.</p>`;
+    
+    const termoLimpo = termo ? termo.trim().toLowerCase().replace('@', '') : "";
+    if (!termoLimpo || termoLimpo.length < 2) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px;">Digite pelo menos 2 letras ou um @username.</p>`;
         return;
     }
 
     try {
         const snapshot = await db.collection('usuarios').get();
         let htmlResultados = '';
-        const termoBusca = termo.toLowerCase().trim();
+        const user = auth.currentUser;
 
         snapshot.forEach(doc => {
             const dados = doc.data();
-            const nome = (dados.nome || dados.nomeCompleto || dados.name || "").toLowerCase();
-            if (nome.includes(termoBusca)) {
-                const uidAtleta = doc.id;
-                const nomeExibicao = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").toUpperCase();
-                const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
+            const uidAtleta = doc.id;
+            
+            if (user && uidAtleta === user.uid) return; // Oculta o próprio usuário da busca
+
+            const nome = (dados.nome || "").toLowerCase();
+            const username = (dados.username || "").toLowerCase();
+
+            // Verifica se o termo bate com o nome ou com o username (@)
+            if (nome.includes(termoLimpo) || username.includes(termoLimpo)) {
+                const nomeExibicao = (dados.nome || "ATLETA").toUpperCase();
+                const handleUser = dados.username ? `@${dados.username}` : '@atleta';
+                const foto = dados.fotoPerfil || '';
                 const inicial = nomeExibicao.charAt(0);
 
                 htmlResultados += `
-                    <div onclick="mudarAbaBlog('perfil', '${uidAtleta}')" class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); transition: all 0.2s;">
-                        <div style="width: 45px; height: 45px; border-radius: 50%; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center;">
-                            ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${inicial}</span>`}
+                    <div class="glass-panel" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1;" onclick="mudarAbaBlog('perfil', '${uidAtleta}')">
+                            <div style="width: 42px; height: 42px; border-radius: 50%; background: #3b82f6; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                ${foto ? `<img src="${foto}" style="width:100%; height:100%; object-fit:cover;">` : `<span style="color:white; font-weight:bold;">${inicial}</span>`}
+                            </div>
+                            <div style="overflow: hidden;">
+                                <p style="color: white; font-size: 13px; font-weight: bold; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nomeExibicao}</p>
+                                <p style="color: #3b82f6; font-size: 11px; margin: 2px 0 0 0; font-weight: 600;">${handleUser}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p style="color: white; font-weight: 800; font-size: 14px; margin: 0; text-transform: uppercase;">${nomeExibicao}</p>
-                            <p style="color: #64748b; font-size: 11px; margin: 2px 0 0 0;">Ver perfil e evoluções</p>
-                        </div>
+                        <button onclick="mudarAbaBlog('perfil', '${uidAtleta}')" style="background: rgba(59,130,246,0.2); color: #3b82f6; border: 1px solid rgba(59,130,246,0.4); padding: 7px 14px; border-radius: 10px; font-size: 11px; font-weight: bold; cursor: pointer; flex-shrink: 0;">VER PERFIL</button>
                     </div>
                 `;
             }
         });
 
-        container.innerHTML = htmlResultados || `<p style="color: #64748b; text-align: center; font-size: 13px; margin-top: 20px;">Nenhum atleta encontrado.</p>`;
+        container.innerHTML = htmlResultados || `<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhum atleta encontrado.</p>`;
     } catch (e) {
-        console.error("Erro na pesquisa:", e);
+        console.error("Erro na busca de atletas:", e);
     }
 }
+
 window.pesquisarAtletas = pesquisarAtletas;
 
 
