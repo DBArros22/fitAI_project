@@ -3215,7 +3215,19 @@ async function carregarFeedDoBanco() {
         container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">Carregando feed...</p>`;
     }
 
+    const user = typeof auth !== 'undefined' ? auth.currentUser : null;
+    if (!user) return;
+
     try {
+        // 1. Descobre quem o usuário atual segue na subcoleção 'seguindo'
+        const seguindoSnap = await db.collection('usuarios').doc(user.uid).collection('seguindo').get();
+        const uidsParaMostrar = [user.uid]; // Sempre inclui o próprio usuário
+        
+        seguindoSnap.forEach(doc => {
+            uidsParaMostrar.push(doc.id);
+        });
+
+        // 2. Busca todos os posts da coleção raiz 'feed'
         let snapshot;
         try {
             snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
@@ -3226,20 +3238,26 @@ async function carregarFeedDoBanco() {
         window.feedEvolucao = [];
         snapshot.forEach(doc => {
             const postData = doc.data();
-            window.feedEvolucao.push({
-                id: doc.id,
-                ...postData,
-                data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
-            });
+            
+            // FILTRO DE NETWORK: Exibe apenas se o post pertencer a você ou a alguém que você segue
+            if (uidsParaMostrar.includes(postData.uid)) {
+                window.feedEvolucao.push({
+                    id: doc.id,
+                    ...postData,
+                    data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
+                });
+            }
         });
 
+        // Ordena cronologicamente do mais recente para o mais antigo
         window.feedEvolucao.sort((a, b) => {
             const tempoA = a.criadoEm && a.criadoEm.toMillis ? a.criadoEm.toMillis() : 0;
             const tempoB = b.criadoEm && b.criadoEm.toMillis ? b.criadoEm.toMillis() : 0;
             return tempoB - tempoA;
         });
+
     } catch (err) {
-        console.error("Erro ao carregar feed:", err);
+        console.error("Erro ao carregar feed da network:", err);
     }
 
     if (typeof atualizarFeedUI === "function") {
