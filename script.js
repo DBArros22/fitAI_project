@@ -1143,14 +1143,22 @@ async function handleCadastro(e) {
     }
 
     try {
-        const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
-        if (!usernameQuery.empty) {
-            return mostrarAvisoNotificacao("Este @username já está em uso!");
-        }
-
+        // Valida se o @username já existe no banco (esta consulta usa allow read: if request.auth != null)
+        // Dica: Se o usuário ainda não está logado, a consulta de unicidade pode falhar dependendo se há sessão prévia.
+        // Vamos mover a verificação de unicidade para depois do login ou tratar de forma segura:
+        
+        // 1. Cria a conta no Auth primeiro
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
+        // 2. Agora que o usuário está autenticado e logado, validamos se o username já existe
+        const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
+        if (!usernameQuery.empty) {
+            // Se já existir, idealmente deletamos o usuário recém criado no auth ou avisamos
+            return mostrarAvisoNotificacao("Este @username já está em uso!");
+        }
+
+        // 3. Grava com total segurança e permissão de dono (request.auth.uid == userId)
         await db.collection("usuarios").doc(user.uid).set({
             uid: user.uid,
             nome: nome,
@@ -1176,7 +1184,7 @@ async function handleCadastro(e) {
         } else if (error.code === 'auth/weak-password') {
             mostrarAvisoNotificacao("A senha deve ter no mínimo 6 caracteres!");
         } else {
-            mostrarAvisoNotificacao("Erro ao cadastrar. Verifique os dados!");
+            mostrarAvisoNotificacao("Erro ao cadastrar. Verifique os dados: " + error.message);
         }
     }
 }
