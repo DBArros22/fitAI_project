@@ -892,19 +892,49 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 
     const toast = document.createElement('div');
     toast.id = 'toast-notificacao';
-    toast.className = tipo; 
-
-    const icone = tipo === 'sucesso' 
-        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-        : `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
-
-    toast.innerHTML = `
-        ${icone}
-        <span>${mensagem}</span>
+    
+    const corDestaque = tipo === 'sucesso' ? '#22c55e' : '#ef4444';
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        opacity: 0;
+        background: rgba(15, 23, 42, 0.9);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-left: 4px solid ${corDestaque};
+        padding: 16px 25px;
+        border-radius: 20px;
+        z-index: 1000000;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: white;
+        font-family: 'Inter', sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 1.2px;
+        text-transform: uppercase;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        pointer-events: none;
+        white-space: nowrap;
     `;
 
+    const icone = tipo === 'sucesso' 
+        ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+        : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${corDestaque}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+
+    toast.innerHTML = `${icone}<span style="margin-top: 2px;">${mensagem}</span>`;
     document.body.appendChild(toast);
-    setTimeout(() => { toast.style.opacity = '1'; }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    }, 50);
 
     setTimeout(() => {
         toast.style.opacity = '0';
@@ -914,8 +944,7 @@ function mostrarAvisoNotificacao(mensagem, tipo = 'erro') {
 }
 
 
-
-// --- NOVO SISTEMA DE NOTIFICAÇÃO (MODAL) ---
+// --- sistema de notificação com modal ---
 function mostrarAviso(mensagem) {
     const antigo = document.getElementById('modal-notificacao');
     if (antigo) antigo.remove();
