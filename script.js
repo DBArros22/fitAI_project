@@ -1087,7 +1087,7 @@ async function handleCadastro(e) {
     if (e && e.preventDefault) e.preventDefault();
 
     const inputNome = document.getElementById('reg-nome');
-    const inputUsername = document.getElementById('reg-username'); // Novo campo para o @
+    const inputUsername = document.getElementById('reg-username');
     const inputEmail = document.getElementById('reg-email');
     const inputTel = document.getElementById('reg-tel');
     const inputPass = document.getElementById('reg-pass');
@@ -1104,7 +1104,7 @@ async function handleCadastro(e) {
         return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios, incluindo o @username!");
     }
 
-    // Normaliza o username (remove o @ se o usuário digitou e troca espaços por underline)
+    // Normaliza o username (remove o @ se digitado e substitui espaços por _)
     username = username.replace('@', '').replace(/\s+/g, '_');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1117,7 +1117,7 @@ async function handleCadastro(e) {
     }
 
     try {
-        // Verifica se o username já existe no Firestore antes de criar o Auth
+        // Valida se o @username já existe na coleção usuarios
         const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
         if (!usernameQuery.empty) {
             return mostrarAvisoNotificacao("Este @username já está em uso. Escolha outro!");
@@ -1127,11 +1127,11 @@ async function handleCadastro(e) {
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
-        // Salva os dados completos no Firestore com o username e estruturas de rede social
+        // Salva os dados completos no Firestore com o username e estruturas
         await db.collection("usuarios").doc(user.uid).set({
             uid: user.uid,
             nome: nome,
-            username: username, // Ex: "joaocrossfit"
+            username: username,
             usernameLower: username.toLowerCase(),
             email: email,
             tel: tel || "",
