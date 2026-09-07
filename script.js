@@ -3097,6 +3097,55 @@ function renderizarConteudoAbaBlog() {
 
 window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
 
+async function seguirAtleta(atletaIdToFollow) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        return mostrarAvisoNotificacao("Você precisa estar logado para seguir alguém!");
+    }
+
+    if (currentUser.uid === atletaIdToFollow) {
+        return mostrarAvisoNotificacao("Você não pode seguir a si mesmo!");
+    }
+
+    try {
+        const seguidorRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToFollow);
+        
+        // Verifica se já segue
+        const docSnap = await seguidorRef.get();
+        
+        if (docSnap.exists) {
+            // Deixar de seguir (Unfollow)
+            await seguidorRef.delete();
+            // Opcional: remover da coleção de seguidores do outro usuário também
+            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).delete();
+            
+            mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
+        } else {
+            // Seguir (Follow)
+            await seguidorRef.set({
+                seguidoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).render = true; // ou set simples
+            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).set({
+                seguidorEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            mostrarAvisoNotificacao("Agora você está seguindo este atleta!", "sucesso");
+        }
+
+        // Atualiza o feed ou a tela se necessário
+        if (typeof carregarFeed === 'function') {
+            carregarFeed();
+        }
+
+    } catch (error) {
+        console.error("Erro ao seguir atleta:", error);
+        mostrarAvisoNotificacao("Erro ao processar ação de seguir.");
+    }
+}
+
+window.seguirAtleta = seguirAtleta;
+
 async function pesquisarAtletas(termo) {
     const container = document.getElementById('lista-resultados-busca') || document.getElementById('resultados-pesquisa-atletas');
     if (!container) return;
@@ -3164,57 +3213,8 @@ function preencherUsernamePerfil(dadosDoc, dadosLocais) {
         inputUsername.disabled = true;
     }
 }
+
 window.preencherUsernamePerfil = preencherUsernamePerfil;
-
-
-async function seguirAtleta(atletaIdToFollow) {
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-        return mostrarAvisoNotificacao("Você precisa estar logado para seguir alguém!");
-    }
-
-    if (currentUser.uid === atletaIdToFollow) {
-        return mostrarAvisoNotificacao("Você não pode seguir a si mesmo!");
-    }
-
-    try {
-        const seguidorRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToFollow);
-        
-        // Verifica se já segue
-        const docSnap = await seguidorRef.get();
-        
-        if (docSnap.exists) {
-            // Deixar de seguir (Unfollow)
-            await seguidorRef.delete();
-            // Opcional: remover da coleção de seguidores do outro usuário também
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).delete();
-            
-            mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
-        } else {
-            // Seguir (Follow)
-            await seguidorRef.set({
-                seguidoEm: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).render = true; // ou set simples
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).set({
-                seguidorEm: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            
-            mostrarAvisoNotificacao("Agora você está seguindo este atleta!", "sucesso");
-        }
-
-        // Atualiza o feed ou a tela se necessário
-        if (typeof carregarFeed === 'function') {
-            carregarFeed();
-        }
-
-    } catch (error) {
-        console.error("Erro ao seguir atleta:", error);
-        mostrarAvisoNotificacao("Erro ao processar ação de seguir.");
-    }
-}
-// Expõe globalmente para o onclick do HTML funcionar
-window.seguirAtleta = seguirAtleta;
 
 // ==========================================
 // PARTE 2: MÍDIA, POSTAGEM E FEED PRINCIPAL
