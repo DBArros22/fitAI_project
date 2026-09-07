@@ -1130,15 +1130,15 @@ async function handleCadastro(e) {
     const passConf = inputPassConf ? inputPassConf.value : "";
 
     if (!nome || !username || !email || !pass) {
-        return mostrarAvisoNotificacao("Preencha todos os campos obrigatórios, incluindo o @username!");
+        return mostrarAvisoNotificacao("Preencha todos os campos, incluindo o @username!");
     }
 
-    // Normaliza o username (remove o @ se digitado e substitui espaços por _)
+    // Limpa o @ se o usuário digitou e remove espaços
     username = username.replace('@', '').replace(/\s+/g, '_');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        return mostrarAvisoNotificacao("Digite um e-mail válido (ex: usuario@email.com)!");
+        return mostrarAvisoNotificacao("Digite um e-mail válido!");
     }
 
     if (pass !== passConf) {
@@ -1146,17 +1146,17 @@ async function handleCadastro(e) {
     }
 
     try {
-        // Valida se o @username já existe na coleção usuarios
+        // Valida se o @username já existe no banco
         const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
         if (!usernameQuery.empty) {
-            return mostrarAvisoNotificacao("Este @username já está em uso. Escolha outro!");
+            return mostrarAvisoNotificacao("Este @username já está em uso!");
         }
 
-        // Cria a conta no Firebase Auth
+        // Cria a conta no Auth
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
-        // Salva os dados completos no Firestore com o username e estruturas
+        // GRAVAÇÃO CORRETA COM O USERNAME INCLUÍDO NO BANCO
         await db.collection("usuarios").doc(user.uid).set({
             uid: user.uid,
             nome: nome,
@@ -1164,8 +1164,8 @@ async function handleCadastro(e) {
             usernameLower: username.toLowerCase(),
             email: email,
             tel: tel || "",
+            bio: "Crossfiteiro, marombeiro nato !",
             fotoPerfil: "",
-            bio: "",
             criadoEm: firebase.firestore.FieldValue.serverTimestamp()
         });
 
@@ -1175,14 +1175,12 @@ async function handleCadastro(e) {
             showView('lobby');
         }
 
-    } catch (error) {
+    }q catch (error) {
         console.error("Erro ao cadastrar:", error);
         if (error.code === 'auth/email-already-in-use') {
             mostrarAvisoNotificacao("Este e-mail já está cadastrado!");
         } else if (error.code === 'auth/weak-password') {
             mostrarAvisoNotificacao("A senha deve ter no mínimo 6 caracteres!");
-        } else if (error.code === 'auth/invalid-email') {
-            mostrarAvisoNotificacao("E-mail com formato inválido!");
         } else {
             mostrarAvisoNotificacao("Erro ao cadastrar. Verifique os dados!");
         }
