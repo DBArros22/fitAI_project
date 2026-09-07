@@ -3275,10 +3275,15 @@ function atualizarFeedUI() {
     const listaPosts = typeof feedEvolucao !== 'undefined' ? feedEvolucao : [];
 
     if (listaPosts.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">SEM ATIVIDADES</p>`;
+        container.innerHTML = `
+            <div style="text-align: center; margin-top: 40px; padding: 20px;">
+                <p style="color: #64748b; font-size: 13px; margin-bottom: 10px;">SEM ATIVIDADES NA SUA NETWORK</p>
+                <p style="color: #475569; font-size: 11px;">Publique algo acima ou vá na aba <strong>Explorar</strong> para seguir outros atletas!</p>
+            </div>`;
         return;
     }
 
+    // O restante da sua renderização de cards continua exatamente igual abaixo...
     container.innerHTML = listaPosts.map(post => {
         let midiaHTML = '';
         if (post.midia) {
