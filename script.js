@@ -1061,8 +1061,6 @@ function showView(viewId) {
 
 window.showView = showView;
 
-window.showView = showView;
-
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
     if (modal) {
@@ -1133,7 +1131,6 @@ async function handleCadastro(e) {
         return mostrarAvisoNotificacao("Preencha todos os campos, incluindo o @username!");
     }
 
-    // Limpa o @ se o usuário digitou e remove espaços
     username = username.replace('@', '').replace(/\s+/g, '_');
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1146,17 +1143,14 @@ async function handleCadastro(e) {
     }
 
     try {
-        // Valida se o @username já existe no banco
         const usernameQuery = await db.collection("usuarios").where("username", "==", username).get();
         if (!usernameQuery.empty) {
             return mostrarAvisoNotificacao("Este @username já está em uso!");
         }
 
-        // Cria a conta no Auth
         const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
         const user = userCredential.user;
 
-        // GRAVAÇÃO CORRETA COM O USERNAME INCLUÍDO NO BANCO
         await db.collection("usuarios").doc(user.uid).set({
             uid: user.uid,
             nome: nome,
