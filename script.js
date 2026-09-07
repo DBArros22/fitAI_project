@@ -1175,7 +1175,7 @@ async function handleCadastro(e) {
             showView('lobby');
         }
 
-    }q catch (error) {
+    } catch (error) {
         console.error("Erro ao cadastrar:", error);
         if (error.code === 'auth/email-already-in-use') {
             mostrarAvisoNotificacao("Este e-mail já está cadastrado!");
