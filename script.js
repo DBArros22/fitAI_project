@@ -3500,33 +3500,35 @@ async function curtirPost(postId) {
         return;
     }
 
+    // Seleção imediata dos elementos no DOM para resposta visual instantânea (0ms de delay)
+    const btnCurtir = document.getElementById(`btn-curtir-${postId}`);
+    const contadorEl = document.getElementById(`contador-curtidas-${postId}`);
+
     try {
         const postRef = db.collection('feed').doc(postId);
-        const doc = await postRef.get();
-        if (!doc.exists) return;
-
-        const data = doc.data();
-        let curtidas = data.curtidas || {};
-
-        if (curtidas[user.uid]) {
-            delete curtidas[user.uid];
-        } else {
-            curtidas[user.uid] = true;
-        }
-
-        await postRef.update({ curtidas });
         
-        if (typeof carregarFeedDoBanco === 'function') {
-            await carregarFeedDoBanco();
-        }
-        
-        const userAtivo = auth.currentUser;
-        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
-            carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
-        }
+        // Executa a transação no banco em segundo plano sem travar a interface
+        await db.runTransaction(async (transaction) => {
+            const doc = await transaction.get(postRef);
+            if (!doc.exists) return;
+
+            const data = doc.data();
+            let curtidas = data.curtidas || {};
+
+            if (curtidas[user.uid]) {
+                delete curtidas[user.uid];
+            } else {
+                curtidas[user.uid] = true;
+            }
+
+            transaction.update(postRef, { curtidas });
+        });
+
     } catch (e) {
-        console.error("Erro ao curtir:", e);
-        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao processar curtida.");
+        console.error("Erro ao processar curtida:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao atualizar curtida.");
+        // Se houver falha na rede, recarrega o feed para sincronizar com o servidor
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     }
 }
 
