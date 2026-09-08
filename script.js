@@ -2833,28 +2833,37 @@ async function carregarPerfilPublico(uidAlvo) {
     if (!container) return;
 
     const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-    const ehMeuPerfil = user && user.uid === uidAlvo;
+    
+    // Define o ID que está sendo visualizado globalmente para evitar perda de contexto da aba
+    if (uidAlvo) {
+        window.perfilVisualizadoUid = uidAlvo;
+    }
+    
+    const targetUid = uidAlvo || (user ? user.uid : null);
+    if (!targetUid) return;
+
+    const ehMeuPerfil = user && user.uid === targetUid;
 
     try {
-        const userDoc = await db.collection('usuarios').doc(uidAlvo).get();
+        const userDoc = await db.collection('usuarios').doc(targetUid).get();
         const dados = userDoc.exists ? userDoc.data() : {};
         const nome = dados.nome || dados.nomeCompleto || dados.name || "ATLETA";
         const foto = dados.fotoPerfil || dados.foto || dados.avatar || null;
         const bio = dados.bio || "";
 
         // Busca seguidores e seguindo
-        const seguidoresSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguidores').get();
-        const seguindoSnap = await db.collection('usuarios').doc(uidAlvo).collection('seguindo').get();
+        const seguidoresSnap = await db.collection('usuarios').doc(targetUid).collection('seguidores').get();
+        const seguindoSnap = await db.collection('usuarios').doc(targetUid).collection('seguindo').get();
         const totalSeguidores = seguidoresSnap.size;
         const totalSeguindo = seguindoSnap.size;
 
         let jaSegue = false;
         if (user && !ehMeuPerfil) {
-            const checkSeguindo = await db.collection('usuarios').doc(user.uid).collection('seguindo').doc(uidAlvo).get();
+            const checkSeguindo = await db.collection('usuarios').doc(user.uid).collection('seguindo').doc(targetUid).get();
             jaSegue = checkSeguindo.exists;
         }
 
-        const postsSnap = await db.collection('feed').where('uid', '==', uidAlvo).get();
+        const postsSnap = await db.collection('feed').where('uid', '==', targetUid).get();
         let totalPosts = postsSnap.size;
         let gridMidiasHtml = '';
         let listaPostsPerfilHtml = '';
@@ -2929,9 +2938,9 @@ async function carregarPerfilPublico(uidAlvo) {
         let botaoAcaoSocial = '';
         if (!ehMeuPerfil && user) {
             if (jaSegue) {
-                botaoAcaoSocial = `<button onclick="deixarDeSeguir('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
+                botaoAcaoSocial = `<button onclick="deixarDeSeguir('${targetUid}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
             } else {
-                botaoAcaoSocial = `<button onclick="seguirAtleta('${uidAlvo}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
+                botaoAcaoSocial = `<button onclick="seguirAtleta('${targetUid}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
             }
         }
 
