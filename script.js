@@ -3145,6 +3145,8 @@ async function seguirAtleta(atletaIdToTarget) {
     }
 }
 
+window.seguirAtleta = seguirAtleta;
+
 async function deixarDeSeguir(atletaIdToUnfollow) {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -3162,8 +3164,6 @@ async function deixarDeSeguir(atletaIdToUnfollow) {
 }
 
 window.deixarDeSeguir = deixarDeSeguir;
-
-window.seguirAtleta = seguirAtleta;
 
 async function pesquisarAtletas(termo) {
     const container = document.getElementById('lista-resultados-busca') || document.getElementById('resultados-pesquisa-atletas');
