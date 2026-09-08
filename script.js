@@ -3032,38 +3032,40 @@ async function salvarNovaBio() {
 
 function mudarAbaBlog(aba, uidAlvo = null) {
     window.abaAtivaBlog = aba;
+    
     if (aba === 'perfil') {
         const user = typeof auth !== 'undefined' ? auth.currentUser : null;
-        window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
+        // Se um uidAlvo foi passado explicitamente, usa ele. Senão, mantém o que já estava sendo visualizado ou pega o próprio ID.
+        window.perfilVisualizadoUid = uidAlvo || window.perfilVisualizadoUid || (user ? user.uid : null);
     }
-
-    // Atualiza o destaque visual dos botões de abas instantaneamente
-    const btnFeed = document.querySelector('button[onclick*="mudarAbaBlog(\'feed\'"]');
-    const btnExplorar = document.querySelector('button[onclick*="mudarAbaBlog(\'explorar\'"]');
-    const btnPerfil = document.querySelector('button[onclick*="mudarAbaBlog(\'perfil\'"]');
+    
+    // Atualiza imediatamente o destaque visual de todos os botões de abas
+    const botoes = {
+        'feed': document.querySelector('button[onclick*="mudarAbaBlog(\'feed\'"]'),
+        'explorar': document.querySelector('button[onclick*="mudarAbaBlog(\'explorar\'"]'),
+        'perfil': document.querySelector('button[onclick*="mudarAbaBlog(\'perfil\'"]')
+    };
 
     const estiloAtivo = 'linear-gradient(135deg, #3b82f6, #1d4ed8)';
     const sombraAtiva = '0 4px 15px rgba(59,130,246,0.4)';
 
-    if (btnFeed) {
-        btnFeed.style.background = aba === 'feed' ? estiloAtivo : 'transparent';
-        btnFeed.style.boxShadow = aba === 'feed' ? sombraAtiva : 'none';
-    }
-    if (btnExplorar) {
-        btnExplorar.style.background = aba === 'explorar' ? estiloAtivo : 'transparent';
-        btnExplorar.style.boxShadow = aba === 'explorar' ? sombraAtiva : 'none';
-    }
-    if (btnPerfil) {
-        btnPerfil.style.background = aba === 'perfil' ? estiloAtivo : 'transparent';
-        btnPerfil.style.boxShadow = aba === 'perfil' ? sombraAtiva : 'none';
+    for (const [chave, btn] of Object.entries(botoes)) {
+        if (btn) {
+            if (chave === aba) {
+                btn.style.background = estiloAtivo;
+                btn.style.boxShadow = sombraAtiva;
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.boxShadow = 'none';
+            }
+        }
     }
 
-    if (typeof renderizarConteudoAba === 'function') {
-        renderizarConteudoAba();
-    } else if (typeof renderizarBlog === 'function') {
+    if (typeof renderizarBlog === 'function') {
         renderizarBlog();
     }
 }
+
 window.mudarAbaBlog = mudarAbaBlog;
 
 function renderizarConteudoAbaBlog() {
