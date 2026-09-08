@@ -3561,6 +3561,7 @@ async function comentarPost(postId) {
     const input = document.getElementById(`input-comentario-${postId}`);
     if (!input || !input.value.trim()) return;
     const textoComentario = input.value.trim();
+    input.value = ""; // Limpa o input instantaneamente
 
     try {
         const userDoc = await db.collection('usuarios').doc(user.uid).get();
@@ -3568,35 +3569,37 @@ async function comentarPost(postId) {
         const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
 
         const postRef = db.collection('feed').doc(postId);
-        const doc = await postRef.get();
-        if (!doc.exists) return;
+        
+        await db.runTransaction(async (transaction) => {
+            const doc = await transaction.get(postRef);
+            if (!doc.exists) return;
 
-        const data = doc.data();
-        let comentarios = data.comentarios || [];
+            const data = doc.data();
+            let comentarios = data.comentarios || [];
 
-        comentarios.push({
-            uid: user.uid,
-            nomeAtleta: nomeAtleta,
-            texto: textoComentario,
-            criadoEm: new Date().toISOString()
+            comentarios.push({
+                uid: user.uid,
+                nomeAtleta: nomeAtleta,
+                texto: textoComentario,
+                criadoEm: new Date().toISOString()
+            });
+
+            transaction.update(postRef, { comentarios });
         });
 
-        await postRef.update({ comentarios });
-        input.value = "";
-        
-        if (typeof carregarFeedDoBanco === 'function') {
-            await carregarFeedDoBanco();
+        // Atualiza a listagem de comentários localmente na tela sem precisar recarregar todo o feed
+        const listaComentariosEl = document.getElementById(`lista-comentarios-${postId}`);
+        if (listaComentariosEl) {
+            listaComentariosEl.innerHTML += `
+                <div class="comentario-item">
+                    <strong>${nomeAtleta}:</strong> ${textoComentario}
+                </div>
+            `;
         }
 
-        const userAtivo = auth.currentUser;
-        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
-            await carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
-        }
-        
-        setTimeout(() => {
-            const el = document.getElementById(`comentarios-container-${postId}`);
-            if (el) el.style.display = 'block';
-        }, 100);
+        const containerSecao = document.getElementById(`comentarios-container-${postId}`);
+        if (containerSecao) containerSecao.style.display = 'block';
+
     } catch (e) {
         console.error("Erro ao comentar:", e);
         if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao enviar comentário.");
