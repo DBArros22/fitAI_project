@@ -3607,16 +3607,20 @@ async function compartilharPost(postId) {
         };
 
         await db.collection('feed').add(repost);
-        await carregarFeedDoBanco();
+        
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
+        }
 
         const userAtivo = auth.currentUser;
-        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
             carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
         }
 
         if (typeof mostrarAviso === 'function') mostrarAviso("Post compartilhado no seu feed com sucesso!");
     } catch (e) {
         console.error("Erro ao compartilhar:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao compartilhar post.");
     }
 }
 
