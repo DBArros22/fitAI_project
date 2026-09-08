@@ -3110,22 +3110,18 @@ async function seguirAtleta(atletaIdToFollow) {
     try {
         const seguidorRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToFollow);
         
-        // Verifica se já segue
         const docSnap = await seguidorRef.get();
         
         if (docSnap.exists) {
-            // Deixar de seguir (Unfollow)
             await seguidorRef.delete();
-            // Opcional: remover da coleção de seguidores do outro usuário também
             await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).delete();
             
             mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
         } else {
-            // Seguir (Follow)
             await seguidorRef.set({
                 seguidoEm: firebase.firestore.FieldValue.serverTimestamp()
             });
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).render = true; // ou set simples
+            
             await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).set({
                 seguidorEm: firebase.firestore.FieldValue.serverTimestamp()
             });
@@ -3133,7 +3129,6 @@ async function seguirAtleta(atletaIdToFollow) {
             mostrarAvisoNotificacao("Agora você está seguindo este atleta!", "sucesso");
         }
 
-        // Atualiza o feed ou a tela se necessário
         if (typeof carregarFeed === 'function') {
             carregarFeed();
         }
