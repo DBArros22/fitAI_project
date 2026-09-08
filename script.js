@@ -3561,10 +3561,13 @@ async function comentarPost(postId) {
 
         await postRef.update({ comentarios });
         input.value = "";
-        await carregarFeedDoBanco();
+        
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
+        }
 
         const userAtivo = auth.currentUser;
-        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
             await carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
         }
         
@@ -3574,6 +3577,7 @@ async function comentarPost(postId) {
         }, 100);
     } catch (e) {
         console.error("Erro ao comentar:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao enviar comentário.");
     }
 }
 
