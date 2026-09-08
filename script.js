@@ -3097,45 +3097,51 @@ function renderizarConteudoAbaBlog() {
 
 window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
 
-async function seguirAtleta(atletaIdToFollow) {
+async function seguirAtleta(atletaIdToTarget) {
     const currentUser = auth.currentUser;
-    if (!currentUser) {
-        return mostrarAvisoNotificacao("Você precisa estar logado para seguir alguém!");
-    }
-
-    if (currentUser.uid === atletaIdToFollow) {
-        return mostrarAvisoNotificacao("Você não pode seguir a si mesmo!");
-    }
+    if (!currentUser) return mostrarAvisoNotificacao("Faça login para seguir atletas!");
+    if (currentUser.uid === atletaIdToTarget) return mostrarAvisoNotificacao("Você não pode seguir a si mesmo.");
 
     try {
-        const seguidorRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToFollow);
-        
-        const docSnap = await seguidorRef.get();
-        
-        if (docSnap.exists) {
-            await seguidorRef.delete();
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).delete();
-            
-            mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
+        const targetUserDoc = await db.collection("usuarios").doc(atletaIdToTarget).get();
+        if (!targetUserDoc.exists) return mostrarAvisoNotificacao("Atleta não encontrado.");
+
+        const targetData = targetUserDoc.data();
+        const isPrivado = targetData.privado === true;
+
+        const seguindoRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToTarget);
+        const checkSeguindo = await seguindoRef.get();
+
+        if (checkSeguindo.exists) {
+            await deixarDeSeguir(atletaIdToTarget);
+            return;
+        }
+
+        if (isPrivado) {
+            await db.collection("usuarios").doc(atletaIdToTarget).collection("solicitacoes").doc(currentUser.uid).set({
+                uid: currentUser.uid,
+                solicitadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            mostrarAvisoNotificacao("Solicitação de seguir enviada!", "sucesso");
         } else {
-            await seguidorRef.set({
-                seguidoEm: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            await seguindoRef.set({ seguidoEm: firebase.firestore.FieldValue.serverTimestamp() });
+            await db.collection("usuarios").doc(atletaIdToTarget).collection("seguidores").doc(currentUser.uid).set({ seguidorEm: firebase.firestore.FieldValue.serverTimestamp() });
             
-            await db.collection("usuarios").doc(atletaIdToFollow).collection("seguidores").doc(currentUser.uid).set({
-                seguidorEm: firebase.firestore.FieldValue.serverTimestamp()
+            await db.collection("notificacoes").add({
+                destinatarioId: atletaIdToTarget,
+                remetenteId: currentUser.uid,
+                tipo: "seguir",
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
+                lida: false
             });
-            
-            mostrarAvisoNotificacao("Agora você está seguindo este atleta!", "sucesso");
+
+            mostrarAvisoNotificacao("Agora você segue este atleta!", "sucesso");
         }
 
-        if (typeof carregarFeed === 'function') {
-            carregarFeed();
-        }
-
+        if (typeof carregarFeed === 'function') carregarFeed();
     } catch (error) {
         console.error("Erro ao seguir atleta:", error);
-        mostrarAvisoNotificacao("Erro ao processar ação de seguir.");
+        mostrarAvisoNotificacao("Erro ao processar ação.");
     }
 }
 
