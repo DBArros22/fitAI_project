@@ -2929,7 +2929,7 @@ async function carregarPerfilPublico(uidAlvo) {
         let botaoAcaoSocial = '';
         if (!ehMeuPerfil && user) {
             if (jaSegue) {
-                botaoAcaoSocial = `<button onclick="deixarDeSeguirAtleta('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
+                botaoAcaoSocial = `<button onclick="deixarDeSeguir('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
             } else {
                 botaoAcaoSocial = `<button onclick="seguirAtleta('${uidAlvo}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
             }
@@ -3789,7 +3789,7 @@ async function carregarPerfilPublico(uidAlvo) {
         let botaoAcaoSocial = '';
         if (!ehMeuPerfil && user) {
             if (jaSegue) {
-                botaoAcaoSocial = `<button onclick="deixarDeSeguirAtleta('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
+                botaoAcaoSocial = `<button onclick="deixarDeSeguir('${uidAlvo}')" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px;">SEGUINDO ✓</button>`;
             } else {
                 botaoAcaoSocial = `<button onclick="seguirAtleta('${uidAlvo}')" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 8px 20px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">SEGUIR ATLETA</button>`;
             }
