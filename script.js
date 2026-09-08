@@ -3506,19 +3506,32 @@ async function curtirPost(postId) {
         }
 
         await postRef.update({ curtidas });
-        await carregarFeedDoBanco();
         
-        // Atualiza o perfil caso esteja visível para refletir as curtidas instantaneamente
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
+        }
+        
         const userAtivo = auth.currentUser;
-        if (window.abaAtivaBlog === 'perfil' && userAtivo) {
+        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
             carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
         }
     } catch (e) {
         console.error("Erro ao curtir:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao processar curtida.");
     }
 }
 
 window.curtirPost = curtirPost;
+
+function toggleSecaoComentarios(postId) {
+    const el = document.getElementById(`comentarios-container-${postId}`);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+window.toggleSecaoComentarios = toggleSecaoComentarios;
+
 
 function toggleSecaoComentarios(postId) {
     const el = document.getElementById(`comentarios-container-${postId}`);
