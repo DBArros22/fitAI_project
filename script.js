@@ -3145,6 +3145,24 @@ async function seguirAtleta(atletaIdToTarget) {
     }
 }
 
+async function deixarDeSeguir(atletaIdToUnfollow) {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+        await db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToUnfollow).delete();
+        await db.collection("usuarios").doc(atletaIdToUnfollow).collection("seguidores").doc(currentUser.uid).delete();
+        
+        mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
+        if (typeof carregarFeed === 'function') carregarFeed();
+    } catch (error) {
+        console.error("Erro ao deixar de seguir:", error);
+        mostrarAvisoNotificacao("Erro ao deixar de seguir.");
+    }
+}
+
+window.deixarDeSeguir = deixarDeSeguir;
+
 window.seguirAtleta = seguirAtleta;
 
 async function pesquisarAtletas(termo) {
