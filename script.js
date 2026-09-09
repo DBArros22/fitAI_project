@@ -3631,7 +3631,6 @@ function toggleSecaoComentarios(postId) {
         sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
     }
 }
--
 
 
 window.toggleSecaoComentarios = toggleSecaoComentarios;
