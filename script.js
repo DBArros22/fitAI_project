@@ -3736,118 +3736,118 @@ function atualizarFeedUI() {
 window.atualizarFeedUI = atualizarFeedUI;
 
 async function curtirPost(postId) {
-    const user = auth.currentUser;
-    if (!user) {
-        if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para curtir!");
-        return;
-    }
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
     const btnCurtir = document.getElementById(`btn-curtir-${postId}`);
-    const contadorEl = document.getElementById(`contador-curtidas-${postId}`);
-    if (!btnCurtir || !contadorEl) return;
-
-    // Extrai o número atual do contador
-    const match = contadorEl.textContent.match(/\d+/);
-    let totalAtual = match ? parseInt(match[0], 10) : 0;
-    const jaEstavaCurtido = btnCurtir.style.color === 'rgb(239, 68, 68)' || btnCurtir.style.color === '#ef4444';
-
-    // Resposta visual imediata (Optimistic UI)
-    if (jaEstavaCurtido) {
-        btnCurtir.style.color = '#94a3b8';
-        contadorEl.textContent = `(${Math.max(0, totalAtual - 1)})`;
-    } else {
-        btnCurtir.style.color = '#ef4444';
-        contadorEl.textContent = `(${totalAtual + 1})`;
+    const spanContador = document.getElementById(`contador-curtidas-${postId}`);
+    
+    // Atualiza o array localmente na hora para feedback instantâneo
+    const post = window.feedEvolucao ? window.feedEvolucao.find(p => p.id === postId) : null;
+    if (post) {
+        if (!post.curtidas) post.curtidas = {};
+        
+        const jaCurtiu = post.curtidas[currentUser.uid];
+        if (jaCurtiu) {
+            delete post.curtidas[currentUser.uid];
+            if (btnCurtir) btnCurtir.style.color = '#94a3b8';
+        } else {
+            post.curtidas[currentUser.uid] = true;
+            if (btnCurtir) btnCurtir.style.color = '#ef4444';
+        }
+        
+        const total = Object.keys(post.curtidas).length;
+        if (spanContador) spanContador.innerText = `(${total})`;
     }
 
+    // Envia para o Firebase em segundo plano
     try {
         const postRef = db.collection('feed').doc(postId);
-        await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(postRef);
-            if (!doc.exists) return;
-
-            const data = doc.data();
-            let curtidas = data.curtidas || {};
-
-            if (curtidas[user.uid]) {
-                delete curtidas[user.uid];
+        const doc = await postRef.get();
+        if (doc.exists) {
+            let curtidas = doc.data().curtidas || {};
+            if (curtidas[currentUser.uid]) {
+                delete curtidas[currentUser.uid];
             } else {
-                curtidas[user.uid] = true;
+                curtidas[currentUser.uid] = true;
             }
-
-            transaction.update(postRef, { curtidas });
-        });
-    } catch (e) {
-        console.error("Erro ao curtir:", e);
-        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
+            await postRef.update({ curtidas });
+            localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
+        }
+    } catch (err) {
+        console.error("Erro ao atualizar curtida no banco:", err);
     }
 }
 
 window.curtirPost = curtirPost;
 
 function toggleSecaoComentarios(postId) {
-    const sec = document.getElementById(`comentarios-container-${postId}`);
-    if (sec) {
-        sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    const container = document.getElementById(`comentarios-container-${postId}`);
+    if (container) {
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
     }
 }
-
 
 window.toggleSecaoComentarios = toggleSecaoComentarios;
 
 
 async function comentarPost(postId) {
-    const user = auth.currentUser;
-    if (!user) {
-        if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para comentar!");
-        return;
-    }
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
 
     const input = document.getElementById(`input-comentario-${postId}`);
     if (!input || !input.value.trim()) return;
+
     const textoComentario = input.value.trim();
-    input.value = ""; // Limpa o input instantaneamente
+    input.value = ""; // Limpa o campo na hora
 
-    try {
-        const userDoc = await db.collection('usuarios').doc(user.uid).get();
-        const dados = userDoc.exists ? userDoc.data() : {};
-        const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
+    // Pega o nome e a foto do usuário atual armazenados localmente
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${currentUser.uid}`)) || {};
+    const nomeAtleta = dadosLocais.nome || currentUser.displayName || currentUser.email.split('@')[0] || "Atleta";
+    const fotoPerfil = localStorage.getItem(`user_foto_${currentUser.uid}`) || localStorage.getItem('user_foto') || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
 
-        const postRef = db.collection('feed').doc(postId);
+    const novoComentario = {
+        uid: currentUser.uid,
+        nomeAtleta: nomeAtleta,
+        fotoPerfil: fotoPerfil,
+        texto: textoComentario,
+        criadoEm: new Date().toISOString()
+    };
+
+    // Atualiza o array local e renderiza na hora na tela
+    const post = window.feedEvolucao ? window.feedEvolucao.find(p => p.id === postId) : null;
+    if (post) {
+        if (!post.comentarios) post.comentarios = [];
+        post.comentarios.push(novoComentario);
         
-        await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(postRef);
-            if (!doc.exists) return;
-
-            const data = doc.data();
-            let comentarios = data.comentarios || [];
-
-            comentarios.push({
-                uid: user.uid,
-                nomeAtleta: nomeAtleta,
-                texto: textoComentario,
-                criadoEm: new Date().toISOString()
-            });
-
-            transaction.update(postRef, { comentarios });
-        });
-
-        // Atualiza a listagem de comentários localmente na tela sem precisar recarregar todo o feed
+        // Atualiza o HTML da lista de comentários daquele post específico instantaneamente
         const listaComentariosEl = document.getElementById(`lista-comentarios-${postId}`);
         if (listaComentariosEl) {
-            listaComentariosEl.innerHTML += `
-                <div class="comentario-item">
-                    <strong>${nomeAtleta}:</strong> ${textoComentario}
-                </div>
-            `;
+            let htmlComentarios = '';
+            post.comentarios.forEach(c => {
+                const fotoC = c.fotoPerfil || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+                htmlComentarios += `
+                    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                        <img src="${fotoC}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        <div>
+                            <strong style="color: #3b82f6;">${c.nomeAtleta}:</strong> ${c.texto}
+                        </div>
+                    </div>
+                `;
+            });
+            listaComentariosEl.innerHTML = htmlComentarios;
         }
+    }
 
-        const containerSecao = document.getElementById(`comentarios-container-${postId}`);
-        if (containerSecao) containerSecao.style.display = 'block';
-
-    } catch (e) {
-        console.error("Erro ao comentar:", e);
-        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao enviar comentário.");
+    // Salva no Firebase em segundo plano
+    try {
+        const postRef = db.collection('feed').doc(postId);
+        await postRef.update({
+            comentarios: firebase.firestore.FieldValue.arrayUnion(novoComentario)
+        });
+        localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
+    } catch (err) {
+        console.error("Erro ao enviar comentário para o banco:", err);
     }
 }
 
