@@ -254,7 +254,6 @@ if (typeof auth !== 'undefined' && auth) {
                     await carregarDadosPerfil();
                 }
 
-                // CHAMA DIRETAMENTE A SUA FUNÇÃO QUE JÁ EXISTE:
                 if (typeof carregarFeedDoBanco === 'function') {
                     await carregarFeedDoBanco();
                 }
@@ -263,9 +262,12 @@ if (typeof auth !== 'undefined' && auth) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
             }
             
+            // REMOVA OU COMENTE ESTAS LINHAS ABAIXO:
+            /*
             if (typeof showView === 'function') {
                 showView('lobby');
             }
+            */
         } else {
             window.usuarioAtualId = null;
             localStorage.removeItem('user_email_ativo');
