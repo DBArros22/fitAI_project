@@ -3420,7 +3420,6 @@ async function carregarFeedDoBanco() {
         const totalCurtidas = Object.keys(curtidasMap).length;
         const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
         
-        // Foto de perfil com formato quadrado e cantos levemente arredondados
         const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
             ? post.fotoPerfil 
             : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
@@ -3435,7 +3434,6 @@ async function carregarFeedDoBanco() {
             `;
         });
 
-        // Exibição padrão Instagram: foto inteira visível, sem cortes ou zoom excessivo, com container elegante
         let midiaHtml = '';
         if (post.midia) {
             const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
