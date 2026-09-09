@@ -3084,15 +3084,8 @@ async function carregarFeedDoBanco() {
     const container = document.getElementById('feed-container');
     if (!container) return;
 
-    // 1. Carregamento rápido via cache local
-    const cacheLocal = localStorage.getItem('fitai_feed_cache');
-    if (cacheLocal && (!window.feedEvolucao || window.feedEvolucao.length === 0)) {
-        window.feedEvolucao = JSON.parse(cacheLocal);
-    } else if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 30px; font-size: 13px;">Carregando feed...</p>`;
-    }
+    container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 30px; font-size: 13px;">Carregando feed...</p>`;
 
-    // 2. Busca na nuvem do Firebase
     try {
         if (navigator.onLine && typeof db !== 'undefined') {
             const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').limit(20).get();
@@ -3106,13 +3099,9 @@ async function carregarFeedDoBanco() {
                     data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
                 });
             });
-
-            if (window.feedEvolucao.length > 0) {
-                localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
-            }
         }
     } catch (err) {
-        console.warn("Aviso: Operando com feed em cache local devido à instabilidade de rede.");
+        console.error("Erro ao carregar feed do Firebase:", err);
     }
 
     if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
@@ -3120,7 +3109,6 @@ async function carregarFeedDoBanco() {
         return;
     }
 
-    // 3. Montagem do HTML direto na função principal
     const currentUser = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     let htmlPosts = '';
 
@@ -3137,9 +3125,13 @@ async function carregarFeedDoBanco() {
         const comentariosList = post.comentarios || [];
         let htmlComentarios = '';
         comentariosList.forEach(c => {
+            const fotoComentario = (c.fotoPerfil && c.fotoPerfil.trim() !== '') ? c.fotoPerfil : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
             htmlComentarios += `
-                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
-                    <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                    <img src="${fotoComentario}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                    <div>
+                        <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
+                    </div>
                 </div>
             `;
         });
