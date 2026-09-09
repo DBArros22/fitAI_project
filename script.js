@@ -3526,14 +3526,14 @@ async function curtirPost(postId) {
         return;
     }
 
-    // Seleção imediata dos elementos no DOM para resposta visual instantânea (0ms de delay)
+    // Seleção imediata dos elementos no DOM para resposta instantânea (0ms de delay)
     const btnCurtir = document.getElementById(`btn-curtir-${postId}`);
     const contadorEl = document.getElementById(`contador-curtidas-${postId}`);
 
     try {
         const postRef = db.collection('feed').doc(postId);
         
-        // Executa a transação no banco em segundo plano sem travar a interface
+        // Executa a transação ou atualização atômica no Firestore
         await db.runTransaction(async (transaction) => {
             const doc = await transaction.get(postRef);
             if (!doc.exists) return;
@@ -3541,6 +3541,7 @@ async function curtirPost(postId) {
             const data = doc.data();
             let curtidas = data.curtidas || {};
 
+            // Lógica de alternância (Toggle): Se já curtiu, remove; senão, adiciona
             if (curtidas[user.uid]) {
                 delete curtidas[user.uid];
             } else {
@@ -3548,12 +3549,26 @@ async function curtirPost(postId) {
             }
 
             transaction.update(postRef, { curtidas });
+
+            // Atualização visual imediata baseada no novo estado
+            const novoTotal = Object.keys(curtidas).length;
+            if (contadorEl) contadorEl.textContent = `(${novoTotal})`;
+            
+            if (btnCurtir) {
+                if (curtidas[user.uid]) {
+                    btnCurtir.classList.add('liked');
+                    btnCurtir.style.color = '#ef4444'; // Exemplo de destaque visual para curtido
+                } else {
+                    btnCurtir.classList.remove('liked');
+                    btnCurtir.style.color = ''; 
+                }
+            }
         });
 
     } catch (e) {
-        console.error("Erro ao processar curtida:", e);
-        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao atualizar curtida.");
-        // Se houver falha na rede, recarrega o feed para sincronizar com o servidor
+        console.error("Erro ao curtir:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao processar curtida.");
+        // Sincroniza novamente com o banco se houver falha de rede
         if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     }
 }
