@@ -3113,8 +3113,16 @@ async function seguirAtleta(atletaIdToTarget) {
     if (!currentUser) return typeof mostrarAviso === 'function' && mostrarAviso("Faça login para seguir atletas!");
     if (currentUser.uid === atletaIdToTarget) return;
 
-    // Atualização Otimista Imediata na Tela (0ms de delay)
-    atualizarBotaoPerfilUI(atletaIdToTarget, true);
+    // Atualização visual imediata no DOM (Optimistic UI)
+    const botoes = document.querySelectorAll(`button[onclick*="${atletaIdToTarget}"]`);
+    botoes.forEach(btn => {
+        btn.textContent = "SEGUINDO ✓";
+        btn.style.background = "rgba(239, 68, 68, 0.2)";
+        btn.style.color = "#ef4444";
+        btn.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+        btn.style.boxShadow = "none";
+        btn.setAttribute("onclick", `deixarDeSeguir('${atletaIdToTarget}')`);
+    });
 
     try {
         const targetUserDoc = await db.collection("usuarios").doc(atletaIdToTarget).get();
@@ -3141,8 +3149,15 @@ async function seguirAtleta(atletaIdToTarget) {
         if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     } catch (error) {
         console.error("Erro ao seguir atleta:", error);
-        // Reverte a UI em caso de erro na rede
-        atualizarBotaoPerfilUI(atletaIdToTarget, false);
+        // Reverte visualmente se houver falha de rede
+        botoes.forEach(btn => {
+            btn.textContent = "SEGUIR ATLETA";
+            btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
+            btn.style.color = "white";
+            btn.style.border = "none";
+            btn.style.boxShadow = "0 4px 15px rgba(59,130,246,0.4)";
+            btn.setAttribute("onclick", `seguirAtleta('${atletaIdToTarget}')`);
+        });
     }
 }
 
@@ -3152,8 +3167,16 @@ async function deixarDeSeguir(atletaIdToUnfollow) {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
-    // Atualização Otimista Imediata na Tela (0ms de delay)
-    atualizarBotaoPerfilUI(atletaIdToUnfollow, false);
+    // Atualização visual imediata no DOM (Optimistic UI)
+    const botoes = document.querySelectorAll(`button[onclick*="${atletaIdToUnfollow}"]`);
+    botoes.forEach(btn => {
+        btn.textContent = "SEGUIR ATLETA";
+        btn.style.background = "linear-gradient(135deg, #3b82f6, #1d4ed8)";
+        btn.style.color = "white";
+        btn.style.border = "none";
+        btn.style.boxShadow = "0 4px 15px rgba(59,130,246,0.4)";
+        btn.setAttribute("onclick", `seguirAtleta('${atletaIdToUnfollow}')`);
+    });
 
     try {
         await db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToUnfollow).delete();
@@ -3163,8 +3186,15 @@ async function deixarDeSeguir(atletaIdToUnfollow) {
         if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     } catch (error) {
         console.error("Erro ao deixar de seguir:", error);
-        // Reverte a UI em caso de erro na rede
-        atualizarBotaoPerfilUI(atletaIdToUnfollow, true);
+        // Reverte visualmente se houver falha de rede
+        botoes.forEach(btn => {
+            btn.textContent = "SEGUINDO ✓";
+            btn.style.background = "rgba(239, 68, 68, 0.2)";
+            btn.style.color = "#ef4444";
+            btn.style.border = "1px solid rgba(239, 68, 68, 0.4)";
+            btn.style.boxShadow = "none";
+            btn.setAttribute("onclick", `deixarDeSeguir('${atletaIdToUnfollow}')`);
+        });
     }
 }
 
