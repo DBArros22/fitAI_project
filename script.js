@@ -3390,7 +3390,6 @@ async function carregarFeedDoBanco() {
     }
 
     try {
-        // Busca todos os posts da coleção global de forma pública e descentralizada
         const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
 
         window.feedEvolucao = [];
@@ -3421,6 +3420,11 @@ async function carregarFeedDoBanco() {
         const totalCurtidas = Object.keys(curtidasMap).length;
         const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
         
+        // Tratamento da foto de perfil do autor do post com fallback padrão
+        const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
+            ? post.fotoPerfil 
+            : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+
         const comentariosList = post.comentarios || [];
         let htmlComentarios = '';
         comentariosList.forEach(c => {
@@ -3447,9 +3451,13 @@ async function carregarFeedDoBanco() {
         htmlPosts += `
             <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <strong onclick="carregarPerfilPublico('${post.uid}')" style="color: white; font-size: 14px; letter-spacing: 0.5px; cursor: pointer;">${post.nomeAtleta || 'ATLETA'}</strong>
+                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="carregarPerfilPublico('${post.uid}')">
+                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        <strong style="color: white; font-size: 14px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
+                    </div>
                     <span style="color: #64748b; font-size: 11px;">${post.data}</span>
                 </div>
+
                 ${post.texto ? `<p style="color: #cbd5e1; font-size: 13px; line-height: 1.5; margin-bottom: 10px;">${post.texto}</p>` : ''}
                 ${midiaHtml}
 
@@ -3480,6 +3488,7 @@ async function carregarFeedDoBanco() {
 
     container.innerHTML = htmlPosts;
 }
+
 window.carregarFeedDoBanco = carregarFeedDoBanco;
 
 function atualizarFeedUI() {
