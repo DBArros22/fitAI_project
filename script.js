@@ -3080,6 +3080,134 @@ function mudarAbaBlog(aba, uidAlvo = null) {
 
 window.mudarAbaBlog = mudarAbaBlog;
 
+async function carregarFeedDoBanco() {
+    const container = document.getElementById('feed-container');
+    if (!container) return;
+
+    // 1. Carregamento rápido via cache local
+    const cacheLocal = localStorage.getItem('fitai_feed_cache');
+    if (cacheLocal && (!window.feedEvolucao || window.feedEvolucao.length === 0)) {
+        window.feedEvolucao = JSON.parse(cacheLocal);
+    } else if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 30px; font-size: 13px;">Carregando feed...</p>`;
+    }
+
+    // 2. Busca na nuvem do Firebase
+    try {
+        if (navigator.onLine && typeof db !== 'undefined') {
+            const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').limit(20).get();
+            
+            window.feedEvolucao = [];
+            snapshot.forEach(doc => {
+                const postData = doc.data();
+                window.feedEvolucao.push({
+                    id: doc.id,
+                    ...postData,
+                    data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
+                });
+            });
+
+            if (window.feedEvolucao.length > 0) {
+                localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
+            }
+        }
+    } catch (err) {
+        console.warn("Aviso: Operando com feed em cache local devido à instabilidade de rede.");
+    }
+
+    if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma publicação encontrada no feed.</p>`;
+        return;
+    }
+
+    // 3. Montagem do HTML direto na função principal
+    const currentUser = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
+    let htmlPosts = '';
+
+    window.feedEvolucao.forEach(post => {
+        const postId = post.id;
+        const curtidasMap = post.curtidas || {};
+        const totalCurtidas = Object.keys(curtidasMap).length;
+        const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
+        
+        const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
+            ? post.fotoPerfil 
+            : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+
+        const comentariosList = post.comentarios || [];
+        let htmlComentarios = '';
+        comentariosList.forEach(c => {
+            htmlComentarios += `
+                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                    <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
+                </div>
+            `;
+        });
+
+        let midiaHtml = '';
+        if (post.midia) {
+            const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
+            const url = typeof post.midia === 'object' ? post.midia.data : post.midia;
+            if (tipo === 'foto' || tipo === 'image') {
+                midiaHtml = `
+                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px; display: flex; justify-content: center; align-items: center;">
+                        <img src="${url}" style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block; margin: 0 auto;" loading="lazy">
+                    </div>
+                `;
+            } else if (tipo === 'video') {
+                midiaHtml = `
+                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px;">
+                        <video src="${url}" controls style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block;" preload="none"></video>
+                    </div>
+                `;
+            } else if (tipo === 'audio') {
+                midiaHtml = `<div style="width: 100%; border-radius: 10px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 8px;"><audio src="${url}" controls style="width: 100%;"></audio></div>`;
+            }
+        }
+
+        htmlPosts += `
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="carregarPerfilPublico('${post.uid}')">
+                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        <strong style="color: white; font-size: 13px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
+                    </div>
+                    <span style="color: #64748b; font-size: 10px;">${post.data}</span>
+                </div>
+
+                ${post.texto ? `<p style="color: #cbd5e1; font-size: 13px; line-height: 1.4; margin-bottom: 10px;">${post.texto}</p>` : ''}
+                ${midiaHtml}
+
+                <div style="display: flex; gap: 15px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                    <button id="btn-curtir-${postId}" onclick="curtirPost('${postId}')" style="background: transparent; border: none; color: ${jaCurtiu ? '#ef4444' : '#94a3b8'}; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                        ❤️ Curtir <span id="contador-curtidas-${postId}">(${totalCurtidas})</span>
+                    </button>
+                    <button onclick="toggleSecaoComentarios('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
+                        💬 Comentar (${comentariosList.length})
+                    </button>
+                    <button onclick="compartilharPost('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
+                        🔄 Repostar
+                    </button>
+                </div>
+
+                <div id="comentarios-container-${postId}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
+                    <div id="lista-comentarios-${postId}" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;">
+                        ${htmlComentarios || '<p style="color: #64748b; font-size: 10px;">Nenhum comentário ainda.</p>'}
+                    </div>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="input-comentario-${postId}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; color: white; font-size: 11px; outline: none;">
+                        <button id="btn-enviar-comentario-${postId}" onclick="comentarPost('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Enviar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = htmlPosts;
+}
+
+window.carregarFeedDoBanco = carregarFeedDoBanco;
+
 function renderizarConteudoAbaBlog() {
     const containerConteudo = document.getElementById('blog-conteudo-dinamico') || document.getElementById('conteudo-aba-blog');
     if (!containerConteudo) return;
