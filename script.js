@@ -3420,7 +3420,7 @@ async function carregarFeedDoBanco() {
         const totalCurtidas = Object.keys(curtidasMap).length;
         const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
         
-        // Tratamento da foto de perfil do autor do post com fallback padrão
+        // Foto de perfil com fallback e formato quadrado arredondado
         const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
             ? post.fotoPerfil 
             : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
@@ -3435,24 +3435,25 @@ async function carregarFeedDoBanco() {
             `;
         });
 
+        // Mídia tratada com limite de altura e object-fit para conter o zoom/exagero
         let midiaHtml = '';
         if (post.midia) {
             const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
             const url = typeof post.midia === 'object' ? post.midia.data : post.midia;
             if (tipo === 'foto' || tipo === 'image') {
-                midiaHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><img src="${url}" style="width: 100%; max-height: 250px; object-fit: cover;"></div>`;
+                midiaHtml = `<div style="width: 100%; max-height: 320px; border-radius: 14px; overflow: hidden; margin-top: 10px; background: #000; display: flex; justify-content: center;"><img src="${url}" style="width: 100%; height: 100%; max-height: 320px; object-fit: contain;"></div>`;
             } else if (tipo === 'video') {
-                midiaHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px;"><video src="${url}" controls style="width: 100%; max-height: 250px;"></video></div>`;
+                midiaHtml = `<div style="width: 100%; border-radius: 14px; overflow: hidden; margin-top: 10px; background: #000;"><video src="${url}" controls style="width: 100%; max-height: 320px; object-fit: contain;"></video></div>`;
             } else if (tipo === 'audio') {
                 midiaHtml = `<div style="width: 100%; border-radius: 14px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 10px;"><audio src="${url}" controls style="width: 100%;"></audio></div>`;
             }
         }
 
         htmlPosts += `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
+            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 15px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="carregarPerfilPublico('${post.uid}')">
-                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 38px; height: 38px; border-radius: 12px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
                         <strong style="color: white; font-size: 14px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
                     </div>
                     <span style="color: #64748b; font-size: 11px;">${post.data}</span>
