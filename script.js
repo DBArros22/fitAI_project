@@ -3393,122 +3393,126 @@ async function postarNoFeed() {
 
 window.postarNoFeed = postarNoFeed;
 
-async function carregarFeedDoBanco() {
-    const container = document.getElementById('feed-container');
+async function carregarFeedDoPerfil(uidUsuarioAlvo) {
+    const container = document.getElementById('perfil-feed-container') || document.getElementById('feed-perfil-container');
     if (!container) return;
 
-    if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">Carregando feed...</p>`;
+    if (!container.innerHTML.trim()) {
+        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 30px; font-size: 13px;">Carregando suas publicações...</p>`;
     }
 
     try {
-        const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
+        const uidAlvo = uidUsuarioAlvo || (typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser.uid : null);
+        if (!uidAlvo) return;
 
-        window.feedEvolucao = [];
+        const snapshot = await db.collection('feed').where('uid', '==', uidAlvo).orderBy('criadoEm', 'desc').get();
+
+        let postsPerfil = [];
         snapshot.forEach(doc => {
             const postData = doc.data();
-            window.feedEvolucao.push({
+            postsPerfil.push({
                 id: doc.id,
                 ...postData,
                 data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
             });
         });
 
-    } catch (err) {
-        console.error("Erro crítico ao carregar feed:", err);
-    }
+        if (postsPerfil.length === 0) {
+            container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma publicação sua encontrada ainda.</p>`;
+            return;
+        }
 
-    if (window.feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma publicação encontrada no feed.</p>`;
-        return;
-    }
+        const currentUser = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
+        let htmlPosts = '';
 
-    const currentUser = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    let htmlPosts = '';
+        postsPerfil.forEach(post => {
+            const postId = post.id;
+            const curtidasMap = post.curtidas || {};
+            const totalCurtidas = Object.keys(curtidasMap).length;
+            const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
+            
+            const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
+                ? post.fotoPerfil 
+                : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
 
-    window.feedEvolucao.forEach(post => {
-        const postId = post.id;
-        const curtidasMap = post.curtidas || {};
-        const totalCurtidas = Object.keys(curtidasMap).length;
-        const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
-        
-        const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
-            ? post.fotoPerfil 
-            : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+            const comentariosList = post.comentarios || [];
+            let htmlComentarios = '';
+            comentariosList.forEach(c => {
+                htmlComentarios += `
+                    <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
+                        <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
+                    </div>
+                `;
+            });
 
-        const comentariosList = post.comentarios || [];
-        let htmlComentarios = '';
-        comentariosList.forEach(c => {
-            htmlComentarios += `
-                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
-                    <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
+            let midiaHtml = '';
+            if (post.midia) {
+                const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
+                const url = typeof post.midia === 'object' ? post.midia.data : post.midia;
+                if (tipo === 'foto' || tipo === 'image') {
+                    midiaHtml = `
+                        <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px; display: flex; justify-content: center; align-items: center;">
+                            <img src="${url}" style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block; margin: 0 auto;">
+                        </div>
+                    `;
+                } else if (tipo === 'video') {
+                    midiaHtml = `
+                        <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px;">
+                            <video src="${url}" controls style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block;"></video>
+                        </div>
+                    `;
+                } else if (tipo === 'audio') {
+                    midiaHtml = `<div style="width: 100%; border-radius: 10px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 8px;"><audio src="${url}" controls style="width: 100%;"></audio></div>`;
+                }
+            }
+
+            htmlPosts += `
+                <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                            <strong style="color: white; font-size: 13px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
+                        </div>
+                        <span style="color: #64748b; font-size: 10px;">${post.data}</span>
+                    </div>
+
+                    ${post.texto ? `<p style="color: #cbd5e1; font-size: 13px; line-height: 1.4; margin-bottom: 10px;">${post.texto}</p>` : ''}
+                    ${midiaHtml}
+
+                    <div style="display: flex; gap: 15px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
+                        <button id="btn-curtir-perfil-${postId}" onclick="curtirPost('${postId}')" style="background: transparent; border: none; color: ${jaCurtiu ? '#ef4444' : '#94a3b8'}; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                            ❤️ Curtir <span id="contador-curtidas-${postId}">(${totalCurtidas})</span>
+                        </button>
+                        <button onclick="toggleSecaoComentarios('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
+                            💬 Comentar (${comentariosList.length})
+                        </button>
+                        <button onclick="compartilharPost('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
+                            🔄 Repostar
+                        </button>
+                    </div>
+
+                    <div id="comentarios-container-${postId}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
+                        <div id="lista-comentarios-${postId}" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;">
+                            ${htmlComentarios || '<p style="color: #64748b; font-size: 10px;">Nenhum comentário ainda.</p>'}
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <input type="text" id="input-comentario-${postId}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; color: white; font-size: 11px; outline: none;">
+                            <button id="btn-enviar-comentario-${postId}" onclick="comentarPost('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Enviar</button>
+                        </div>
+                    </div>
                 </div>
             `;
         });
 
-        let midiaHtml = '';
-        if (post.midia) {
-            const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
-            const url = typeof post.midia === 'object' ? post.midia.data : post.midia;
-            if (tipo === 'foto' || tipo === 'image') {
-                midiaHtml = `
-                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px; display: flex; justify-content: center; align-items: center;">
-                        <img src="${url}" style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block; margin: 0 auto;">
-                    </div>
-                `;
-            } else if (tipo === 'video') {
-                midiaHtml = `
-                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px;">
-                        <video src="${url}" controls style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block;"></video>
-                    </div>
-                `;
-            } else if (tipo === 'audio') {
-                midiaHtml = `<div style="width: 100%; border-radius: 10px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 8px;"><audio src="${url}" controls style="width: 100%;"></audio></div>`;
-            }
-        }
+        container.innerHTML = htmlPosts;
 
-        htmlPosts += `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="carregarPerfilPublico('${post.uid}')">
-                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
-                        <strong style="color: white; font-size: 13px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
-                    </div>
-                    <span style="color: #64748b; font-size: 10px;">${post.data}</span>
-                </div>
-
-                ${post.texto ? `<p style="color: #cbd5e1; font-size: 13px; line-height: 1.4; margin-bottom: 10px;">${post.texto}</p>` : ''}
-                ${midiaHtml}
-
-                <div style="display: flex; gap: 15px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-                    <button id="btn-curtir-${postId}" onclick="curtirPost('${postId}')" style="background: transparent; border: none; color: ${jaCurtiu ? '#ef4444' : '#94a3b8'}; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                        ❤️ Curtir <span id="contador-curtidas-${postId}">(${totalCurtidas})</span>
-                    </button>
-                    <button onclick="toggleSecaoComentarios('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
-                        💬 Comentar (${comentariosList.length})
-                    </button>
-                    <button onclick="compartilharPost('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
-                        🔄 Repostar
-                    </button>
-                </div>
-
-                <div id="comentarios-container-${postId}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
-                    <div id="lista-comentarios-${postId}" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;">
-                        ${htmlComentarios || '<p style="color: #64748b; font-size: 10px;">Nenhum comentário ainda.</p>'}
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <input type="text" id="input-comentario-${postId}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; color: white; font-size: 11px; outline: none;">
-                        <button id="btn-enviar-comentario-${postId}" onclick="comentarPost('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-
-    container.innerHTML = htmlPosts;
+    } catch (err) {
+        console.error("Erro ao carregar feed do perfil:", err);
+        container.innerHTML = `<p style="color: #ef4444; text-align: center; font-size: 12px; padding: 15px;">Erro ao carregar suas publicações.</p>`;
+    }
 }
 
-window.carregarFeedDoBanco = carregarFeedDoBanco;
+window.carregarFeedDoPerfil = carregarFeedDoPerfil;
 
 function atualizarFeedUI() {
     const container = document.getElementById('feed-container');
