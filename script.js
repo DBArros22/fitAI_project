@@ -3582,39 +3582,26 @@ async function curtirPost(postId) {
         return;
     }
 
-    // 1. Seleção imediata dos elementos no DOM
     const btnCurtir = document.getElementById(`btn-curtir-${postId}`);
     const contadorEl = document.getElementById(`contador-curtidas-${postId}`);
+    if (!btnCurtir || !contadorEl) return;
 
-    // 2. Atualização Visual Imediata (Optimistic UI - Sem esperar o banco)
-    let totalAtual = 0;
-    if (contadorEl) {
-        // Extrai o número atual de dentro dos parênteses do texto (ex: "(5)" vira 5)
-        const match = contadorEl.textContent.match(/\d+/);
-        totalAtual = match ? parseInt(match[0], 10) : 0;
-    }
+    // Extrai o número atual do contador
+    const match = contadorEl.textContent.match(/\d+/);
+    let totalAtual = match ? parseInt(match[0], 10) : 0;
+    const jaEstavaCurtido = btnCurtir.style.color === 'rgb(239, 68, 68)' || btnCurtir.style.color === '#ef4444';
 
-    const jaEstavaCurtido = btnCurtir ? btnCurtir.classList.contains('liked') : false;
-
-    // Inverte visualmente na hora para o usuário
+    // Resposta visual imediata (Optimistic UI)
     if (jaEstavaCurtido) {
-        if (btnCurtir) {
-            btnCurtir.classList.remove('liked');
-            btnCurtir.style.color = '';
-        }
-        if (contadorEl) contadorEl.textContent = `(${Math.max(0, totalAtual - 1)})`;
+        btnCurtir.style.color = '#94a3b8';
+        contadorEl.textContent = `(${Math.max(0, totalAtual - 1)})`;
     } else {
-        if (btnCurtir) {
-            btnCurtir.classList.add('liked');
-            btnCurtir.style.color = '#ef4444';
-        }
-        if (contadorEl) contadorEl.textContent = `(${totalAtual + 1})`;
+        btnCurtir.style.color = '#ef4444';
+        contadorEl.textContent = `(${totalAtual + 1})`;
     }
 
-    // 3. Processamento no Firestore em segundo plano
     try {
         const postRef = db.collection('feed').doc(postId);
-        
         await db.runTransaction(async (transaction) => {
             const doc = await transaction.get(postRef);
             if (!doc.exists) return;
@@ -3630,15 +3617,9 @@ async function curtirPost(postId) {
 
             transaction.update(postRef, { curtidas });
         });
-
     } catch (e) {
-        console.error("Erro ao processar curtida no banco:", e);
-        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao atualizar curtida.");
-        
-        // Se houver erro de rede, reverte o visual chamando o recarregamento do feed
-        if (typeof carregarFeedDoBanco === 'function') {
-            carregarFeedDoBanco();
-        }
+        console.error("Erro ao curtir:", e);
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     }
 }
 
