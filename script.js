@@ -3110,49 +3110,39 @@ window.renderizarConteudoAbaBlog = renderizarConteudoAbaBlog;
 
 async function seguirAtleta(atletaIdToTarget) {
     const currentUser = auth.currentUser;
-    if (!currentUser) return mostrarAvisoNotificacao("Faça login para seguir atletas!");
-    if (currentUser.uid === atletaIdToTarget) return mostrarAvisoNotificacao("Você não pode seguir a si mesmo.");
+    if (!currentUser) return typeof mostrarAviso === 'function' && mostrarAviso("Faça login para seguir atletas!");
+    if (currentUser.uid === atletaIdToTarget) return;
+
+    // Atualização Otimista Imediata na Tela (0ms de delay)
+    atualizarBotaoPerfilUI(atletaIdToTarget, true);
 
     try {
         const targetUserDoc = await db.collection("usuarios").doc(atletaIdToTarget).get();
-        if (!targetUserDoc.exists) return mostrarAvisoNotificacao("Atleta não encontrado.");
+        if (!targetUserDoc.exists) return;
 
         const targetData = targetUserDoc.data();
         const isPrivado = targetData.privado === true;
 
         const seguindoRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToTarget);
-        const checkSeguindo = await seguindoRef.get();
-
-        if (checkSeguindo.exists) {
-            await deixarDeSeguir(atletaIdToTarget);
-            return;
-        }
 
         if (isPrivado) {
             await db.collection("usuarios").doc(atletaIdToTarget).collection("solicitacoes").doc(currentUser.uid).set({
                 uid: currentUser.uid,
                 solicitadoEm: firebase.firestore.FieldValue.serverTimestamp()
             });
-            mostrarAvisoNotificacao("Solicitação de seguir enviada!", "sucesso");
+            if (typeof mostrarAvisoNotificacao === 'function') mostrarAvisoNotificacao("Solicitação de seguir enviada!", "sucesso");
         } else {
             await seguindoRef.set({ seguidoEm: firebase.firestore.FieldValue.serverTimestamp() });
             await db.collection("usuarios").doc(atletaIdToTarget).collection("seguidores").doc(currentUser.uid).set({ seguidorEm: firebase.firestore.FieldValue.serverTimestamp() });
             
-            await db.collection("notificacoes").add({
-                destinatarioId: atletaIdToTarget,
-                remetenteId: currentUser.uid,
-                tipo: "seguir",
-                criadoEm: firebase.firestore.FieldValue.serverTimestamp(),
-                lida: false
-            });
-
-            mostrarAvisoNotificacao("Agora você segue este atleta!", "sucesso");
+            if (typeof mostrarAvisoNotificacao === 'function') mostrarAvisoNotificacao("Agora você segue este atleta!", "sucesso");
         }
 
-        if (typeof carregarFeed === 'function') carregarFeed();
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     } catch (error) {
         console.error("Erro ao seguir atleta:", error);
-        mostrarAvisoNotificacao("Erro ao processar ação.");
+        // Reverte a UI em caso de erro na rede
+        atualizarBotaoPerfilUI(atletaIdToTarget, false);
     }
 }
 
@@ -3162,15 +3152,19 @@ async function deixarDeSeguir(atletaIdToUnfollow) {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
+    // Atualização Otimista Imediata na Tela (0ms de delay)
+    atualizarBotaoPerfilUI(atletaIdToUnfollow, false);
+
     try {
         await db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToUnfollow).delete();
         await db.collection("usuarios").doc(atletaIdToUnfollow).collection("seguidores").doc(currentUser.uid).delete();
         
-        mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
-        if (typeof carregarFeed === 'function') carregarFeed();
+        if (typeof mostrarAvisoNotificacao === 'function') mostrarAvisoNotificacao("Você deixou de seguir este atleta.");
+        if (typeof carregarFeedDoBanco === 'function') carregarFeedDoBanco();
     } catch (error) {
         console.error("Erro ao deixar de seguir:", error);
-        mostrarAvisoNotificacao("Erro ao deixar de seguir.");
+        // Reverte a UI em caso de erro na rede
+        atualizarBotaoPerfilUI(atletaIdToUnfollow, true);
     }
 }
 
