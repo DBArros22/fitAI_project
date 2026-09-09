@@ -368,122 +368,112 @@ function limparCacheLocalSessao() {
 
 let dadosOriginaisPerfil = {};
 
-async function carregarFeedDoBanco() {
-    const container = document.getElementById('feed-container');
-    if (!container) return;
+async function carregarDadosPerfil() {
+    const user = auth.currentUser;
+    if (!user) return;
 
-    if (!window.feedEvolucao || window.feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; margin-top: 40px; font-size: 13px;">Carregando feed...</p>`;
+    // TRAVA DEFINITIVA DO E-MAIL
+    const inputEmail = document.getElementById('perfil-email');
+    if (inputEmail) {
+        inputEmail.value = user.email || "";
+        inputEmail.disabled = true;
+        inputEmail.style.opacity = "0.6";
+        inputEmail.style.cursor = "not-allowed";
     }
 
+    // 1. Pega os dados salvos no localStorage específico do usuário
+    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${user.uid}`)) || {};
+
+    // CORREÇÃO CRUCIAL: Garante que busca o nome salvo no objeto local, depois no displayName, e só por último usa o fallback "Atleta" se realmente não houver nada
+    let nomeFinal = dadosLocais.nome || user.displayName || (user.email ? user.email.split('@')[0] : "Atleta");
+    let telFinal = dadosLocais.tel || dadosLocais.telefone || "";
+    let fotoFinal = localStorage.getItem(`user_foto_${user.uid}`) || localStorage.getItem('user_foto') || "";
+
+    // Se o nome encontrado for genérico ou vazio, mas existir no perfil do Google/Auth, usa ele
+    if ((!nomeFinal || nomeFinal.toLowerCase() === "atleta") && user.displayName) {
+        nomeFinal = user.displayName;
+    }
+
+    // 2. Busca na nuvem (Firestore) em segundo plano para atualizar se houver dados novos
     try {
-        const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').get();
+        if (typeof db !== 'undefined' && db) {
+            const docRef = await db.collection("usuarios").doc(user.uid).get();
 
-        window.feedEvolucao = [];
-        snapshot.forEach(doc => {
-            const postData = doc.data();
-            window.feedEvolucao.push({
-                id: doc.id,
-                ...postData,
-                data: postData.criadoEm && postData.criadoEm.toDate ? postData.criadoEm.toDate().toLocaleString('pt-BR') : "Recentemente"
-            });
-        });
+            if (docRef.exists) {
+                const dadosDoc = docRef.data();
 
-    } catch (err) {
-        console.error("Erro crítico ao carregar feed:", err);
-    }
+                if (dadosDoc.nome && dadosDoc.nome.trim() !== "") {
+                    nomeFinal = dadosDoc.nome;
+                    dadosLocais.nome = nomeFinal; // Atualiza o objeto local
+                }
 
-    if (window.feedEvolucao.length === 0) {
-        container.innerHTML = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma publicação encontrada no feed.</p>`;
-        return;
-    }
+                if (dadosDoc.tel || dadosDoc.telefone) {
+                    telFinal = dadosDoc.tel || dadosDoc.telefone;
+                    dadosLocais.tel = telFinal;
+                }
 
-    const currentUser = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
-    let htmlPosts = '';
+                if (dadosDoc.fotoPerfil) {
+                    fotoFinal = dadosDoc.fotoPerfil;
+                    localStorage.setItem(`user_foto_${user.uid}`, fotoFinal);
+                    localStorage.setItem('user_foto', fotoFinal);
+                }
 
-    window.feedEvolucao.forEach(post => {
-        const postId = post.id;
-        const curtidasMap = post.curtidas || {};
-        const totalCurtidas = Object.keys(curtidasMap).length;
-        const jaCurtiu = currentUser && curtidasMap[currentUser.uid] ? true : false;
-        
-        const fotoPerfilUrl = (post.fotoPerfil && post.fotoPerfil.trim() !== '') 
-            ? post.fotoPerfil 
-            : 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
-
-        const comentariosList = post.comentarios || [];
-        let htmlComentarios = '';
-        comentariosList.forEach(c => {
-            htmlComentarios += `
-                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 4px;">
-                    <strong style="color: #3b82f6;">${c.nomeAtleta || 'Atleta'}:</strong> ${c.texto}
-                </div>
-            `;
-        });
-
-        let midiaHtml = '';
-        if (post.midia) {
-            const tipo = typeof post.midia === 'object' ? post.midia.tipo : 'foto';
-            const url = typeof post.midia === 'object' ? post.midia.data : post.midia;
-            if (tipo === 'foto' || tipo === 'image') {
-                midiaHtml = `
-                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px; display: flex; justify-content: center; align-items: center;">
-                        <img src="${url}" style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block; margin: 0 auto;">
-                    </div>
-                `;
-            } else if (tipo === 'video') {
-                midiaHtml = `
-                    <div style="width: 100%; background: #090d16; border-radius: 12px; overflow: hidden; margin-top: 10px;">
-                        <video src="${url}" controls style="width: 100%; height: auto; max-height: 420px; object-fit: contain; display: block;"></video>
-                    </div>
-                `;
-            } else if (tipo === 'audio') {
-                midiaHtml = `<div style="width: 100%; border-radius: 10px; margin-top: 10px; background: rgba(255,255,255,0.05); padding: 8px;"><audio src="${url}" controls style="width: 100%;"></audio></div>`;
+                // Salva preventivamente no localStorage para o feed nunca mais ler "Atleta"
+                localStorage.setItem(`fitai_user_data_${user.uid}`, JSON.stringify(dadosLocais));
             }
         }
+    } catch (error) {
+        console.error("Erro ao buscar dados do perfil no Firestore:", error);
+    }
 
-        htmlPosts += `
-            <div class="glass-panel" style="background: rgba(255,255,255,0.03); padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 14px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="display: flex; align-items: center; gap: 10px; cursor: pointer;" onclick="carregarPerfilPublico('${post.uid}')">
-                        <img src="${fotoPerfilUrl}" alt="Perfil" style="width: 36px; height: 36px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
-                        <strong style="color: white; font-size: 13px; letter-spacing: 0.5px;">${post.nomeAtleta || 'ATLETA'}</strong>
-                    </div>
-                    <span style="color: #64748b; font-size: 10px;">${post.data}</span>
-                </div>
+    // Guarda nos dados originais para controle de alterações se necessário
+    dadosOriginaisPerfil = { nome: nomeFinal, tel: telFinal };
 
-                ${post.texto ? `<p style="color: #cbd5e1; font-size: 13px; line-height: 1.4; margin-bottom: 10px;">${post.texto}</p>` : ''}
-                ${midiaHtml}
+    // Preenche os inputs de texto na tela de perfil
+    const inputNome = document.getElementById('perfil-nome');
 
-                <div style="display: flex; gap: 15px; margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-                    <button id="btn-curtir-${postId}" onclick="curtirPost('${postId}')" style="background: transparent; border: none; color: ${jaCurtiu ? '#ef4444' : '#94a3b8'}; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                        ❤️ Curtir <span id="contador-curtidas-${postId}">(${totalCurtidas})</span>
-                    </button>
-                    <button onclick="toggleSecaoComentarios('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
-                        💬 Comentar (${comentariosList.length})
-                    </button>
-                    <button onclick="compartilharPost('${postId}')" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px; font-weight: bold;">
-                        🔄 Repostar
-                    </button>
-                </div>
+    if (inputNome) {
+        inputNome.value = nomeFinal;
+        inputNome.disabled = true; // Mantém travado até o usuário clicar em editar
+        inputNome.classList.remove('input-pendente');
+    }
 
-                <div id="comentarios-container-${postId}" style="display: none; margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
-                    <div id="lista-comentarios-${postId}" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;">
-                        ${htmlComentarios || '<p style="color: #64748b; font-size: 10px;">Nenhum comentário ainda.</p>'}
-                    </div>
-                    <div style="display: flex; gap: 6px;">
-                        <input type="text" id="input-comentario-${postId}" placeholder="Escreva um comentário..." style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; color: white; font-size: 11px; outline: none;">
-                        <button id="btn-enviar-comentario-${postId}" onclick="comentarPost('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Enviar</button>
-                    </div>
-                </div>
-            </div>
-        `;
+    const inputTel = document.getElementById('perfil-tel');
+
+    if (inputTel) {
+        inputTel.value = telFinal;
+        inputTel.disabled = true;
+        inputTel.classList.remove('input-pendente');
+    }
+
+    // 3. Aplica a foto e o nome na interface de forma definitiva (Avatar e Miniaturas do Feed)
+    const preview = document.getElementById('perfil-foto-preview');
+    const navIcon = document.getElementById('nav-perfil-icon');
+
+    const svgBonecoGrande = `<svg viewBox="0 0 24 24" width="40" height="40" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+    const svgBonecoPequeno = `<svg viewBox="0 0 24 24" width="24" height="24" stroke="white" stroke-width="1.5" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+
+    if (fotoFinal && fotoFinal.trim() !== "") {
+        if (preview) {
+            preview.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover;">`;
+        }
+
+        if (navIcon) {
+            navIcon.innerHTML = `<img src="${fotoFinal}" style="width:100%; height:100%; object-fit:cover; border-radius: 50%;">`;
+        }
+    } else {
+        if (preview) preview.innerHTML = svgBonecoGrande;
+        if (navIcon) navIcon.innerHTML = svgBonecoPequeno;
+    }
+
+    // Atualiza também elementos do feed se houverem na página atual
+    document.querySelectorAll(`.nome-usuario-atual, [data-user-name-id="${user.uid}"]`).forEach(el => {
+        el.innerText = nomeFinal;
     });
-
-    container.innerHTML = htmlPosts;
 }
 
-window.carregarFeedDoBanco = carregarFeedDoBanco;
+window.carregarDadosPerfil = carregarDadosPerfil;
 
 // Função peril // código OTP simulado 
 
