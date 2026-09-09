@@ -3791,9 +3791,8 @@ async function comentarPost(postId) {
     if (!input || !input.value.trim()) return;
 
     const textoComentario = input.value.trim();
-    input.value = ""; // Limpa o campo na hora
+    input.value = ""; 
 
-    // Pega o nome e a foto do usuário atual armazenados localmente
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${currentUser.uid}`)) || {};
     const nomeAtleta = dadosLocais.nome || currentUser.displayName || currentUser.email.split('@')[0] || "Atleta";
     const fotoPerfil = localStorage.getItem(`user_foto_${currentUser.uid}`) || localStorage.getItem('user_foto') || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
@@ -3806,24 +3805,25 @@ async function comentarPost(postId) {
         criadoEm: new Date().toISOString()
     };
 
-    // Atualiza o array local e renderiza na hora na tela
     const post = window.feedEvolucao ? window.feedEvolucao.find(p => p.id === postId) : null;
     if (post) {
         if (!post.comentarios) post.comentarios = [];
         post.comentarios.push(novoComentario);
         
-        // Atualiza o HTML da lista de comentários daquele post específico instantaneamente
         const listaComentariosEl = document.getElementById(`lista-comentarios-${postId}`);
         if (listaComentariosEl) {
             let htmlComentarios = '';
             post.comentarios.forEach(c => {
                 const fotoC = c.fotoPerfil || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
                 htmlComentarios += `
-                    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
-                        <img src="${fotoC}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
-                        <div>
-                            <strong style="color: #3b82f6;">${c.nomeAtleta}:</strong> ${c.texto}
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; font-size: 12px; color: #cbd5e1; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 6px;">
+                        <div style="display: flex; align-items: flex-start; gap: 8px; flex: 1;">
+                            <img src="${fotoC}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); margin-top: 2px;">
+                            <div>
+                                <strong style="color: #3b82f6;">${c.nomeAtleta}:</strong> ${c.texto}
+                            </div>
                         </div>
+                        <button onclick="responderComentario('${postId}', '${c.nomeAtleta}')" style="background: transparent; border: none; color: #94a3b8; font-size: 10px; cursor: pointer; padding: 2px 4px;">Responder</button>
                     </div>
                 `;
             });
@@ -3831,19 +3831,41 @@ async function comentarPost(postId) {
         }
     }
 
-    // Salva no Firebase em segundo plano
     try {
         const postRef = db.collection('feed').doc(postId);
         await postRef.update({
             comentarios: firebase.firestore.FieldValue.arrayUnion(novoComentario)
         });
-        localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
+
+        const postDoc = await postRef.get();
+        if (postDoc.exists) {
+            const donoPostUid = postDoc.data().uid;
+            if (donoPostUid && donoPostUid !== currentUser.uid) {
+                await db.collection('usuarios').doc(donoPostUid).collection('notificacoes').add({
+                    tipo: 'comentario',
+                    remetenteNome: nomeAtleta,
+                    mensagem: 'comentou na sua publicação.',
+                    linkId: postId,
+                    criadoEm: new Date().toISOString()
+                });
+            }
+        }
     } catch (err) {
-        console.error("Erro ao enviar comentário para o banco:", err);
+        console.error("Erro ao enviar comentário ou notificação:", err);
     }
 }
 
 window.comentarPost = comentarPost;
+
+function responderComentario(postId, nomeAutor) {
+    const input = document.getElementById(`input-comentario-${postId}`);
+    if (input) {
+        input.value = `@${nomeAutor} `;
+        input.focus();
+    }
+}
+
+window.responderComentario = responderComentario;
 
 async function compartilharPost(postId) {
     try {
