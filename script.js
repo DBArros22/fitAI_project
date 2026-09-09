@@ -3626,23 +3626,14 @@ async function curtirPost(postId) {
 window.curtirPost = curtirPost;
 
 function toggleSecaoComentarios(postId) {
-    const el = document.getElementById(`comentarios-container-${postId}`);
-    if (el) {
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    const sec = document.getElementById(`comentarios-container-${postId}`);
+    if (sec) {
+        sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
     }
 }
 
 window.toggleSecaoComentarios = toggleSecaoComentarios;
 
-
-function toggleSecaoComentarios(postId) {
-    const el = document.getElementById(`comentarios-container-${postId}`);
-    if (el) {
-        el.style.display = el.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-window.toggleSecaoComentarios = toggleSecaoComentarios;
 
 async function comentarPost(postId) {
     const user = auth.currentUser;
