@@ -3488,7 +3488,7 @@ async function carregarFeedDoBanco() {
     });
 
     container.innerHTML = htmlPosts;
-async function carregarFeedDoBanco() {
+
     const container = document.getElementById('feed-container');
     if (!container) return;
 
