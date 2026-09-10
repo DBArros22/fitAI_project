@@ -3890,48 +3890,23 @@ function responderComentario(postId, nomeAutor) {
 window.responderComentario = responderComentario;
 
 function compartilharPost(postId) {
-    const antigo = document.getElementById('modal-repost-container');
-    if (antigo) antigo.remove();
+    const postCard = document.getElementById(`post-feed-${postId}`) || document.getElementById(`post-perfil-${postId}`);
+    if (!postCard) return;
 
-    const modal = document.createElement('div');
-    modal.id = 'modal-repost-container';
-    modal.style.cssText = `
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(2, 6, 23, 0.85) !important;
-        backdrop-filter: blur(8px) !important;
-        -webkit-backdrop-filter: blur(8px) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        z-index: 99999999 !important;
-        padding: 16px !important;
-        box-sizing: border-box !important;
-    `;
+    // Evita duplicar o painel de input se já estiver aberto
+    if (document.getElementById(`repost-inline-box-${postId}`)) return;
 
-    modal.innerHTML = `
-        <div class="glass-panel" style="background: var(--bg-card, #0f172a) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 24px !important; padding: 24px !important; width: 100% !important; max-width: 420px !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7) !important; display: flex !important; flex-direction: column !important; gap: 16px !important; box-sizing: border-box !important;">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
-                <h3 style="font-size: 1rem; margin: 0; color: #3b82f6; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;">REPOSTAR PUBLICAÇÃO</h3>
-                <button onclick="document.getElementById('modal-repost-container').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 32px; height: 32px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
-            </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 6px;">
-                <label style="color: #94a3b8; font-size: 11px; font-weight: bold; text-transform: uppercase;">Adicionar comentário:</label>
-                <textarea id="texto-comentario-repost" placeholder="Escreva algo sobre este treino..." style="width: 100%; height: 100px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: white; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
-            </div>
-            
-            <div style="display: flex; gap: 10px; margin-top: 4px;">
-                <button onclick="document.getElementById('modal-repost-container').remove()" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; cursor: pointer;">CANCELAR</button>
-                <button onclick="confirmarRepost('${postId}')" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">REPOSTAR</button>
-            </div>
+    const caixaRepost = document.createElement('div');
+    caixaRepost.id = `repost-inline-box-${postId}`;
+    caixaRepost.style.cssText = "margin-top: 12px; background: rgba(0,0,0,0.25); border: 1px solid rgba(59,130,246,0.4); border-radius: 14px; padding: 12px;";
+    caixaRepost.innerHTML = `
+        <textarea id="input-texto-repost-${postId}" placeholder="Adicione um comentário ao compartilhar..." style="width: 100%; background: transparent; border: none; color: white; font-family: inherit; resize: none; outline: none; font-size: 13px; min-height: 50px; margin-bottom: 8px;"></textarea>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+            <button onclick="document.getElementById('repost-inline-box-${postId}').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Cancelar</button>
+            <button onclick="executarCompartilhamento('${postId}')" style="background: #3b82f6; color: white; border: none; padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">Confirmar Repost</button>
         </div>
     `;
-
-    document.body.appendChild(modal);
+    postCard.appendChild(caixaRepost);
 }
 
 window.compartilharPost = compartilharPost;
