@@ -4154,6 +4154,16 @@ async function carregarNotificacoes() {
 
 window.carregarNotificacoes = carregarNotificacoes;
 
+
+// evento ouvinte global para garantir a abertura instantanea do modal de notificacoes
+document.addEventListener('click', function(event) {
+    const btnNotif = event.target.closest('button[title="Notificações"], .btn-icone-platina');
+    if (btnNotif && btnNotif.querySelector('svg path[d*="M18 8A6 6 0 0 0 6 8"]')) {
+        event.preventDefault();
+        carregarNotificacoes();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const btnNotificacao = document.getElementById('btn-notificacoes') || document.querySelector('.icone-notificacao');
     if (btnNotificacao) {
