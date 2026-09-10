@@ -720,3 +720,13 @@ html {
     justify-content: center !important;
     box-sizing: border-box;
 }
+
+.modal-overlay, .modal-container, .glass-modal {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    z-index: 9999 !important;
+}
