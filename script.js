@@ -4044,57 +4044,44 @@ async function confirmarRepost(postId) {
 window.confirmarRepost = confirmarRepost;
 
 async function carregarNotificacoes() {
-    const currentUser = auth.currentUser;
-    if (!currentUser) return;
+    const user = auth.currentUser;
+    if (!user) return;
 
-    try {
-        const snapshot = await db.collection('usuarios').doc(currentUser.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(30).get();
-        
-        let htmlNotificacoes = '';
-        if (snapshot.empty) {
-            htmlNotificacoes = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma notificação por enquanto.</p>`;
-        } else {
-            snapshot.forEach(doc => {
-                const n = doc.data();
-                const dataFormatada = n.criadoEm ? new Date(n.criadoEm).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
-                
-                htmlNotificacoes += `
-                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;">
-                        <div style="font-size: 12px; color: #cbd5e1;">
-                            <strong style="color: white;">${n.remetenteNome}</strong> ${n.mensagem}
-                        </div>
-                        <span style="font-size: 10px; color: #64748b;">${dataFormatada}</span>
-                    </div>
-                `;
-            });
-        }
+    // Remove modal anterior se existir para evitar duplicação
+    const modalAntigo = document.getElementById('modal-notificacoes-global');
+    if (modalAntigo) modalAntigo.remove();
 
-        // Abre um modal centralizado utilizando sua mesma estrutura padrão
-        const antigo = document.getElementById('modal-painel-notificacoes');
-        if (antigo) antigo.remove();
-
-        const modal = document.createElement('div');
-        modal.id = 'modal-painel-notificacoes';
-        modal.style = `
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; align-items: center;
-            justify-content: center; z-index: 10000; backdrop-filter: blur(6px); padding: 20px;
-        `;
-        
-        modal.innerHTML = `
-            <div class="glass-panel" style="width: 100%; max-width: 420px; padding: 25px; border: 1px solid #3b82f6; border-radius: 20px; background: #0f172a; box-shadow: 0 0 20px rgba(59,130,246,0.3); display: flex; flex-direction: column; max-height: 80vh;">
-                <h3 class="italic-bold" style="color: #3b82f6; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">NOTIFICAÇÕES</h3>
-                <div style="overflow-y: auto; max-height: 50vh; margin-bottom: 15px; padding-right: 4px;">
-                    ${htmlNotificacoes}
+    const snapshot = await db.collection('usuarios').doc(user.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(20).get();
+    
+    let itensHtml = '';
+    snapshot.forEach(doc => {
+        const n = doc.data();
+        const foto = n.remetenteFoto || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+        itensHtml += `
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <img src="${foto}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2);">
+                <div style="flex: 1;">
+                    <p style="color: white; font-size: 13px; margin: 0;">
+                        <strong style="color: #3b82f6;">${n.remetenteNome || 'Atleta'}</strong> ${n.mensagem}
+                    </p>
                 </div>
-                <button onclick="document.getElementById('modal-painel-notificacoes').remove()" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">FECHAR</button>
             </div>
         `;
-        document.body.appendChild(modal);
+    });
 
-    } catch (err) {
-        console.error("Erro ao carregar notificações:", err);
-    }
+    const modalEl = document.createElement('div');
+    modalEl.id = 'modal-notificacoes-global';
+    modalEl.style.cssText = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 20px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.6);";
+    modalEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            <h3 style="color: white; font-size: 15px; margin: 0;">NOTIFICAÇÕES</h3>
+            <button onclick="document.getElementById('modal-notificacoes-global').remove()" style="background: none; border: none; color: #ef4444; font-size: 20px; cursor: pointer; font-weight: bold;">&times;</button>
+        </div>
+        <div style="max-height: 350px; overflow-y: auto;">
+            ${itensHtml || '<p style="color: #64748b; text-align: center; font-size: 13px;">Nenhuma notificação recente.</p>'}
+        </div>
+    `;
+    document.body.appendChild(modalEl);
 }
 
 window.carregarNotificacoes = carregarNotificacoes;
