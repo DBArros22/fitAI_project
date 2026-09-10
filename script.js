@@ -3943,7 +3943,6 @@ async function executarCompartilhamento(postId) {
 
         await db.collection('feed').add(novoRepost);
         
-        // Notifica o autor original
         if (postOriginal.uid && postOriginal.uid !== user.uid) {
             await db.collection('usuarios').doc(postOriginal.uid).collection('notificacoes').add({
                 tipo: 'repost',
@@ -3963,6 +3962,7 @@ async function executarCompartilhamento(postId) {
         if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao efetuar o repost.");
     }
 }
+
 window.executarCompartilhamento = executarCompartilhamento;
 
 function abrirModalRepost(postId) {
