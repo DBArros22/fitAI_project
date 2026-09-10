@@ -3286,6 +3286,12 @@ async function seguirAtleta(atletaIdToTarget) {
 
         const seguindoRef = db.collection("usuarios").doc(currentUser.uid).collection("seguindo").doc(atletaIdToTarget);
 
+        // Busca dados do usuário logado para enviar na notificação
+        const userDoc = await db.collection("usuarios").doc(currentUser.uid).get();
+        const dadosUser = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dadosUser.nome || dadosUser.nomeCompleto || "ATLETA").trim().toUpperCase();
+        const fotoPerfil = dadosUser.fotoPerfil || currentUser.photoURL || '';
+
         if (isPrivado) {
             await db.collection("usuarios").doc(atletaIdToTarget).collection("solicitacoes").doc(currentUser.uid).set({
                 uid: currentUser.uid,
@@ -3296,6 +3302,16 @@ async function seguirAtleta(atletaIdToTarget) {
             await seguindoRef.set({ seguidoEm: firebase.firestore.FieldValue.serverTimestamp() });
             await db.collection("usuarios").doc(atletaIdToTarget).collection("seguidores").doc(currentUser.uid).set({ seguidorEm: firebase.firestore.FieldValue.serverTimestamp() });
             
+            // Adiciona a notificação para o usuário alvo
+            await db.collection("usuarios").doc(atletaIdToTarget).collection("notificacoes").add({
+                tipo: 'seguir',
+                remetenteUid: currentUser.uid,
+                remetenteNome: nomeAtleta,
+                remetenteFoto: fotoPerfil,
+                mensagem: 'começou a seguir você.',
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
             if (typeof mostrarAvisoNotificacao === 'function') mostrarAvisoNotificacao("Agora você segue este atleta!", "sucesso");
         }
 
