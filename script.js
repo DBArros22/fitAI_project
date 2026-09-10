@@ -2770,12 +2770,21 @@ window.renderizarBlog = renderizarBlog;
 
 function mudarAbaBlog(aba, uidAlvo = null) {
     window.abaAtivaBlog = aba;
+    
+    // Se a aba selecionada for notificações, chama diretamente a função dedicada
+    if (aba === 'notificacoes') {
+        if (typeof abrirPaginaNotificacoes === 'function') {
+            abrirPaginaNotificacoes();
+        }
+        return;
+    }
+
     if (aba === 'perfil') {
         const user = typeof auth !== 'undefined' ? auth.currentUser : null;
         window.perfilVisualizadoUid = uidAlvo || (user ? user.uid : null);
     }
     
-    // Atualiza imediatamente o destaque visual de todos os botões de abas
+    // Atualiza imediatamente o destaque visual de todos os botões de abas principais
     const botoes = {
         'feed': document.querySelector('button[onclick*="mudarAbaBlog(\'feed\'"]'),
         'explorar': document.querySelector('button[onclick*="mudarAbaBlog(\'explorar\'"]'),
