@@ -4076,7 +4076,6 @@ async function carregarNotificacoes() {
     const user = auth.currentUser;
     if (!user) return;
 
-    // Remove modal anterior se existir para evitar duplicação
     const modalAntigo = document.getElementById('modal-notificacoes-global');
     if (modalAntigo) modalAntigo.remove();
 
@@ -4100,7 +4099,7 @@ async function carregarNotificacoes() {
 
     const modalEl = document.createElement('div');
     modalEl.id = 'modal-notificacoes-global';
-    modalEl.style.cssText = "position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 20px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.6);";
+    modalEl.style.cssText = "position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90%; max-width: 450px; max-height: 85vh !important; overflow-y: auto !important; background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); border-radius: 20px; padding: 20px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.6);";
     modalEl.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
             <h3 style="color: white; font-size: 15px; margin: 0;">NOTIFICAÇÕES</h3>
