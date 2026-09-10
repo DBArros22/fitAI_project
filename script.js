@@ -4166,6 +4166,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+async function carregarNotificacoes() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const modalAntigo = document.getElementById('modal-notificacoes-global');
+    if (modalAntigo) modalAntigo.remove();
+
+    const snapshot = await db.collection('usuarios').doc(user.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(20).get();
+    
+    let itensHtml = '';
+    snapshot.forEach(doc => {
+        const n = doc.data();
+        const foto = n.remetenteFoto || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+        const linkId = n.linkId || '';
+        const remetenteUid = n.remetenteUid || '';
+        const tipo = n.tipo || '';
+
+        itensHtml += `
+            <div onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                <img src="${foto}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;">
+                <div style="flex: 1; overflow: hidden;">
+                    <p style="color: white; font-size: 12px; margin: 0; line-height: 1.4;">
+                        <strong style="color: #3b82f6;">${n.remetenteNome || 'Atleta'}</strong> ${n.mensagem}
+                    </p>
+                </div>
+            </div>
+        `;
+    });
+
+    const modalEl = document.createElement('div');
+    modalEl.id = 'modal-notificacoes-global';
+    modalEl.style.cssText = "position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90%; max-width: 400px; max-height: 80vh !important; overflow-y: auto !important; background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.6);";
+    modalEl.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+            <h3 style="color: white; font-size: 14px; margin: 0; font-weight: 800;">NOTIFICAÇÕES</h3>
+            <button onclick="document.getElementById('modal-notificacoes-global').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ef4444; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; font-weight: bold; line-height: 1;">&times;</button>
+        </div>
+        <div style="max-height: 320px; overflow-y: auto;">
+            ${itensHtml || '<p style="color: #64748b; text-align: center; font-size: 12px; padding: 20px;">Nenhuma notificação recente.</p>'}
+        </div>
+    `;
+    document.body.appendChild(modalEl);
+}
+
+window.carregarNotificacoes = carregarNotificacoes;
+
+
+
+function clicarNotificacao(tipo, linkId, remetenteUid) {
+    const modal = document.getElementById('modal-notificacoes-global');
+    if (modal) modal.remove();
+
+    if (tipo === 'seguir' && remetenteUid) {
+        if (typeof mudarAbaBlog === 'function') mudarAbaBlog('perfil', remetenteUid);
+    } else if (linkId) {
+        const postEl = document.getElementById(`post-feed-${linkId}`) || document.getElementById(`post-perfil-${linkId}`);
+        if (postEl) {
+            postEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            postEl.style.border = '1px solid #3b82f6';
+            setTimeout(() => postEl.style.border = '1px solid rgba(255,255,255,0.08)', 2500);
+        } else if (typeof carregarFeedDoBanco === 'function') {
+            carregarFeedDoBanco().then(() => {
+                setTimeout(() => {
+                    const p = document.getElementById(`post-feed-${linkId}`);
+                    if (p) {
+                        p.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        p.style.border = '1px solid #3b82f6';
+                        setTimeout(() => p.style.border = '1px solid rgba(255,255,255,0.08)', 2500);
+                    }
+                }, 400);
+            });
+        }
+    }
+}
+
+window.clicarNotificacao = clicarNotificacao;
+
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
     if (!container) return;
