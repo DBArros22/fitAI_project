@@ -3850,6 +3850,7 @@ async function comentarPost(postId) {
                 });
             }
         }
+        localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
     } catch (err) {
         console.error("Erro ao enviar comentário ou notificação:", err);
     }
