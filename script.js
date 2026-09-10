@@ -3755,13 +3755,16 @@ async function curtirPost(postId) {
     const btnCurtir = document.getElementById(`btn-curtir-${postId}`);
     const spanContador = document.getElementById(`contador-curtidas-${postId}`);
     
-    // Atualiza o array localmente na hora para feedback instantâneo
     const post = window.feedEvolucao ? window.feedEvolucao.find(p => p.id === postId) : null;
+    let donoPostUid = null;
+    let jaCurtiuLocal = false;
+
     if (post) {
         if (!post.curtidas) post.curtidas = {};
+        donoPostUid = post.uid;
         
-        const jaCurtiu = post.curtidas[currentUser.uid];
-        if (jaCurtiu) {
+        jaCurtiuLocal = post.curtidas[currentUser.uid];
+        if (jaCurtiuLocal) {
             delete post.curtidas[currentUser.uid];
             if (btnCurtir) btnCurtir.style.color = '#94a3b8';
         } else {
@@ -3773,17 +3776,37 @@ async function curtirPost(postId) {
         if (spanContador) spanContador.innerText = `(${total})`;
     }
 
-    // Envia para o Firebase em segundo plano
     try {
         const postRef = db.collection('feed').doc(postId);
         const doc = await postRef.get();
         if (doc.exists) {
-            let curtidas = doc.data().curtidas || {};
-            if (curtidas[currentUser.uid]) {
+            const dataDoc = doc.data();
+            donoPostUid = dataDoc.uid;
+            let curtidas = dataDoc.curtidas || {};
+            const jaCurtiuNoBanco = curtidas[currentUser.uid];
+
+            if (jaCurtiuNoBanco) {
                 delete curtidas[currentUser.uid];
             } else {
                 curtidas[currentUser.uid] = true;
+
+                if (donoPostUid && donoPostUid !== currentUser.uid) {
+                    const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${currentUser.uid}`)) || {};
+                    const nomeAtleta = dadosLocais.nome || currentUser.displayName || "Atleta";
+                    const fotoPerfil = localStorage.getItem(`user_foto_${currentUser.uid}`) || '';
+
+                    await db.collection('usuarios').doc(donoPostUid).collection('notificacoes').add({
+                        tipo: 'curtida',
+                        remetenteUid: currentUser.uid,
+                        remetenteNome: nomeAtleta,
+                        remetenteFoto: fotoPerfil,
+                        mensagem: 'curtiu a sua publicação.',
+                        linkId: postId,
+                        criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
             }
+
             await postRef.update({ curtidas });
             localStorage.setItem('fitai_feed_cache', JSON.stringify(window.feedEvolucao));
         }
