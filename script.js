@@ -4184,13 +4184,23 @@ async function carregarNotificacoes() {
         const tipo = n.tipo || '';
 
         itensHtml += `
-            <div onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
-                <img src="${foto}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                
+                <!-- Foto em miniatura clicável para ir ao perfil -->
+                <img src="${foto}" onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; cursor: pointer;">
+                
+                <!-- Conteúdo da notificação: Nome clicável vai para o perfil, clicar na mensagem vai para o post (se houver) -->
                 <div style="flex: 1; overflow: hidden;">
                     <p style="color: white; font-size: 12px; margin: 0; line-height: 1.4;">
-                        <strong style="color: #3b82f6;">${n.remetenteNome || 'Atleta'}</strong> ${n.mensagem}
+                        <strong onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="color: #3b82f6; cursor: pointer; text-decoration: underline;">${n.remetenteNome || 'Atleta'}</strong> 
+                        <span ${linkId ? `onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')"` : ''} style="${linkId ? 'cursor: pointer;' : ''}">${n.mensagem}</span>
                     </p>
                 </div>
+
+                <!-- Botão opcional rápido se for post para facilitar a visualização -->
+                ${linkId && tipo !== 'seguir' ? `
+                    <button onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')" style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: bold; white-space: nowrap;">Ver Post</button>
+                ` : ''}
             </div>
         `;
     });
@@ -4211,6 +4221,18 @@ async function carregarNotificacoes() {
 }
 
 window.carregarNotificacoes = carregarNotificacoes;
+
+// Função auxiliar de redirecionamento de perfil garantida caso ainda não tenha declarado
+function abrirPerfilDeNotificacao(uidUsuario) {
+    const modal = document.getElementById('modal-notificacoes-global');
+    if (modal) modal.remove();
+
+    if (uidUsuario && typeof mudarAbaBlog === 'function') {
+        mudarAbaBlog('perfil', uidUsuario);
+    }
+}
+
+window.abrirPerfilDeNotificacao = abrirPerfilDeNotificacao;
 
 
 
