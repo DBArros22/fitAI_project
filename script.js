@@ -2736,9 +2736,21 @@ function renderizarBlog() {
     container.innerHTML = `
         <div class="glass-panel" style="padding: 20px; min-height: 85vh; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); border-radius: 28px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
-                <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 18px; border-radius: 14px; cursor: pointer; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
-                </button>
+                
+                <!-- GRUPO ESQUERDA: VOLTAR + BOTÃO NOTIFICAÇÕES PLATINADO -->
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px 18px; border-radius: 14px; cursor: pointer; font-size: 0.75rem; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; transition: 0.2s;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>VOLTAR
+                    </button>
+
+                    <button class="btn-icone-platina" onclick="carregarNotificacoes()" title="Notificações" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; position: relative;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" style="color: var(--icon-platinum, #f8fafc); filter: drop-shadow(0 0 6px rgba(248, 250, 252, 0.3));">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                        </svg>
+                        <span id="badge-notif-nova" class="notif-badge-dot hidden" style="position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; box-shadow: 0 0 6px #ef4444;"></span>
+                    </button>
+                </div>
                 
                 <div style="display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);">
                     <button onclick="mudarAbaBlog('feed')" style="background: ${window.abaAtivaBlog === 'feed' ? 'linear-gradient(135deg, #3b82f6, #1d4ed8)' : 'transparent'}; color: white; border: none; padding: 10px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: ${window.abaAtivaBlog === 'feed' ? '0 4px 15px rgba(59,130,246,0.4)' : 'none'};">📰 Feed</button>
