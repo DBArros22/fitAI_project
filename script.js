@@ -3937,43 +3937,52 @@ async function compartilharPost(postId) {
 window.compartilharPost = compartilharPost;
 
 function abrirModalRepost(postId) {
-    // Remove modal anterior se já existir
+    // Remove qualquer modal de repost anterior para evitar duplicações
     const antigo = document.getElementById('modal-repost-container');
     if (antigo) antigo.remove();
 
+    // Cria o container principal cobrindo toda a viewport com overlay escuro e desfoque
     const modal = document.createElement('div');
     modal.id = 'modal-repost-container';
     modal.style.cssText = `
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: rgba(2, 6, 23, 0.85);
         backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 999999;
-        padding: 20px;
+        z-index: 9999999;
+        padding: 16px;
         box-sizing: border-box;
     `;
 
+    // Caixa interna do modal estilizada no padrão glassmorphism do app
     modal.innerHTML = `
-        <div class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; width: 100%; max-width: 440px; box-shadow: var(--shadow-pro); display: flex; flex-direction: column; gap: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h3 class="italic-bold uppercase blue-text" style="font-size: 1rem; margin: 0;">Compartilhar Publicação</h3>
-                <button onclick="document.getElementById('modal-repost-container').remove()" style="background: transparent; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer;">&times;</button>
+        <div class="glass-panel" style="background: var(--bg-card, #0f172a); border: 1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius: 24px; padding: 24px; width: 100%; max-width: 420px; box-shadow: var(--shadow-pro, 0 20px 25px -5px rgba(0,0,0,0.5)); display: flex; flex-direction: column; gap: 16px; box-sizing: border-box; animation: fadeInScale 0.25s ease-out;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
+                <h3 class="italic-bold uppercase blue-text" style="font-size: 0.95rem; margin: 0; color: #3b82f6; letter-spacing: 1px;">COMPARTILHAR PUBLICAÇÃO</h3>
+                <button onclick="document.getElementById('modal-repost-container').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
             </div>
             
-            <textarea id="texto-comentario-repost" placeholder="Escreva algo sobre este post..." class="input-field" style="height: 90px; resize: none;"></textarea>
+            <textarea id="texto-comentario-repost" placeholder="Escreva algo sobre este treino..." class="input-field" style="width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 12px; color: white; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
             
-            <div style="display: flex; gap: 10px;">
-                <button onclick="document.getElementById('modal-repost-container').remove()" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">Cancelar</button>
-                <button onclick="confirmarRepost('${postId}')" class="btn-primary" style="flex: 1; padding: 12px;">Repostar</button>
+            <div style="display: flex; gap: 10px; margin-top: 4px;">
+                <button onclick="document.getElementById('modal-repost-container').remove()" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; cursor: pointer; transition: 0.2s;">CANCELAR</button>
+                <button onclick="confirmarRepost('${postId}')" class="btn-primary" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4); transition: 0.2s;">REPOSTAR</button>
             </div>
         </div>
     `;
 
+    // Garante que o scroll da janela trave levemente no topo ao abrir o modal, garantindo centralização visual perfeita
+    window.scrollTo({ top: window.scrollY, behavior: 'smooth' });
     document.body.appendChild(modal);
 }
+
 window.abrirModalRepost = abrirModalRepost;
 
 async function confirmarRepost(postId) {
