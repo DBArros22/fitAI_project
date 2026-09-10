@@ -3936,6 +3936,104 @@ async function compartilharPost(postId) {
 
 window.compartilharPost = compartilharPost;
 
+function abrirModalRepost(postId) {
+    // Remove modal anterior se já existir
+    const antigo = document.getElementById('modal-repost-container');
+    if (antigo) antigo.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'modal-repost-container';
+    modal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999999;
+        padding: 20px;
+        box-sizing: border-box;
+    `;
+
+    modal.innerHTML = `
+        <div class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 24px; padding: 24px; width: 100%; max-width: 440px; box-shadow: var(--shadow-pro); display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="italic-bold uppercase blue-text" style="font-size: 1rem; margin: 0;">Compartilhar Publicação</h3>
+                <button onclick="document.getElementById('modal-repost-container').remove()" style="background: transparent; border: none; color: var(--text-secondary); font-size: 18px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <textarea id="texto-comentario-repost" placeholder="Escreva algo sobre este post..." class="input-field" style="height: 90px; resize: none;"></textarea>
+            
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('modal-repost-container').remove()" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;">Cancelar</button>
+                <button onclick="confirmarRepost('${postId}')" class="btn-primary" style="flex: 1; padding: 12px;">Repostar</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+}
+window.abrirModalRepost = abrirModalRepost;
+
+async function confirmarRepost(postId) {
+    try {
+        const inputComentario = document.getElementById('texto-comentario-repost');
+        const comentarioUsuario = inputComentario ? inputComentario.value.trim() : '';
+
+        const postRef = db.collection('feed').doc(postId);
+        const doc = await postRef.get();
+        if (!doc.exists) return;
+
+        const p = doc.data();
+        const user = auth.currentUser;
+        if (!user) {
+            if (typeof mostrarAviso === 'function') mostrarAviso("Faça login para compartilhar!");
+            return;
+        }
+
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dados.nome || dados.nomeCompleto || dados.name || "ATLETA").trim().split(" ")[0].toUpperCase();
+        const fotoPerfil = dados.fotoPerfil || dados.foto || dados.avatar || user.photoURL || null;
+
+        // Monta o texto unindo o comentário do usuário e referenciando o post original
+        const textoFinal = comentarioUsuario 
+            ? `${comentarioUsuario}\n\n🔄 Repost de ${p.nomeAtleta || 'Atleta'}:\n${p.texto || ''}`
+            : `🔄 Repost de ${p.nomeAtleta || 'Atleta'}:\n${p.texto || ''}`;
+
+        const repost = {
+            uid: user.uid,
+            nomeAtleta: nomeAtleta,
+            fotoPerfil: fotoPerfil,
+            texto: textoFinal,
+            midia: p.midia || null,
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('feed').add(repost);
+
+        // Fecha o modal de repost
+        const modal = document.getElementById('modal-repost-container');
+        if (modal) modal.remove();
+        
+        if (typeof carregarFeedDoBanco === 'function') {
+            await carregarFeedDoBanco();
+        }
+
+        const userAtivo = auth.currentUser;
+        if (window.abaAtivaBlog === 'perfil' && userAtivo && typeof carregarPerfilPublico === 'function') {
+            carregarPerfilPublico(window.perfilVisualizadoUid || userAtivo.uid);
+        }
+
+        if (typeof mostrarAviso === 'function') mostrarAviso("Post compartilhado no seu feed com sucesso!");
+    } catch (e) {
+        console.error("Erro ao compartilhar:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao compartilhar post.");
+    }
+}
+window.confirmarRepost = confirmarRepost;
+
 async function carregarNotificacoes() {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
