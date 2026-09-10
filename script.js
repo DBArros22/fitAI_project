@@ -3890,11 +3890,9 @@ function responderComentario(postId, nomeAutor) {
 window.responderComentario = responderComentario;
 
 function compartilharPost(postId) {
-    // Remove qualquer modal pré-existente no DOM
     const antigo = document.getElementById('modal-repost-container');
     if (antigo) antigo.remove();
 
-    // Cria o overlay cobrindo toda a tela com flexbox centralizado
     const modal = document.createElement('div');
     modal.id = 'modal-repost-container';
     modal.style.cssText = `
@@ -3914,7 +3912,6 @@ function compartilharPost(postId) {
         box-sizing: border-box !important;
     `;
 
-    // Caixa interna com o input de comentário e os botões
     modal.innerHTML = `
         <div class="glass-panel" style="background: var(--bg-card, #0f172a) !important; border: 1px solid rgba(255,255,255,0.15) !important; border-radius: 24px !important; padding: 24px !important; width: 100% !important; max-width: 420px !important; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.7) !important; display: flex !important; flex-direction: column !important; gap: 16px !important; box-sizing: border-box !important;">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
@@ -3923,18 +3920,17 @@ function compartilharPost(postId) {
             </div>
             
             <div style="display: flex; flex-direction: column; gap: 6px;">
-                <label style="color: #94a3b8; font-size: 11px; font-weight: bold; text-transform: uppercase;">Adicionar comentário (Opcional):</label>
+                <label style="color: #94a3b8; font-size: 11px; font-weight: bold; text-transform: uppercase;">Adicionar comentário:</label>
                 <textarea id="texto-comentario-repost" placeholder="Escreva algo sobre este treino..." style="width: 100%; height: 100px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; padding: 12px; color: white; font-family: inherit; font-size: 13px; resize: none; outline: none; box-sizing: border-box;"></textarea>
             </div>
             
             <div style="display: flex; gap: 10px; margin-top: 4px;">
                 <button onclick="document.getElementById('modal-repost-container').remove()" style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 12px; cursor: pointer;">CANCELAR</button>
-                <button onclick="executarConfirmacaoRepost('${postId}')" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">CONFIRMAR</button>
+                <button onclick="confirmarRepost('${postId}')" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; font-size: 12px; cursor: pointer; box-shadow: 0 4px 15px rgba(59,130,246,0.4);">REPOSTAR</button>
             </div>
         </div>
     `;
 
-    // Trava o scroll da tela e injeta no body centralizado
     document.body.appendChild(modal);
 }
 
