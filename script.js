@@ -3893,7 +3893,6 @@ function compartilharPost(postId) {
     const postCard = document.getElementById(`post-feed-${postId}`) || document.getElementById(`post-perfil-${postId}`);
     if (!postCard) return;
 
-    // Evita duplicar o painel de input se já estiver aberto
     if (document.getElementById(`repost-inline-box-${postId}`)) return;
 
     const caixaRepost = document.createElement('div');
