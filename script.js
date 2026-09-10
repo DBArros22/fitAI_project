@@ -4138,6 +4138,18 @@ async function carregarNotificacoes() {
 
 window.carregarNotificacoes = carregarNotificacoes;
 
+document.addEventListener('DOMContentLoaded', () => {
+    const btnNotificacao = document.getElementById('btn-notificacoes') || document.querySelector('.icone-notificacao');
+    if (btnNotificacao) {
+        btnNotificacao.addEventListener('click', (e) => {
+            e.preventDefault();
+            carregarNotificacoes();
+        });
+    }
+});
+
+
+
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
     if (!container) return;
