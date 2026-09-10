@@ -3911,6 +3911,60 @@ function compartilharPost(postId) {
 
 window.compartilharPost = compartilharPost;
 
+async function executarCompartilhamento(postId) {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const inputEl = document.getElementById(`input-texto-repost-${postId}`);
+    const textoComentario = inputEl ? inputEl.value.trim() : "";
+
+    const postOriginal = window.feedEvolucao ? window.feedEvolucao.find(p => p.id === postId) : null;
+    if (!postOriginal) return;
+
+    try {
+        const userDoc = await db.collection('usuarios').doc(user.uid).get();
+        const dados = userDoc.exists ? userDoc.data() : {};
+        const nomeAtleta = (dados.nome || dados.nomeCompleto || "ATLETA").trim().toUpperCase();
+        const fotoPerfil = dados.fotoPerfil || user.photoURL || null;
+
+        const novoRepost = {
+            uid: user.uid,
+            nomeAtleta: nomeAtleta,
+            fotoPerfil: fotoPerfil,
+            texto: textoComentario,
+            postOriginalId: postId,
+            conteudoOriginal: {
+                nomeAutor: postOriginal.nomeAtleta,
+                texto: postOriginal.texto || "",
+                midia: postOriginal.midia || null
+            },
+            criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('feed').add(novoRepost);
+        
+        // Notifica o autor original
+        if (postOriginal.uid && postOriginal.uid !== user.uid) {
+            await db.collection('usuarios').doc(postOriginal.uid).collection('notificacoes').add({
+                tipo: 'repost',
+                remetenteUid: user.uid,
+                remetenteNome: nomeAtleta,
+                remetenteFoto: fotoPerfil,
+                mensagem: 'compartilhou a sua publicação.',
+                linkId: postId,
+                criadoEm: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        if (typeof carregarFeedDoBanco === 'function') await carregarFeedDoBanco();
+        if (typeof mostrarAviso === 'function') mostrarAviso("Repost realizado com sucesso!");
+    } catch (e) {
+        console.error("Erro ao repostar:", e);
+        if (typeof mostrarAviso === 'function') mostrarAviso("Erro ao efetuar o repost.");
+    }
+}
+window.executarCompartilhamento = executarCompartilhamento;
+
 function abrirModalRepost(postId) {
     // Remove qualquer modal de repost anterior para evitar duplicações
     const antigo = document.getElementById('modal-repost-container');
