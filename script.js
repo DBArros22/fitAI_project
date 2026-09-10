@@ -3816,7 +3816,7 @@ async function comentarPost(postId) {
 
     const dadosLocais = JSON.parse(localStorage.getItem(`fitai_user_data_${currentUser.uid}`)) || {};
     const nomeAtleta = dadosLocais.nome || currentUser.displayName || currentUser.email.split('@')[0] || "Atleta";
-    const fotoPerfil = localStorage.getItem(`user_foto_${currentUser.uid}`) || localStorage.getItem('user_foto') || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+    const fotoPerfil = localStorage.getItem(`user_foto_${currentUser.uid}`) || localStorage.getItem('user_foto') || '';
 
     const novoComentario = {
         uid: currentUser.uid,
@@ -3864,10 +3864,12 @@ async function comentarPost(postId) {
             if (donoPostUid && donoPostUid !== currentUser.uid) {
                 await db.collection('usuarios').doc(donoPostUid).collection('notificacoes').add({
                     tipo: 'comentario',
+                    remetenteUid: currentUser.uid,
                     remetenteNome: nomeAtleta,
+                    remetenteFoto: fotoPerfil,
                     mensagem: 'comentou na sua publicação.',
                     linkId: postId,
-                    criadoEm: new Date().toISOString()
+                    criadoEm: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }
         }
