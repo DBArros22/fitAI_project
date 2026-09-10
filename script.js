@@ -3915,6 +3915,62 @@ async function compartilharPost(postId) {
 
 window.compartilharPost = compartilharPost;
 
+async function carregarNotificacoes() {
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+
+    try {
+        const snapshot = await db.collection('usuarios').doc(currentUser.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(30).get();
+        
+        let htmlNotificacoes = '';
+        if (snapshot.empty) {
+            htmlNotificacoes = `<p style="color: #64748b; text-align: center; font-size: 13px; padding: 20px;">Nenhuma notificação por enquanto.</p>`;
+        } else {
+            snapshot.forEach(doc => {
+                const n = doc.data();
+                const dataFormatada = n.criadoEm ? new Date(n.criadoEm).toLocaleDateString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+                
+                htmlNotificacoes += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); margin-bottom: 8px;">
+                        <div style="font-size: 12px; color: #cbd5e1;">
+                            <strong style="color: white;">${n.remetenteNome}</strong> ${n.mensagem}
+                        </div>
+                        <span style="font-size: 10px; color: #64748b;">${dataFormatada}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Abre um modal centralizado utilizando sua mesma estrutura padrão
+        const antigo = document.getElementById('modal-painel-notificacoes');
+        if (antigo) antigo.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'modal-painel-notificacoes';
+        modal.style = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; align-items: center;
+            justify-content: center; z-index: 10000; backdrop-filter: blur(6px); padding: 20px;
+        `;
+        
+        modal.innerHTML = `
+            <div class="glass-panel" style="width: 100%; max-width: 420px; padding: 25px; border: 1px solid #3b82f6; border-radius: 20px; background: #0f172a; box-shadow: 0 0 20px rgba(59,130,246,0.3); display: flex; flex-direction: column; max-height: 80vh;">
+                <h3 class="italic-bold" style="color: #3b82f6; margin-bottom: 15px; text-align: center; letter-spacing: 1px;">NOTIFICAÇÕES</h3>
+                <div style="overflow-y: auto; max-height: 50vh; margin-bottom: 15px; padding-right: 4px;">
+                    ${htmlNotificacoes}
+                </div>
+                <button onclick="document.getElementById('modal-painel-notificacoes').remove()" style="width: 100%; padding: 12px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer;">FECHAR</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+    } catch (err) {
+        console.error("Erro ao carregar notificações:", err);
+    }
+}
+
+window.carregarNotificacoes = carregarNotificacoes;
+
 async function carregarPerfilPublico(uidAlvo) {
     const container = document.getElementById('perfil-publico-container') || document.getElementById('blog-conteudo-dinamico');
     if (!container) return;
