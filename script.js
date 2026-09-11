@@ -3093,7 +3093,8 @@ async function carregarFeedDoBanco() {
 
     try {
         if (navigator.onLine && typeof db !== 'undefined') {
-            const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').limit(20).get();
+            // Otimizado de 20 para 10 itens iniciais para aliviar o DOM e acelerar o carregamento
+            const snapshot = await db.collection('feed').orderBy('criadoEm', 'desc').limit(10).get();
             
             window.feedEvolucao = [];
             snapshot.forEach(doc => {
@@ -3200,10 +3201,14 @@ async function carregarFeedDoBanco() {
         `;
     });
 
-    container.innerHTML = htmlPosts;
+    // Inserção em lote única no DOM para evitar repinturas excessivas da página
+    window.requestAnimationFrame(() => {
+        container.innerHTML = htmlPosts;
+    });
 }
 
 window.carregarFeedDoBanco = carregarFeedDoBanco;
+
 
 function renderizarConteudoAbaBlog() {
     const containerConteudo = document.getElementById('blog-conteudo-dinamico') || document.getElementById('conteudo-aba-blog');
