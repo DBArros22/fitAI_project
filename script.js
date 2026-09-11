@@ -1442,7 +1442,7 @@ async function concluirRedefinicaoSenha() {
     }
 }
 
-// --- 3. Pagina de criação de fichas de treinos com exercicios ---
+// --- PÁGINA CRIAR FICHAS COM TREINOS / EXERCICIOS ---
 
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
