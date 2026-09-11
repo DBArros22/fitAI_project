@@ -9,7 +9,7 @@ const firebaseConfig = {
   measurementId: "G-0V4XD960QL"
 };
 
-// 1. INICIALIZAÇÃO SEGURA DO FIREBASE
+// 1. inicialização segura do firebase
 if (typeof firebase !== 'undefined') {
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
