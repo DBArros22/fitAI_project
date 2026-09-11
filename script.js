@@ -4184,29 +4184,18 @@ document.addEventListener('click', function(event) {
     }
 });
 
-document.addEventListener('DOMContentLoaded', () => {
-    const btnNotificacao = document.getElementById('btn-notificacoes') || document.querySelector('.icone-notificacao');
-    if (btnNotificacao) {
-        btnNotificacao.addEventListener('click', (e) => {
-            e.preventDefault();
-            carregarNotificacoes();
-        });
+document.addEventListener('click', function(event) {
+    const btnNotif = event.target.closest('button[title="Notificações"], .btn-icone-platina');
+    if (!btnNotif) return;
+
+    if (btnNotif.querySelector('svg path[d*="M18 8A6 6 0 0 0 6 8"]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        carregarNotificacoes();
     }
 });
 
-
-// Função auxiliar de redirecionamento de perfil garantida caso ainda não tenha declarado
-function abrirPerfilDeNotificacao(uidUsuario) {
-    const modal = document.getElementById('modal-notificacoes-global');
-    if (modal) modal.remove();
-
-    if (uidUsuario && typeof mudarAbaBlog === 'function') {
-        mudarAbaBlog('perfil', uidUsuario);
-    }
-}
-
 window.abrirPerfilDeNotificacao = abrirPerfilDeNotificacao;
-
 
 
 function clicarNotificacao(tipo, linkId, remetenteUid) {
