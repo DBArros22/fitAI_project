@@ -26,7 +26,7 @@ if (typeof firebase !== 'undefined') {
 }
 
 // Atalhos globais sem redeclarar (const e let)
-window.bancoDeDados = JSON.parse(localStorage.getItem('bancoDeDados')) || { fichas: {} };
+
 var auth = window.auth;
 var db = window.db;
 
