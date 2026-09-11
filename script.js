@@ -1023,6 +1023,10 @@ function showView(viewId) {
 
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
+    } else if (cleanId === 'registro') {
+        if (typeof renderizarResumoFicha === 'function' && typeof fichaAtiva !== 'undefined') {
+            renderizarResumoFicha(fichaAtiva);
+        }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'blog' && typeof renderizarBlog === 'function') {
