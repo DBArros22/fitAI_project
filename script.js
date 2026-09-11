@@ -32,8 +32,8 @@ var db = window.db;
 
 // 2. VARIÁVEIS GLOBAIS DE ESTADO
 let usuarioAtualId = null;
-let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} }; 
-window.bancoDeDados = bancoDeDados; 
+let bancoDeDados = JSON.parse(localStorage.getItem('fitai_pro_data')) || { fichas: {} };
+window.bancoDeDados = bancoDeDados;
 let diasTreinados = [];
 let lembretes = [];
 let feedEvolucao = [];
