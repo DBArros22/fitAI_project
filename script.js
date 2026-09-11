@@ -4101,65 +4101,75 @@ async function confirmarRepost(postId) {
 }
 window.confirmarRepost = confirmarRepost;
 
-async function carregarNotificacoes() {
-    const user = auth.currentUser;
+function carregarNotificacoes() {
+    const user = typeof auth !== 'undefined' && auth.currentUser ? auth.currentUser : null;
     if (!user) return;
 
+    // 1. Remove modal anterior instantaneamente se existir
     const modalAntigo = document.getElementById('modal-notificacoes-global');
     if (modalAntigo) modalAntigo.remove();
 
+    // 2. Cria e exibe o esqueleto do modal de forma IMEDIATA (Síncrona)
     const modalEl = document.createElement('div');
     modalEl.id = 'modal-notificacoes-global';
     modalEl.style.cssText = "position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90%; max-width: 400px; max-height: 80vh !important; overflow-y: auto !important; background: #0b0f19; border: 1px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 16px; z-index: 10000; box-shadow: 0 20px 40px rgba(0,0,0,0.6);";
     modalEl.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
             <h3 style="color: white; font-size: 14px; margin: 0; font-weight: 800;">NOTIFICAÇÕES</h3>
-            <button type="button" onclick="document.getElementById('modal-notificacoes-global').remove()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ef4444; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; font-weight: bold; line-height: 1;">&times;</button>
+            <button type="button" id="btn-fechar-notif" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #ef4444; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; cursor: pointer; font-weight: bold; line-height: 1;">&times;</button>
         </div>
         <div id="lista-notificacoes-conteudo" style="max-height: 320px; overflow-y: auto;">
-            <p style="color: #64748b; text-align: center; font-size: 12px; padding: 20px;">Carregando...</p>
+            <p style="color: #64748b; text-align: center; font-size: 12px; padding: 20px;">Carregando notificações...</p>
         </div>
     `;
+    
+    // Força a inserção imediata no DOM para que o usuário veja o modal abrir na mesma hora
     document.body.appendChild(modalEl);
 
-    try {
-        const snapshot = await db.collection('usuarios').doc(user.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(20).get();
-        
-        let itensHtml = '';
-        snapshot.forEach(doc => {
-            const n = doc.data();
-            const foto = n.remetenteFoto || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
-            const linkId = n.linkId || '';
-            const remetenteUid = n.remetenteUid || '';
-            const tipo = n.tipo || '';
+    // 3. Vincula o evento de fechamento de forma síncrona e direta no botão recém-criado
+    document.getElementById('btn-fechar-notif').addEventListener('click', (e) => {
+        e.stopPropagation();
+        modalEl.remove();
+    });
 
-            itensHtml += `
-                <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
-                    <img src="${foto}" onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; cursor: pointer;">
-                    <div style="flex: 1; overflow: hidden;">
-                        <p style="color: white; font-size: 12px; margin: 0; line-height: 1.4;">
-                            <strong onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="color: #3b82f6; cursor: pointer; text-decoration: underline;">${n.remetenteNome || 'Atleta'}</strong> 
-                            <span ${linkId ? `onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')"` : ''} style="${linkId ? 'cursor: pointer;' : ''}">${n.mensagem}</span>
-                        </p>
+    // 4. Busca os dados no Firebase em background sem travar a interface
+    setTimeout(async () => {
+        try {
+            const snapshot = await db.collection('usuarios').doc(user.uid).collection('notificacoes').orderBy('criadoEm', 'desc').limit(15).get();
+            
+            let itensHtml = '';
+            snapshot.forEach(doc => {
+                const n = doc.data();
+                const foto = n.remetenteFoto || 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg';
+                const linkId = n.linkId || '';
+                const remetenteUid = n.remetenteUid || '';
+                const tipo = n.tipo || '';
+
+                itensHtml += `
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.04)'" onmouseout="this.style.background='transparent'">
+                        <img src="${foto}" onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; cursor: pointer;">
+                        <div style="flex: 1; overflow: hidden;">
+                            <p style="color: white; font-size: 12px; margin: 0; line-height: 1.4;">
+                                <strong onclick="abrirPerfilDeNotificacao('${remetenteUid}')" title="Ver perfil" style="color: #3b82f6; cursor: pointer; text-decoration: underline;">${n.remetenteNome || 'Atleta'}</strong> 
+                                <span ${linkId ? `onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')"` : ''} style="${linkId ? 'cursor: pointer;' : ''}">${n.mensagem}</span>
+                            </p>
+                        </div>
                     </div>
-                    ${linkId && tipo !== 'seguir' ? `
-                        <button type="button" onclick="clicarNotificacao('${tipo}', '${linkId}', '${remetenteUid}')" style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #3b82f6; padding: 4px 8px; border-radius: 6px; font-size: 10px; cursor: pointer; font-weight: bold; white-space: nowrap;">Ver Post</button>
-                    ` : ''}
-                </div>
-            `;
-        });
+                `;
+            });
 
-        const container = document.getElementById('lista-notificacoes-conteudo');
-        if (container) {
-            container.innerHTML = itensHtml || '<p style="color: #64748b; text-align: center; font-size: 12px; padding: 20px;">Nenhuma notificação recente.</p>';
+            const containerConteudo = document.getElementById('lista-notificacoes-conteudo');
+            if (containerConteudo) {
+                containerConteudo.innerHTML = itensHtml || '<p style="color: #64748b; text-align: center; font-size: 12px; padding: 20px;">Nenhuma notificação recente.</p>';
+            }
+        } catch (err) {
+            console.error("Erro ao buscar notificações:", err);
+            const containerConteudo = document.getElementById('lista-notificacoes-conteudo');
+            if (containerConteudo) {
+                containerConteudo.innerHTML = '<p style="color: #ef4444; text-align: center; font-size: 12px; padding: 20px;">Erro ao carregar notificações.</p>';
+            }
         }
-    } catch (err) {
-        console.error("Erro ao carregar notificações:", err);
-        const container = document.getElementById('lista-notificacoes-conteudo');
-        if (container) {
-            container.innerHTML = '<p style="color: #ef4444; text-align: center; font-size: 12px; padding: 20px;">Erro ao carregar.</p>';
-        }
-    }
+    }, 10);
 }
 
 window.carregarNotificacoes = carregarNotificacoes;
