@@ -25,19 +25,6 @@ if (typeof firebase !== 'undefined') {
     console.error("SDK do Firebase não foi encontrado! Verifique as tags <script> no index.html.");
 }
 
-// A função de máscara de tempo foi movida para fora do bloco de inicialização do Firebase:
-function aplicarMascaraTempo(e) {
-    let valor = e.target.value.replace(/\D/g, '');
-    if (valor.length > 6) {
-        valor = valor.slice(0, 6);
-    }
-    valor = valor.padStart(6, '0');
-    const horas = valor.slice(0, 2);
-    const minutos = valor.slice(2, 4);
-    const segundos = valor.slice(4, 6);
-    e.target.value = `${horas}:${minutos}:${segundos}`;
-}
-
 // Atalhos globais sem redeclarar (const e let)
 var auth = window.auth;
 var db = window.db;
