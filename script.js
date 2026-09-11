@@ -1652,10 +1652,15 @@ function formatarTempoParaExibicao(valor) {
 }
 
 function renderizarResumoFicha(nome) {
-    const container = document.getElementById('lista-exercicios-estaticos');
+    const container = document.getElementById('lista-treino'); // Corrigido para o ID correto do HTML
     if(!container) return;
     container.innerHTML = "";
     const exercicios = bancoDeDados.fichas[nome] || [];
+
+    if (exercicios.length === 0) {
+        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px; font-size: 13px;">Nenhum exercício cadastrado nesta ficha.</p>`;
+        return;
+    }
 
     exercicios.forEach(ex => {
         const infoExibicao = ex.tipo === 'tempo'
@@ -1678,6 +1683,54 @@ function renderizarResumoFicha(nome) {
                 </div>
             </div>`;
     });
+}
+
+
+function atualizarListaExercicios() {
+    const selectGrupo = document.getElementById('select-grupo-sub');
+    const selectExercicio = document.getElementById('select-exercicio');
+    const camposForca = document.getElementById('campos-forca');
+    const camposCardio = document.getElementById('campos-cardio');
+    
+    if (!selectGrupo || !selectExercicio) return;
+
+    const grupo = selectGrupo.value;
+    selectExercicio.innerHTML = '<option value="">Selecione o Exercício...</option>';
+
+    // Mapeamento dos exercícios baseados nas opções do seu HTML
+    const catalogoExercicios = {
+        "Peitoral": ["Supino Reto", "Supino Inclinado", "Crucifixo", "Flexão de Braço", "Cross Over"],
+        "Dorsais (Costas)": ["Puxada Alta", "Remada Curvada", "Remada Baixa", "Barra Fixa"],
+        "Trapézio": ["Encolhimento com Halteres", "Encolhimento na Barra"],
+        "Deltoides (Ombros)": ["Desenvolvimento", "Elevação Lateral", "Elevação Frontal"],
+        "Quadríceps": ["Agachamento Livre", "Leg Press 45", "Cadeira Extensora"],
+        "Posteriores de Coxa": ["Mesa Flexora", "Cadeira Flexora", "Stiff"],
+        "Glúteos": ["Elevação Pélvica", "Coice no Cabo", "Glúteo na Polia"],
+        "Bíceps/Braquial": ["Rosca Direta", "Rosca Alternada", "Rosca Martelo"],
+        "Tríceps Braquial": ["Tríceps Corda", "Tríceps Testa", "Paralelas"],
+        "Antebraço": ["Rosca Invertida", "Rosca de Punho"],
+        "Core/Abdominal": ["Abdominal Supra", "Abdominal Infra", "Prancha Abdominal"],
+        "Panturrilhas": ["Panturrilha em Pé", "Panturrilha Sentado"],
+        "Cardio & Aeróbico": ["Esteira", "Bicicleta Ergométrica", "Elíptico"]
+    };
+
+    if (catalogoExercicios[grupo]) {
+        catalogoExercicios[grupo].forEach(ex => {
+            selectExercicio.innerHTML += `<option value="${ex}">${ex}</option>`;
+        });
+    }
+
+    // Alterna a exibição entre os campos de Força e Cardio automaticamente
+    const isCardio = (grupo === "Cardio & Aeróbico");
+    if (camposForca && camposCardio) {
+        if (isCardio) {
+            camposForca.classList.add('hidden');
+            camposCardio.classList.remove('hidden');
+        } else {
+            camposForca.classList.remove('hidden');
+            camposCardio.classList.add('hidden');
+        }
+    }
 }
 
 async function excluirFicha(nome) {
