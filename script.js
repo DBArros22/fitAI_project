@@ -1652,15 +1652,10 @@ function formatarTempoParaExibicao(valor) {
 }
 
 function renderizarResumoFicha(nome) {
-    const container = document.getElementById('lista-treino'); // Corrigido para o ID correto do HTML
+    const container = document.getElementById('lista-exercicios-estaticos');
     if(!container) return;
     container.innerHTML = "";
     const exercicios = bancoDeDados.fichas[nome] || [];
-
-    if (exercicios.length === 0) {
-        container.innerHTML = `<p style="color: gray; text-align: center; margin-top: 20px; font-size: 13px;">Nenhum exercício cadastrado nesta ficha.</p>`;
-        return;
-    }
 
     exercicios.forEach(ex => {
         const infoExibicao = ex.tipo === 'tempo'
