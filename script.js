@@ -4195,8 +4195,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-window.abrirPerfilDeNotificacao = abrirPerfilDeNotificacao;
-
 
 function clicarNotificacao(tipo, linkId, remetenteUid) {
     const modal = document.getElementById('modal-notificacoes-global');
