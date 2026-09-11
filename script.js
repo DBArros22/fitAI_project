@@ -4186,6 +4186,8 @@ document.addEventListener('click', function(event) {
     }
 });
 
+
+
 function clicarNotificacao(tipo, linkId, remetenteUid) {
     const modal = document.getElementById('modal-notificacoes-global');
     if (modal) modal.remove();
