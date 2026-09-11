@@ -1494,6 +1494,45 @@ function renderizarFichas() {
     });
 }
 
+function inicializarSelectsExercicios() {
+    const selectGrupo = document.getElementById('select-grupo-sub');
+    const selectExercicio = document.getElementById('select-exercicio');
+    
+    if (!selectGrupo || !selectExercicio) return;
+
+    // Lista padrão de grupos e exercícios caso não venha pronta do banco
+    const exerciciosDisponiveis = {
+        "Peito": ["Supino Reto", "Supino Inclinado", "Crucifixo", "Flexão de Braço"],
+        "Costas": ["Puxada Alta", "Remada Curvada", "Remada Baixa", "Barra Fixa"],
+        "Pernas": ["Agachamento Livre", "Leg Press 45", "Cadeira Extensora", "Mesa Flexora"],
+        "Bíceps": ["Rosca Direta", "Rosca Alternada", "Rosca Martelo"],
+        "Tríceps": ["Tríceps Corda", "Tríceps Testa", "Paralelas"],
+        "Ombros": ["Desenvolvimento com Halteres", "Elevação Lateral", "Elevação Frontal"],
+        "Cardio & Aeróbico": ["Esteira", "Bicicleta Ergométrica", "Elíptico", "Pular Corda"]
+    };
+
+    // Preenche o select de grupos musculares
+    selectGrupo.innerHTML = '<option value="">Selecione o Grupo</option>';
+    Object.keys(exerciciosDisponiveis).forEach(grupo => {
+        selectGrupo.innerHTML += `<option value="${grupo}">${grupo}</option>`;
+    });
+
+    // Escuta a mudança no grupo para atualizar as opções do select de exercícios correspondente
+    selectGrupo.onchange = function() {
+        const grupoSelecionado = this.value;
+        selectExercicio.innerHTML = '<option value="">Selecione o Exercício</option>';
+        
+        if (exerciciosDisponiveis[grupoSelecionado]) {
+            exerciciosDisponiveis[grupoSelecionado].forEach(ex => {
+                selectExercicio.innerHTML += `<option value="${ex}">${ex}</option>`;
+            });
+        }
+    };
+}
+
+// Executa a função assim que o DOM estiver carregado ou quando a página de registro for aberta
+document.addEventListener('DOMContentLoaded', inicializarSelectsExercicios);
+
 async function criarNovaFicha() {
     solicitarNomeFichaCustom(async (nome) => {
         if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
