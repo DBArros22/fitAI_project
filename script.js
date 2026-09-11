@@ -1024,8 +1024,14 @@ function showView(viewId) {
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
-        if (typeof renderizarResumoFicha === 'function' && typeof fichaAtiva !== 'undefined') {
-            renderizarResumoFicha(fichaAtiva);
+        if (typeof window.fichaAtiva === 'undefined' || !window.fichaAtiva) {
+            window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+        }
+        
+        if (typeof renderizarResumoFicha === 'function') {
+            renderizarResumoFicha(window.fichaAtiva);
+        } else {
+            console.warn("renderizarResumoFicha não encontrada ao abrir o registro.");
         }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
