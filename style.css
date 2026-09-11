@@ -719,9 +719,12 @@ html {
     align-items: center !important;
     justify-content: center !important;
     box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.7); /* Garanta que o fundo escuro fique aqui */
+    z-index: 9998 !important;
 }
 
-.modal-overlay, .modal-container, .glass-modal {
+/* Apenas os containers internos recebem o posicionamento de centralização por transform */
+.modal-container, .glass-modal {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
