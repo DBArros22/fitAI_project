@@ -204,7 +204,7 @@ const dicionarioExercicios = {
 
 window.dicionarioExercicios = dicionarioExercicios;
 
-// 3. ESCUTA DE AUTENTICAÇÃO (Controla o acesso Login vs Lobby)
+// 3. Evento ouvinto de autenticação (Login x Lobby)
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Configuração das abas de Login e Cadastro
     const btnTabLogin = document.getElementById('btn-tab-login');
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// 4. Monitoramento seguro do Firebase Auth (Fica fora do DOMContentLoaded pois gerencia o estado do Firebase)
+// 4. monitoramento seguro do fire base em >>> Auth (ficando fora do DOMContentLoaded pois gerencia o estado do Firebase)
 if (typeof auth !== 'undefined' && auth) {
     auth.onAuthStateChanged(async (user) => {
         if (user) {
@@ -261,13 +261,6 @@ if (typeof auth !== 'undefined' && auth) {
             } catch (err) {
                 console.error("Erro ao carregar dados do atleta no login:", err);
             }
-            
-            // REMOVA OU COMENTE ESTAS LINHAS ABAIXO:
-            /*
-            if (typeof showView === 'function') {
-                showView('lobby');
-            }
-            */
         } else {
             window.usuarioAtualId = null;
             localStorage.removeItem('user_email_ativo');
@@ -309,18 +302,18 @@ window.alternarAbaAuth = window.toggleAuthTab;
 async function handleLogin(e) {
     if (e && e.preventDefault) e.preventDefault();
 
-    // 1. LIMPEZA IMEDIATA: Antes de tentar logar, garantimos que não haja cache residual
+    //  Limpeza de cache imediata
     localStorage.removeItem('bancoDeDados');
     localStorage.removeItem('perfil_usuario'); 
     
-    // Forçamos a limpeza visual da foto no DOM aqui também
+   
     const fotoPerfil = document.getElementById('foto-perfil-feed');
     if (fotoPerfil) fotoPerfil.src = ''; 
 
     const emailInput = document.getElementById('login-email');
     const passInput = document.getElementById('login-pass');
 
-    // ... (o restante do seu código segue igual) ...
+ 
     const email = emailInput.value.trim();
     const pass = passInput.value;
 
