@@ -1606,22 +1606,19 @@ function solicitarNomeFichaCustom(callback) {
 function abrirFicha(nome) {
     fichaAtivaNoMomento = nome;
     fichaAtiva = nome;
-    
-    // Salva a referência na memória sem forçar a troca de tela errada
-    localStorage.setItem('fichaAtiva', nome);
-    
-    // Retorna para a view original de consulta que funcionava
-    showView('consulta'); 
-    
+    showView('consulta'); // ou a view de detalhes/edição
     const titulo = document.getElementById('titulo-consulta');
     if(titulo) titulo.innerText = nome.toUpperCase();
-    
+    // CORREÇÃO: Garante que os exercícios salvos aparecem na hora que abre a ficha
     renderizarResumoFicha(nome);
-    
     if (typeof renderizarLogTreino === 'function') {
+
         renderizarLogTreino();
+
     }
-}
+} 
+
+
 
 
 function voltarParaFichas() {
