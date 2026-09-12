@@ -197,22 +197,21 @@
             <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVO SET</h3>
             
             <div class="form-group">
-                <select id="select-grupo-sub" onchange="atualizarListaExercicios()">
-                    <option value="">Selecione o Grupo...</option>
-                    <option value="Peitoral">Peitoral</option>
-                    <option value="Dorsais">Dorsais (Costas)</option>
-                    <option value="Trapézio">Trapézio</option>
-                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-                    <option value="Quadríceps">Quadríceps</option>
-                    <option value="Posteriores de Coxa">Posteriores de Coxa</option>
-                    <option value="Glúteos">Glúteos</option>
-                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-                    <option value="Tríceps Braquial">Tríceps Braquial</option>
-                    <option value="Antebraço">Antebraço</option>
-                    <option value="Core/Abdominal">Core/Abdominal</option>
-                    <option value="Panturrilhas">Panturrilhas</option>
-                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-                </select>
+  <select id="select-grupo-sub" onchange="atualizarListaExercicios()">    <option value="">Selecione o Grupo...</option>
+    <option value="Peitoral">Peitoral</option>
+    <option value="Dorsais">Dorsais (Costas)</option>
+    <option value="Trapézio">Trapézio</option>
+    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+    <option value="Quadríceps">Quadríceps</option>
+    <option value="Posteriores de Coxa">Posteriores de Coxa</option>
+    <option value="Glúteos">Glúteos</option>
+    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+    <option value="Tríceps Braquial">Tríceps Braquial</option>
+    <option value="Antebraço">Antebraço</option>
+    <option value="Core/Abdominal">Core/Abdominal</option>
+    <option value="Panturrilhas">Panturrilhas</option>
+    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+</select>
                  
                 <select id="select-exercicio" class="input-field"></select>
 
@@ -252,9 +251,112 @@
             <h2 class="italic-bold" style="font-size: 1rem; letter-spacing: 1px;">LOG DE PERFORMANCE</h2>
             <button onclick="limparTreino()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: 0.3s;">LIMPAR</button>
         </div>
-        <div id="lista-exercicios-registro" class="fade-in" style="max-height: 500px; overflow-y: auto;"></div>
+        <div id="lista-treino" class="fade-in" style="max-height: 500px; overflow-y: auto;">
+            </div>
     </section>
 </main>
+
+<main id="view-blog" class="hidden" style="padding: 20px 5%;">
+        <div class="glass-panel" style="max-width: 600px; margin: 0 auto;">
+            <h2 class="italic-bold" style="margin-bottom:20px;">NOVA ATUALIZAÇÃO</h2>
+            
+            <textarea id="texto-evolucao" class="input-field" placeholder="Como foi o treino de hoje?" style="height: 100px; margin-bottom:15px; resize: none;"></textarea>
+
+            <div style="display: flex; align-items: center; gap: 15px; margin-top: 15px;">
+                <button id="btn-mic" onclick="toggleGravacao()" class="btn-action">
+                    <svg id="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+                </button>
+                
+                <span id="timer-gravacao" class="hidden" style="color: var(--accent-blue); font-weight: bold; font-family: monospace;">00:00</span>
+                
+                <input type="file" id="input-media" accept="image/*,video/*" style="display:none" onchange="previewMidia(event)">
+                
+                <button onclick="document.getElementById('input-media').click()" class="btn-action">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                </button>
+                
+                <button onclick="postarEvolucao()" class="btn-primary" style="display: flex; align-items: center; gap: 8px;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+    </svg>
+    POSTAR
+</button>
+            <div id="preview-container" style="margin-top: 15px;"></div>
+            <hr style="margin: 25px 0; border: 0; border-top: 1px solid var(--border-color);">
+            <div id="feed-container"></div> </div>
+    </main>
+
+    <main id="view-calendario" class="hidden"></main>
+
+<div id="view-aparelho-ocupado" class="page-container hidden">
+    <div class="container-central">
+        <div style="width: 100%; display: flex; justify-content: flex-start; margin-bottom: 30px;">
+            <button onclick="showView('lobby')" class="btn-voltar-premium">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                VOLTAR
+            </button>
+        </div>
+
+        <h2 class="italic-bold uppercase blue-text" style="margin-bottom: 10px;">Plano B</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 40px;">Aparelho ocupado? Escolha uma alternativa.</p>
+        
+        <div class="glass-card-action">
+            <div class="input-group" style="margin-bottom: 25px; text-align: left;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">1. Grupo Muscular</label>
+                <select id="select-grupo-sub" onchange="carregarExerciciosSub()">
+                    <option value="">Selecione o Grupo...</option>
+                    <option value="Peitoral">Peitoral</option>
+                    <option value="Dorsais">Dorsais</option>
+                    <option value="Quadríceps">Quadríceps</option>
+                    <option value="Posteriores/Glúteos">Posteriores/Glúteos</option>
+                    <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                    <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                    <option value="Tríceps Braquial">Tríceps Braquial</option>
+                    <option value="Core/Abdominal">Core/Abdominal</option>
+                    <option value="Panturrilhas">Panturrilhas</option>
+                    <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="margin-bottom: 30px; text-align: left;">
+                <label style="display: block; margin-bottom: 12px; font-size: 0.7rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">2. Qual aparelho está ocupado?</label>
+                <select id="select-ex-ocupado">
+                    <option value="">Aguardando grupo...</option>
+                </select>
+            </div>
+
+            <button class="btn-sugerir-glow" onclick="gerarSugestao()">
+                <span>SUGERIR ALTERNATIVA</span>
+            </button>
+
+            <div id="resultado-sugestao" class="hidden" style="margin-top: 30px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <p class="label-res" style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 15px; font-weight: 800; text-transform: uppercase;">Troca Sugerida:</p>
+                <div class="sugestao-destaque">
+                    <span id="nome-sugestao">---</span>
+                </div>
+            </div>
+        </div>
+    </div> <div id="modal-aviso" class="modal-overlay hidden">
+        <div class="modal-confirm" style="max-width: 350px;">
+            <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+                <svg viewBox="0 0 24 24" width="32" height="32" stroke="var(--accent-blue)" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3 class="italic-bold blue-text uppercase" style="margin-bottom: 10px;">Atenção</h3>
+            <p id="texto-modal-aviso" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">
+                Selecione o grupo e o aparelho ocupado!
+            </p>
+            <button onclick="fecharModalAviso()" class="btn-primary" style="width: 100%; padding: 12px;">ENTENDI</button>
+        </div>
+    </div>
+</div> 
 
 <main id="view-blog" class="hidden" style="padding: 20px 5%;">
     <div class="glass-panel" style="max-width: 600px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
