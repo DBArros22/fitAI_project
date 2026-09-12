@@ -1606,18 +1606,24 @@ function solicitarNomeFichaCustom(callback) {
 function abrirFicha(nome) {
     fichaAtivaNoMomento = nome;
     fichaAtiva = nome;
-    showView('consulta'); // ou a view de detalhes/edição
+    
+    // Salva no localStorage para a view de registro não perder a referência
+    localStorage.setItem('fichaAtiva', nome);
+    
+    // Direciona para a view correta de registro onde estão os selects e o log
+    showView('registro'); 
     
     const titulo = document.getElementById('titulo-consulta');
     if(titulo) titulo.innerText = nome.toUpperCase();
     
-    // CORREÇÃO: Garante que os exercícios salvos aparecem na hora que abre a ficha
+    // Garante que os exercícios salvos aparecem na hora que abre a ficha
     renderizarResumoFicha(nome);
     
     if (typeof renderizarLogTreino === 'function') {
         renderizarLogTreino();
     }
 }
+
 
 function voltarParaFichas() {
     // Garante que a lista de treinos seja renderizada com os dados atualizados antes de exibir
