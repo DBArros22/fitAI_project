@@ -353,13 +353,15 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 #view-registro {
     display: grid;
-    grid-template-columns: 1fr; /* Responsivo para mobile */
+    grid-template-columns: 1fr;
     gap: 20px;
+    width: 100%;
 }
 
-@media (max-width: 768px) {
-    #view-registro.registro-container {
-        grid-template-columns: 1fr !important;
+@media (min-width: 768px) {
+    #view-registro {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
     }
 }
 
