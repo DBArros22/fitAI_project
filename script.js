@@ -994,6 +994,9 @@ function showView(viewId) {
         tela.style.gridTemplateColumns = '';
         tela.style.gap = '';
         tela.style.alignItems = '';
+        tela.style.justifyContent = '';
+        tela.style.maxWidth = '';
+        tela.style.margin = '';
     });
 
     let viewAlvo = document.getElementById(viewId) || 
@@ -1015,10 +1018,12 @@ function showView(viewId) {
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
-            // Força estritamente 3 colunas ignorando conflitos de CSS externo
-            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
-            viewAlvo.style.setProperty('gap', '20px', 'important');
-            viewAlvo.style.setProperty('align-items', 'stretch', 'important');
+            // Define exatamente 3 colunas, limita a largura para centralizar perfeitamente e distribui os itens
+            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, minmax(220px, 260px))', 'important');
+            viewAlvo.style.setProperty('justify-content', 'center', 'important');
+            viewAlvo.style.setProperty('gap', '25px', 'important');
+            viewAlvo.style.setProperty('max-width', '900px', 'important');
+            viewAlvo.style.setProperty('margin', '0 auto', 'important');
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
