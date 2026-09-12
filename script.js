@@ -1717,32 +1717,10 @@ if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
 
 
 function abrirFicha(nome) {
-
-fichaAtivaNoMomento = nome;
-
-fichaAtiva = nome;
-
-showView('consulta'); // ou a view de detalhes/edição
-
-
-const titulo = document.getElementById('titulo-consulta');
-
-if(titulo) titulo.innerText = nome.toUpperCase();
-
-
-// CORREÇÃO: Garante que os exercícios salvos aparecem na hora que abre a ficha
-
-renderizarResumoFicha(nome);
-
-
-if (typeof renderizarLogTreino === 'function') {
-
-renderizarLogTreino();
-
+    window.fichaAtiva = nome;
+    localStorage.setItem('fichaAtiva', nome);
+    showView('registro');
 }
-
-}
-
 
 
 function voltarParaFichas() {
