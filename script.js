@@ -1527,8 +1527,6 @@ container.innerHTML += `
 
 
 
-
-
 async function criarNovaFicha() {
 
 solicitarNomeFichaCustom(async (nome) => {
@@ -1885,7 +1883,38 @@ console.error("Ficha não encontrada para exclusão:", nome);
  }
 } 
 
+function confirmarAcaoOriginal(titulo, mensagem, callbackSim) {
+    const modalExistente = document.getElementById('modal-confirmacao-global');
+    if (modalExistente) modalExistente.remove();
 
+    const modal = document.createElement('div');
+    modal.id = 'modal-confirmacao-global';
+    modal.style = `
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 100000; padding: 20px;
+    `;
+
+    modal.innerHTML = `
+        <div class="glass-panel fade-in" style="max-width: 380px; width: 100%; padding: 30px; border: 1px solid rgba(239, 68, 68, 0.3); background: var(--bg-card); border-radius: 24px; text-align: center;">
+            <h3 class="italic-bold" style="color: white; margin-bottom: 10px; font-size: 1.1rem; text-transform: uppercase;">${titulo}</h3>
+            <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 25px;">${mensagem}</p>
+            <div style="display: flex; gap: 12px;">
+                <button id="btn-nao" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer;">CANCELAR</button>
+                <button id="btn-sim" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 12px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">EXCLUIR</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('btn-nao').onclick = () => modal.remove();
+    document.getElementById('btn-sim').onclick = () => {
+        modal.remove();
+        if (typeof callbackSim === 'function') callbackSim();
+    };
+}
 
 
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
