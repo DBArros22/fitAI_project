@@ -1720,23 +1720,38 @@ function abrirFicha(nome) {
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
     
-    // Oculta as outras views e exibe a de registro
-    document.querySelectorAll('main, section').forEach(el => el.classList.add('hidden'));
-    
-    const viewRegistro = document.getElementById('view-registro');
-    if (viewRegistro) {
-        viewRegistro.classList.remove('hidden');
-        viewRegistro.style.display = 'grid';
+    // Utiliza a função global showView para garantir que a view de registro abra corretamente com o display adequado
+    if (typeof showView === 'function') {
+        showView('view-registro');
+    } else {
+        // Fallback caso showView falhe
+        document.querySelectorAll('main, section, .page-container').forEach(el => {
+            el.classList.add('hidden');
+            el.style.display = 'none';
+        });
+        const viewRegistro = document.getElementById('view-registro');
+        if (viewRegistro) {
+            viewRegistro.classList.remove('hidden');
+            viewRegistro.style.display = 'grid';
+        }
     }
     
+    // Atualiza o título da ficha ativa na tela
     const titulo = document.getElementById('nome-ficha-ativa');
-    if (titulo) titulo.innerText = nome.toUpperCase();
+    if (titulo) {
+        titulo.innerText = nome.toUpperCase();
+    }
     
+    // Popula o select de grupos/exercícios ao abrir a ficha
+    if (typeof atualizarListaExercicios === 'function') {
+        atualizarListaExercicios();
+    }
+    
+    // Renderiza os exercícios salvos da ficha no log de performance
     if (typeof renderizarResumoFicha === 'function') {
         renderizarResumoFicha(nome);
     }
 }
-
 
 function voltarParaFichas() {
 
@@ -1788,47 +1803,49 @@ const partes = valor.split(':');
 if (partes.length === 3) {
 
 return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
-
 } else if (partes.length === 2) {
-
 return `${partes[0]}m ${partes[1]}s`;
-
 }
-
 return valor + "s";
-
 }
 
 
 
 function renderizarResumoFicha(nome) {
-    const container = document.getElementById('lista-exercicios-estaticos');
+    // Aponta para o ID correto existente no seu HTML da view-registro: 'lista-treino'
+    const container = document.getElementById('lista-treino') || document.getElementById('lista-exercicios-estaticos');
     if (!container) return;
+    
     container.innerHTML = "";
-    const exercicios = bancoDeDados.fichas[nome] || [];
+    const exercicios = bancoDeDados.fichas && bancoDeDados.fichas[nome] ? bancoDeDados.fichas[nome] : [];
+
+    if (exercicios.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+        return;
+    }
 
     exercicios.forEach(ex => {
         const infoExibicao = ex.tipo === 'tempo'
             ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
-            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || '-'}x${ex.reps || '-'} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
 
         container.innerHTML += `
-        <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
             <div style="flex: 1;">
                 <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
                 <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
             </div>
             <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
-                <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')">
+                <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')" title="Editar">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))">
+                <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))" title="Excluir">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
             </div>
         </div>`;
     });
-}
+} 
 
 
 
