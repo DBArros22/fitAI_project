@@ -363,22 +363,30 @@ body:has(#view-login:not(.hidden)) .navbar {
     transform: translateY(-3px) scale(1.1);
 }
 
+
+#app-shell, 
+#app-shell > main, 
+#app-shell > section,
+.page-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 /* --- REGISTRO CONTAINER --- */
 .registro-container {
+    width: 100% !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 30px !important;
-    padding: 30px 5% !important;
-    max-width: 1400px !important;
-    margin: 0 auto !important;
-    align-items: start !important;
-    width: 100% !important;
     box-sizing: border-box !important;
 }
 
 
  /* para nao comprimir o painel interno*/ 
- 
+
 .registro-container > aside,
 .registro-container > section.glass-panel {
     width: 100% !important;
@@ -388,8 +396,8 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 
 @media (max-width: 900px) {
-    .registro-container { 
-        grid-template-columns: 1fr !important; 
+    .registro-container {
+        grid-template-columns: 1fr !important;
     }
 }
 
