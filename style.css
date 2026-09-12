@@ -365,19 +365,31 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 /* --- REGISTRO CONTAINER --- */
 .registro-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    padding: 30px 5%;
-    max-width: 1400px;
-    margin: 0 auto;
-    align-items: start;
-    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 30px !important;
+    padding: 30px 5% !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    align-items: start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
+
+
+ /* para nao comprimir o painel interno*/ 
+ 
+.registro-container > aside,
+.registro-container > section.glass-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 
 @media (max-width: 900px) {
     .registro-container { 
-        grid-template-columns: 1fr; 
+        grid-template-columns: 1fr !important; 
     }
 }
 
