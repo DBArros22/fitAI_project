@@ -759,3 +759,17 @@ html {
     margin-bottom: 25px !important;
     display: block;
 }
+
+.header-treinos, .planilhas-header, div:has(> h2#meus-treinos), div:has(> h3) {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    margin-bottom: 25px !important;
+    box-sizing: border-box;
+}
+
+.btn-nova-ficha, button:has-text("NOVA") {
+    margin-left: auto;
+    flex-shrink: 0;
+}
