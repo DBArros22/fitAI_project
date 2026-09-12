@@ -991,6 +991,8 @@ function showView(viewId) {
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
         tela.classList.add('hidden');
         tela.style.display = 'none';
+        tela.style.gridTemplateColumns = '';
+        tela.style.gap = '';
     });
 
     let viewAlvo = document.getElementById(viewId) || 
@@ -1005,17 +1007,19 @@ function showView(viewId) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
         
-        if (viewAlvo.id === 'view-registro' || viewAlvo.id === 'registro') {
+        const targetId = viewAlvo.id;
+        if (targetId === 'view-registro' || targetId === 'registro') {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.gridTemplateColumns = '';
-        } else if (viewAlvo.id === 'view-crossfit-lobby' || viewAlvo.id === 'lobby' || cleanId === 'crossfit-lobby') {
+            viewAlvo.style.gap = '';
+        } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby') {
             viewAlvo.style.display = 'grid';
-            viewAlvo.style.gridTemplateColumns = ' repeat(auto-fit, minmax(280px, 1fr)) ';
+            viewAlvo.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
             viewAlvo.style.gap = '20px';
-        } else if (viewAlvo.id === 'view-planilhas' || viewAlvo.id === 'planilhas') {
+        } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
-            viewAlvo.style.display = viewAlvo.tagName.toLowerCase() === 'main' ? 'block' : 'block';
+            viewAlvo.style.display = 'block';
         }
     }
 
