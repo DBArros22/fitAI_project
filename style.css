@@ -107,6 +107,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: var(--shadow-pro);
 }
 
+
 .logo-main {
     font-size: 2.2rem; 
     font-weight: 900; 
