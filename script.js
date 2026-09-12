@@ -1003,11 +1003,18 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
-    // 3. Exibe a view correta removendo bloqueios e aplicando display flex/block
+    // 3. Exibe a view correta tratando especificamente o display para evitar compressão
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
-        viewAlvo.style.display = viewAlvo.tagName.toLowerCase() === 'main' ? 'grid' : 'block';
+        
+        if (viewAlvo.id === 'view-registro' || viewAlvo.id === 'registro') {
+            viewAlvo.style.display = 'grid';
+        } else if (viewAlvo.id === 'view-planilhas' || viewAlvo.id === 'planilhas') {
+            viewAlvo.style.display = 'block';
+        } else {
+            viewAlvo.style.display = viewAlvo.tagName.toLowerCase() === 'main' ? 'block' : 'block';
+        }
     }
 
     // 4. Gatilhos de renderização específicos
@@ -1018,7 +1025,6 @@ function showView(viewId) {
             window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
         }
         
-        // CORREÇÃO DO LOG: Garante que o container interno receba os dados corretamente
         const nomeFichaEl = document.getElementById('nome-ficha-ativa');
         if (nomeFichaEl && window.fichaAtiva) {
             nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
@@ -1026,6 +1032,10 @@ function showView(viewId) {
 
         if (typeof renderizarResumoFicha === 'function') {
             renderizarResumoFicha(window.fichaAtiva);
+        }
+
+        if (typeof atualizarListaExercicios === 'function') {
+            atualizarListaExercicios();
         }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
