@@ -1015,7 +1015,7 @@ function showView(viewId) {
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
-            viewAlvo.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))';
+            viewAlvo.style.gridTemplateColumns = 'repeat(3, 1fr)';
             viewAlvo.style.gap = '20px';
             viewAlvo.style.alignItems = 'stretch';
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
@@ -1056,6 +1056,7 @@ function showView(viewId) {
 }
 
 window.showView = showView;
+
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
