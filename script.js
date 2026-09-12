@@ -968,21 +968,17 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) {
-        viewId = 'view-crossfit-lobby';
-    }
+    if (!viewId) viewId = 'view-crossfit-lobby';
 
     const modalAvisoGlobal = document.getElementById('modal-aviso');
-    if (modalAvisoGlobal) {
-        modalAvisoGlobal.classList.add('hidden');
-    }
+    if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
 
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('section, main, .page-container').forEach(el => {
+        document.querySelectorAll('section, main:not(#view-login), .page-container').forEach(el => {
             if (el.id !== 'view-login') el.classList.add('hidden');
         });
         window.currentView = cleanId;
@@ -992,79 +988,54 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    document.querySelectorAll('section, main, .page-container').forEach(tela => {
-        if (tela.id && tela.id !== 'view-login') {
-            tela.classList.add('hidden');
-        }
+    // 1. Oculta apenas os containers de view, preservando o layout geral
+    document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
+        tela.classList.add('hidden');
+        tela.style.display = 'none'; // Força o encapsulamento visual
     });
 
-    let viewAlvo = document.getElementById(viewId) || document.getElementById(`view-${viewId}`);
-    
-    if (!viewAlvo) {
-        if (cleanId === 'perfil' || viewId === 'perfil') {
-            viewAlvo = document.getElementById('view-perfil') || document.getElementById('perfil');
-        } else if (cleanId === 'crossfit' || cleanId === 'crossfit-lobby' || viewId === 'crossfit-lobby') {
-            viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('crossfit-lobby') || document.getElementById('crossfit');
-        } else {
-            viewAlvo = document.getElementById(viewId) || 
-                       document.getElementById(`view-${cleanId}`) || 
-                       document.getElementById(cleanId) ||
-                       document.getElementById(`crossfit-${cleanId}`);
-        }
-    }
+    // 2. Resolve o alvo com precisão cirúrgica
+    let viewAlvo = document.getElementById(viewId) || 
+                   document.getElementById(`view-${cleanId}`) || 
+                   document.getElementById(cleanId);
 
     if (!viewAlvo) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
+    // 3. Exibe a view correta removendo bloqueios e aplicando display flex/block
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
-        viewAlvo.className = viewAlvo.className.replace('hidden', '').trim();
+        viewAlvo.style.display = viewAlvo.tagName.toLowerCase() === 'main' ? 'grid' : 'block';
     }
 
+    // 4. Gatilhos de renderização específicos
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
-        if (typeof window.fichaAtiva === 'undefined' || !window.fichaAtiva) {
+        if (!window.fichaAtiva) {
             window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
         }
         
+        // CORREÇÃO DO LOG: Garante que o container interno receba os dados corretamente
+        const nomeFichaEl = document.getElementById('nome-ficha-ativa');
+        if (nomeFichaEl && window.fichaAtiva) {
+            nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
+        }
+
         if (typeof renderizarResumoFicha === 'function') {
             renderizarResumoFicha(window.fichaAtiva);
-        } else {
-            console.warn("renderizarResumoFicha não encontrada ao abrir o registro.");
         }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
-    } else if (cleanId === 'blog' && typeof renderizarBlog === 'function') {
-        renderizarBlog();
-    } else if ((cleanId === 'consulta' || cleanId === 'consulta-geral') && typeof renderizarFichasConsulta === 'function') {
-        renderizarFichasConsulta();
-    } else if (cleanId === 'calendario' && typeof renderizarPaginaCronograma === 'function') {
-        renderizarPaginaCronograma();
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
-    } else if (cleanId.includes('crossfit')) {
-        if (cleanId === 'crossfit-record-hub' && typeof atualizarListaRecordsCF === 'function') {
-            atualizarListaRecordsCF();
-        } else if (cleanId === 'crossfit-benchmark-hub' && typeof atualizarListaBenchmarksCF === 'function') {
-            atualizarListaBenchmarksCF();
-        } else if (cleanId === 'crossfit-gymnastic' && typeof atualizarListaRecordsCF === 'function') {
-            atualizarListaRecordsCF('gymnastic');
-        } else if (cleanId === 'crossfit-endurance' && typeof atualizarListaRecordsCF === 'function') {
-            atualizarListaRecordsCF('endurance');
-        }
     }
 
     window.currentView = cleanId;
-    
-    setTimeout(() => {
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-        document.documentElement.scrollTop = 0;
-        document.body.scrollTop = 0;
-    }, 10);
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
 window.showView = showView;
@@ -1838,85 +1809,44 @@ return valor + "s";
 
 
 function renderizarResumoFicha(nome) {
+    const container = document.getElementById('lista-exercicios-estaticos');
+    if(!container) return;
+    container.innerHTML = "";
+    const exercicios = bancoDeDados.fichas[nome] || [];
 
-const container = document.getElementById('lista-exercicios-estaticos');
+    exercicios.forEach(ex => {
+        const infoExibicao = ex.tipo === 'tempo'
+            ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
 
-if(!container) return;
-
-container.innerHTML = "";
-
-const exercicios = bancoDeDados.fichas[nome] || [];
-
-
-
-exercicios.forEach(ex => {
-
-const infoExibicao = ex.tipo === 'tempo'
-
-? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
-
-: `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
-
-
-
-container.innerHTML += `
-
-<div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-
-<div style="flex: 1;">
-
-<h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
-
-<div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
-
-</div>
-
-<div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
-
-<button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')">
-
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-
-</button>
-
-<button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))">
-
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-
-</button>
-
-</div>
-
-</div>`;
-
-});
-
+        container.innerHTML += `
+        <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex: 1;">
+                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
+                <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
+            </div>
+            <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
+                <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>`;
+    });
 }
-
-
 
 async function excluirFicha(nome) {
-
 if (bancoDeDados.fichas && bancoDeDados.fichas[nome]) {
-
 delete bancoDeDados.fichas[nome];
-
 await salvarBanco();
-
-
 if (typeof renderizarFichas === 'function') renderizarFichas();
-
 if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-
-
 mostrarAviso("Ficha excluída com sucesso!");
-
 } else {
-
 console.error("Ficha não encontrada para exclusão:", nome);
-
-}
-
+ }
 } 
 
 
