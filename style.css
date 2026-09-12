@@ -357,8 +357,8 @@ body:has(#view-login:not(.hidden)) .navbar {
     gap: 20px;
 }
 
-@media (max-width: 900px) {
-    .registro-container {
+@media (max-width: 768px) {
+    #view-registro.registro-container {
         grid-template-columns: 1fr !important;
     }
 }
