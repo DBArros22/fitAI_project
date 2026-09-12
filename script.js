@@ -1604,19 +1604,26 @@ function solicitarNomeFichaCustom(callback) {
 }
 
 function abrirFicha(nome) {
+    if (!nome) return;
     fichaAtivaNoMomento = nome;
     fichaAtiva = nome;
-    showView('consulta'); // ou a view de detalhes/edição
-    const titulo = document.getElementById('titulo-consulta');
-    if(titulo) titulo.innerText = nome.toUpperCase();
-    // CORREÇÃO: Garante que os exercícios salvos aparecem na hora que abre a ficha
-    renderizarResumoFicha(nome);
-    if (typeof renderizarLogTreino === 'function') {
-
-        renderizarLogTreino();
-
+    try {
+        localStorage.setItem('fichaAtiva', nome);
+    } catch (e) {
+        console.warn("Não foi possível salvar no localStorage:", e);
     }
-} 
+    showView('consulta');
+    const titulo = document.getElementById('titulo-consulta');
+    if (titulo) {
+        titulo.innerText = nome.toUpperCase();
+    }
+    if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nome);
+    }
+    if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino();
+    }
+}
 
 
 
