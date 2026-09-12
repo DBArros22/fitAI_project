@@ -1018,11 +1018,11 @@ function showView(viewId) {
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
-            // Define exatamente 3 colunas, limita a largura para centralizar perfeitamente e distribui os itens
-            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, minmax(220px, 260px))', 'important');
+            // Alargados ligeiramente na horizontal (de 260px para 310px) mantendo as 3 colunas centralizadas
+            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, minmax(280px, 310px))', 'important');
             viewAlvo.style.setProperty('justify-content', 'center', 'important');
             viewAlvo.style.setProperty('gap', '25px', 'important');
-            viewAlvo.style.setProperty('max-width', '900px', 'important');
+            viewAlvo.style.setProperty('max-width', '1020px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
