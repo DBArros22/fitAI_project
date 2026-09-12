@@ -993,6 +993,7 @@ function showView(viewId) {
         tela.style.display = 'none';
         tela.style.gridTemplateColumns = '';
         tela.style.gap = '';
+        tela.style.alignItems = '';
     });
 
     let viewAlvo = document.getElementById(viewId) || 
@@ -1012,10 +1013,11 @@ function showView(viewId) {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
-        } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby') {
+        } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
-            viewAlvo.style.gridTemplateColumns = 'repeat(auto-fit, minmax(280px, 1fr))';
+            viewAlvo.style.gridTemplateColumns = 'repeat(auto-fit, minmax(260px, 1fr))';
             viewAlvo.style.gap = '20px';
+            viewAlvo.style.alignItems = 'stretch';
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
