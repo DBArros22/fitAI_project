@@ -1719,7 +1719,22 @@ if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
 function abrirFicha(nome) {
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
-    showView('registro');
+    
+    // Oculta as outras views e exibe a de registro
+    document.querySelectorAll('main, section').forEach(el => el.classList.add('hidden'));
+    
+    const viewRegistro = document.getElementById('view-registro');
+    if (viewRegistro) {
+        viewRegistro.classList.remove('hidden');
+        viewRegistro.style.display = 'grid';
+    }
+    
+    const titulo = document.getElementById('nome-ficha-ativa');
+    if (titulo) titulo.innerText = nome.toUpperCase();
+    
+    if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nome);
+    }
 }
 
 
