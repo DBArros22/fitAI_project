@@ -1495,6 +1495,7 @@ function renderizarFichas() {
     });
 }
 
+window.fichaAtiva = window.fichaAtiva || localStorage.getItem('fichaAtiva');
 
 async function criarNovaFicha() {
     solicitarNomeFichaCustom(async (nome) => {
