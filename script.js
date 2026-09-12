@@ -988,13 +988,11 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // 1. Oculta apenas os containers de view, preservando o layout geral
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
         tela.classList.add('hidden');
-        tela.style.display = 'none'; // Força o encapsulamento visual
+        tela.style.display = 'none';
     });
 
-    // 2. Resolve o alvo com precisão cirúrgica
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
@@ -1003,15 +1001,17 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
-    // 3. Exibe a view correta tratando especificamente o display para cada tela
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
         
         if (viewAlvo.id === 'view-registro' || viewAlvo.id === 'registro') {
             viewAlvo.style.display = 'grid';
+            viewAlvo.style.gridTemplateColumns = '';
         } else if (viewAlvo.id === 'view-crossfit-lobby' || viewAlvo.id === 'lobby' || cleanId === 'crossfit-lobby') {
             viewAlvo.style.display = 'grid';
+            viewAlvo.style.gridTemplateColumns = ' repeat(auto-fit, minmax(280px, 1fr)) ';
+            viewAlvo.style.gap = '20px';
         } else if (viewAlvo.id === 'view-planilhas' || viewAlvo.id === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
@@ -1019,7 +1019,6 @@ function showView(viewId) {
         }
     }
 
-    // 4. Gatilhos de renderização específicos
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
