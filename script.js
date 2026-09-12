@@ -1003,12 +1003,14 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
-    // 3. Exibe a view correta tratando especificamente o display para evitar compressão
+    // 3. Exibe a view correta tratando especificamente o display para cada tela
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
         
         if (viewAlvo.id === 'view-registro' || viewAlvo.id === 'registro') {
+            viewAlvo.style.display = 'grid';
+        } else if (viewAlvo.id === 'view-crossfit-lobby' || viewAlvo.id === 'lobby' || cleanId === 'crossfit-lobby') {
             viewAlvo.style.display = 'grid';
         } else if (viewAlvo.id === 'view-planilhas' || viewAlvo.id === 'planilhas') {
             viewAlvo.style.display = 'block';
@@ -1037,7 +1039,7 @@ function showView(viewId) {
         if (typeof atualizarListaExercicios === 'function') {
             atualizarListaExercicios();
         }
-    } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+    } else if ((cleanId === 'lobby' || cleanId === 'crossfit-lobby') && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
