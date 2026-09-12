@@ -1607,16 +1607,15 @@ function abrirFicha(nome) {
     fichaAtivaNoMomento = nome;
     fichaAtiva = nome;
     
-    // Salva no localStorage para a view de registro não perder a referência
+    // Salva a referência na memória sem forçar a troca de tela errada
     localStorage.setItem('fichaAtiva', nome);
     
-    // Direciona para a view correta de registro onde estão os selects e o log
-    showView('registro'); 
+    // Retorna para a view original de consulta que funcionava
+    showView('consulta'); 
     
     const titulo = document.getElementById('titulo-consulta');
     if(titulo) titulo.innerText = nome.toUpperCase();
     
-    // Garante que os exercícios salvos aparecem na hora que abre a ficha
     renderizarResumoFicha(nome);
     
     if (typeof renderizarLogTreino === 'function') {
