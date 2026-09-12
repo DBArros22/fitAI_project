@@ -1015,9 +1015,10 @@ function showView(viewId) {
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
-            viewAlvo.style.gridTemplateColumns = 'repeat(3, 1fr)';
-            viewAlvo.style.gap = '20px';
-            viewAlvo.style.alignItems = 'stretch';
+            // Força estritamente 3 colunas ignorando conflitos de CSS externo
+            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
+            viewAlvo.style.setProperty('gap', '20px', 'important');
+            viewAlvo.style.setProperty('align-items', 'stretch', 'important');
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
