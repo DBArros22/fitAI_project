@@ -351,6 +351,12 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-sizing: border-box !important;
 }
 
+#view-registro {
+    display: grid;
+    grid-template-columns: 1fr; /* Responsivo para mobile */
+    gap: 20px;
+}
+
 @media (max-width: 900px) {
     .registro-container {
         grid-template-columns: 1fr !important;
