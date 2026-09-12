@@ -1,19 +1,14 @@
 :root {
-    /* Tons de Fundo e Painéis */
     --bg-main: #020617;
     --bg-card: #0f172a;
     --bg-input: #1e293b;
-    /* Cores de Destaque e Ação */
     --accent-blue: #38bdf8;
     --accent-blue-hover: #0ea5e9;
     --accent-green: #10b981;
-    /* Tipografia e Bordas */
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --border-color: rgba(56, 189, 248, 0.15); 
-    /* Efeitos */
     --shadow-pro: 0 20px 50px rgba(0, 0, 0, 0.7);
-    /* Arte dos Ícones */
     --icon-bg: #020617;
     --icon-platinum: #f8fafc;
 }
@@ -34,35 +29,25 @@ body {
     min-height: 100vh;
     line-height: 1.5;
     overflow-x: hidden;
-    position: relative; /* Adicionado para garantir o contexto */
+    position: relative;
 }
 
-/* --- CLASSE UNIVERSAL HIDDEN (PRIORIDADE ABSOLUTA) --- */
 .hidden { 
     display: none !important; 
 }
-
-/* Adição para melhorar showView*/
 
 .page-container, #view-perfil {
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Garante que qualquer view ativa dentro do app-shell ocupe o espaço corretamente */
-#app-shell > *:not(.hidden) {
-    display: block;
-    flex: 1;
-}
-
-/* --- ESTRUTURA GERAL E GERENCIAMENTO DE VIEWS --- */
 #app-shell { 
     min-height: 100vh; 
     display: flex; 
     flex-direction: column; 
+    width: 100%;
 }
 
-/* --- TELA DE LOGIN/CADASTRO --- */
 #view-login {
     position: fixed;
     top: 0;
@@ -82,25 +67,16 @@ body {
     display: none !important;
 }
 
-/* Alerta para salvar alterações feita no perfil (pendentes) */
-
-.input-pendente {
-    border: 1px solid #f59e0b !important;
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
-}
-
 .input-pendente {
     border: 1px solid #f59e0b !important;
     background: rgba(245, 158, 11, 0.05) !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
 }
 
-/* Garante que o input, mesmo desabilitado, receba cliques */
 input:disabled {
     cursor: default;
 }
 
-
-/* Garante que nada do App apareça quando o login estiver ativo */
 #view-login:not(.hidden) ~ #app-shell,
 #view-login:not(.hidden) ~ .navbar,
 body:has(#view-login:not(.hidden)) #app-shell,
@@ -108,7 +84,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
-/* --- NAVBAR PREMIUM --- */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -142,7 +117,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     text-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
 }
 
-/* --- TAB SYSTEM (SLIDING ANIMADO) --- */
 .tab-system {
     display: flex; 
     background: #020617; 
@@ -190,7 +164,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     color: #020617 !important; 
 }
 
-/* --- INPUTS E SELECTS --- */
 .form-group { 
     display: flex; 
     flex-direction: column; 
@@ -215,7 +188,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 }
 
-/* --- SAGUÃO / LOBBY (CARDS EM GRID HORIZONTAL) --- */
 .content-grid {
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -225,7 +197,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     margin: 0 auto;
 }
 
-/* CROSSFIT GRID ISOLADO */
 .crossfit-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -290,7 +261,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     color: var(--bg-main);
 }
 
-/* --- BOTÕES --- */
 .btn-primary {
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
     color: #020617; 
@@ -318,7 +288,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3); 
 }
 
-/* --- LISTAGEM E AÇÕES --- */
 .treino-item, .ficha-item {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
@@ -363,17 +332,7 @@ body:has(#view-login:not(.hidden)) .navbar {
     transform: translateY(-3px) scale(1.1);
 }
 
-
-#app-shell, 
-#app-shell > main, 
-#app-shell > section,
-.page-container {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-/* --- REGISTRO CONTAINER --- */
+/* --- CORREÇÃO DEFINITIVA DO CONTAINER DE REGISTRO --- */
 .registro-container {
     width: 100% !important;
     max-width: 1400px !important;
@@ -381,11 +340,9 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 30px !important;
+    padding: 30px 5% !important;
     box-sizing: border-box !important;
 }
-
-
- /* para nao comprimir o painel interno*/ 
 
 .registro-container > aside,
 .registro-container > section.glass-panel {
@@ -394,14 +351,12 @@ body:has(#view-login:not(.hidden)) .navbar {
     box-sizing: border-box !important;
 }
 
-
 @media (max-width: 900px) {
     .registro-container {
         grid-template-columns: 1fr !important;
     }
 }
 
-/* --- PLANO B --- */
 #view-aparelho-ocupado {
     justify-content: center;
     align-items: center;
@@ -457,7 +412,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     width: 100%;
 }
 
-/* --- MODAIS E UTILIDADES --- */
 .modal-overlay {
     position: fixed !important; 
     top: 0 !important; 
@@ -469,9 +423,9 @@ body:has(#view-login:not(.hidden)) .navbar {
     display: flex !important; 
     align-items: center !important; 
     justify-content: center !important;
-    z-index: 999999 !important; /* Prioridade máxima */
+    z-index: 999999 !important;
     padding: 20px !important;
-    overflow: hidden !important; /* Impede rolagem na página principal */
+    overflow: hidden !important;
 }
 
 .modal-confirm {
@@ -482,8 +436,8 @@ body:has(#view-login:not(.hidden)) .navbar {
     text-align: center;
     width: 100%;
     max-width: 400px;
-    max-height: 90vh; /* Não deixa estourar a tela */
-    overflow-y: auto; /* Permite scroll apenas dentro do modal se necessário */
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0 0 50px rgba(0,0,0,0.5);
 }
 
@@ -491,7 +445,6 @@ body:has(#view-login:not(.hidden)) .navbar {
 .blue-text { color: var(--accent-blue) !important; }
 .uppercase { text-transform: uppercase; }
 
-/* --- TOAST DE NOTIFICAÇÃO --- */
 #toast-notificacao {
     position: fixed;
     top: 30px;
@@ -525,7 +478,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     border-left: 4px solid #ef4444; 
 }
 
-/* --- BOTÕES ESPECIAIS --- */
 .btn-logout-nav {
     background: rgba(239, 68, 68, 0.1); 
     color: #ef4444; 
@@ -549,10 +501,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     border-color: #ef4444;
 }
 
-.btn-logout-nav:active {
-    transform: scale(0.95);
-}
-
 .btn-recuperar-senha {
     background: transparent;
     color: var(--text-secondary);
@@ -571,11 +519,6 @@ body:has(#view-login:not(.hidden)) .navbar {
 .btn-recuperar-senha:hover {
     color: var(--accent-blue);
     background: rgba(56, 189, 248, 0.1); 
-    text-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
-}
-
-.btn-recuperar-senha:active {
-    transform: scale(0.95);
 }
 
 .btn-voltar-premium {
@@ -598,11 +541,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     color: var(--accent-blue);
     border-color: var(--accent-blue);
     background: rgba(56, 189, 248, 0.1);
-    transform: translateX(-3px);
-}
-
-.btn-voltar-premium svg {
-    stroke: currentColor; 
 }
 
 @keyframes fadeIn {
@@ -627,129 +565,27 @@ body:has(#view-login:not(.hidden)) .navbar {
     transform: scale(1.05);
 }
 
-/* Estilos de input atenuado do perfil */
 .input-perfil-muted {
     background: rgba(255, 255, 255, 0.03) !important;
     border: 1px solid rgba(255, 255, 255, 0.06) !important;
     color: #94a3b8 !important;
-    transition: all 0.25s ease-in-out !important;
 }
+
 .input-perfil-muted:focus {
     background: rgba(15, 23, 42, 0.6) !important;
     border-color: var(--accent-blue) !important;
     color: #ffffff !important;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
 }
 
-/* --- RESPONSIVIDADE GERAL E CROSSFIT --- */
-
 @media (max-width: 600px) {
-    /* Centraliza e aperta as margens dos containers principais para aproveitar a tela do celular */
     #crossfit-record-hub .container-central,
     #crossfit-benchmark-hub .container-central {
         padding: 10px 12px !important;
         max-width: 100% !important;
         width: 100% !important;
-        box-sizing: border-box;
     }
-
-    /* Reduz o painel de inputs (glass-panel) para não ocupar a tela inteira desnecessariamente */
-    #crossfit-record-hub .glass-panel,
-    #crossfit-benchmark-hub .glass-panel {
-        padding: 16px 12px !important;
-        border-radius: 18px !important;
-        margin-bottom: 16px !important;
-        background: rgba(255, 255, 255, 0.04) !important;
-    }
-
-    /* Agrupa os inputs menores lado a lado de forma inteligente no mobile */
-    #crossfit-record-hub .glass-panel div[style*="display: flex; gap: 8px;"],
-    #crossfit-benchmark-hub .glass-panel div[style*="display: flex; gap: 8px;"] {
-        flex-direction: column !important;
-        gap: 10px !important;
-    }
-
-    /* Deixa os campos de input, select e botões com excelente ergonomia para toque no celular */
-    #crossfit-record-hub .input-field,
-    #crossfit-benchmark-hub .input-field {
-        font-size: 0.9rem !important;
-        padding: 12px 14px !important;
-        border-radius: 12px !important;
-    }
-
-    #crossfit-record-hub button.btn-primary,
-    #crossfit-benchmark-hub button.btn-primary {
-        padding: 14px !important;
-        font-size: 0.85rem !important;
-        border-radius: 12px !important;
-    }
-
-    /* Organiza os cards da listagem gerada (ranking/histórico) */
-    #lista-cf-records,
-    #lista-cf-benchmarks {
-        gap: 8px !important;
-        padding-bottom: 30px;
-    }
-}
-
-/* Regras de ajuste */ 
-
-#app-shell > main:not(.hidden),
-#app-shell > div:not(.hidden),
-#app-shell > section:not(.hidden) {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    width: 100% !important;
-    min-height: 100vh !important;
-}
-
-
-.page-container.hidden,
-#view-perfil.hidden {
-    display: none !important;
-}
-
-/* Força a exibição correta quando o hidden é removido pelo JavaScript */
-.page-container:not(.hidden),
-#view-perfil:not(.hidden) {
-    display: block !important;
-    width: 100%;
-    box-sizing: border-box;
 }
 
 html {
     overflow-y: scroll;
-}
-
-/* Garante centralização absoluta e resiliência a re-fluxos para todas as views e modais */
-.page-container, 
-#view-aparelho-ocupado, 
-#view-crossfit-lobby {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-sizing: border-box;
-}
-
-.modal-overlay {
-    position: fixed !important;
-    inset: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box;
-    background: rgba(0, 0, 0, 0.7); /* Garanta que o fundo escuro fique aqui */
-    z-index: 9998 !important;
-}
-
-/* Apenas os containers internos recebem o posicionamento de centralização por transform */
-.modal-container, .glass-modal {
-    position: fixed !important;
-    top: 50% !important;
-    left: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    max-height: 85vh !important;
-    overflow-y: auto !important;
-    z-index: 9999 !important;
 }
