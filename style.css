@@ -733,3 +733,29 @@ html {
     overflow-y: auto !important;
     z-index: 9999 !important;
 }
+
+#view-registro {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    width: 100% !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#view-registro.hidden {
+    display: none !important;
+}
+
+#view-registro .glass-panel, 
+#view-registro aside {
+    width: 100% !important;
+    box-sizing: border-box;
+}
+
+#view-registro h3#nome-ficha-ativa {
+    margin-bottom: 25px !important;
+    display: block;
+}
