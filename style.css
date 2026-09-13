@@ -625,6 +625,7 @@ html {
     overflow-y: scroll;
 }
 
+ /* ajute exclusivo nos cards de treinos na pagina consulta-geral */
 #lista-nomes-treinos {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
