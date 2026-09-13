@@ -1753,7 +1753,7 @@ function confirmarAcaoOriginal(titulo, mensagem, callbackSim) {
 
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
 
-// Inicio das functions da pagina de consulta treinos 
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx pagina de consulta treinos xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarFichasConsulta() {
     const containerLista = document.getElementById('lista-nomes-treinos');

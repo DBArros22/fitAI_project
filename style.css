@@ -324,7 +324,7 @@ body:has(#view-login:not(.hidden)) .navbar {
 .ficha-item {
     background: var(--bg-card);
     border-radius: 20px;
-    padding: 20px;
+    padding: 12px 18px;
     border: 1px solid var(--border-color);
     margin-bottom: 12px;
     display: flex;
