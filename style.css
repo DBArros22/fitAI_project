@@ -227,17 +227,16 @@ body:has(#view-login:not(.hidden)) .navbar {
 /* CROSSFIT GRID ISOLADO */
 .crossfit-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(280px, 1fr)) !important;
+    grid-template-columns: repeat(2, 280px) !important;
     gap: 24px !important;
-    max-width: 700px !important;
+    width: fit-content !important;
     margin: 0 auto !important;
-    width: 100% !important;
     justify-content: center !important;
     justify-items: center !important;
 }
 
 .crossfit-grid .menu-card {
-    width: 100% !important;
+    width: 280px !important;
     min-height: 220px !important;
 }
 
