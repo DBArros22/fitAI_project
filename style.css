@@ -316,7 +316,19 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 /* --- LISTAGEM E AÇÕES --- */
-.treino-item, .ficha-item {
+.ficha-item {
+    background: var(--bg-card);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.3s ease;
+}
+
+.treino-item {
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 18px;
@@ -326,12 +338,6 @@ body:has(#view-login:not(.hidden)) .navbar {
     justify-content: space-between;
     align-items: center;
     transition: 0.3s ease;
-}
-
-.ficha-item {
-    background: var(--bg-card);
-    border-radius: 20px;
-    padding: 20px;
 }
 
 .treino-item:hover, .ficha-item:hover {
