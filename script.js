@@ -2625,7 +2625,9 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// Fim da pagina cronograma
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+
 function renderizarLogTreino() {
     const container = document.getElementById('lista-treino');
     const ativa = fichaAtivaNoMomento || fichaAtiva;
