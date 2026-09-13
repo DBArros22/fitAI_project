@@ -2334,14 +2334,14 @@ function gerarCalendario() {
     const calContainer = document.getElementById('calendario-semanal');
     if (!calContainer) return;
 
-    const diasSemana = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
+    const diasSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
     calContainer.innerHTML = "";
 
     for (let i = 0; i < 7; i++) {
         const registro = diasTreinados.find(d => d.dia === i);
         const letraTreino = registro ? registro.treino : ""; 
         
-        let estiloAtivo = "border: 1.5px solid var(--border-color, rgba(255,255,255,0.1)); background: var(--bg-input, rgba(0,0,0,0.2)); color: var(--accent-blue, #3b82f6);";
+        let estiloAtivo = "border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #3b82f6;";
         if (registro) {
             if (registro.treino === "★") {
                 estiloAtivo = "border: 2px solid #eab308; background: rgba(234,179,8,0.15); color: #facc15;";
