@@ -648,3 +648,40 @@ html {
     justify-content: space-between !important;
     box-sizing: border-box !important;
 }
+
+/* renderização forçada */ 
+
+#view-crossfit-lobby.page-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#view-crossfit-lobby .container-central {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 650px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Centraliza perfeitamente a grade de cards */
+.crossfit-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 280px) !important;
+    gap: 20px !important;
+    justify-content: center !important;
+    justify-items: center !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+}
+
+.crossfit-grid .menu-card {
+    width: 280px !important;
+    min-height: 200px !important;
+    box-sizing: border-box !important;
+}
