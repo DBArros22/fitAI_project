@@ -685,3 +685,14 @@ html {
     min-height: 200px !important;
     box-sizing: border-box !important;
 }
+
+.page-container.hidden, 
+main.hidden {
+    display: none !important;
+}
+
+/*  exibir pagina corretamente no formato */
+.page-container:not(.hidden), 
+main:not(.hidden) {
+    display: block !important;
+}
