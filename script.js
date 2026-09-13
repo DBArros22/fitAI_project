@@ -2334,14 +2334,14 @@ function gerarCalendario() {
     const calContainer = document.getElementById('calendario-semanal');
     if (!calContainer) return;
 
-    const diasSemana = ["D", "S", "T", "Q", "Q", "S", "S"];
+    const diasSemana = ["SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM"];
     calContainer.innerHTML = "";
 
     for (let i = 0; i < 7; i++) {
         const registro = diasTreinados.find(d => d.dia === i);
         const letraTreino = registro ? registro.treino : ""; 
         
-        let estiloAtivo = "border: 1px solid rgba(255,255,255,0.1);";
+        let estiloAtivo = "border: 1.5px solid var(--border-color); background: var(--bg-input); color: var(--accent-blue);";
         if (registro) {
             if (registro.treino === "★") {
                 estiloAtivo = "border: 2px solid #eab308; background: rgba(234,179,8,0.15); color: #facc15;";
@@ -2351,11 +2351,9 @@ function gerarCalendario() {
         }
 
         calContainer.innerHTML += `
-            <div onclick="alternarTreinoDia(${i})" style="cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px;">
-                <span style="font-size: 10px; color: gray; font-weight: bold;">${diasSemana[i]}</span>
-                <div id="dia-${i}" style="width: 40px; height: 40px; ${estiloAtivo} border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; transition: all 0.2s;">
-                    ${letraTreino}
-                </div>
+            <div class="treino-item cronograma-dia-card" onclick="alternarTreinoDia(${i})" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none; ${estiloAtivo}">
+                <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">${diasSemana[i]}</span>
+                <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900;">${letraTreino}</span>
             </div>
         `;
     }

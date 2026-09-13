@@ -338,50 +338,46 @@
             </button>
         </div>
 
-        <div style="margin-bottom: 30px;">
-            <label style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 15px;">Divisão Semanal (Clique para alterar)</label>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 10px;" id="cronograma-dias-container">
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">SEG</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">A</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">TER</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">B</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">QUA</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">C</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">QUI</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">D</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">SEX</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">E</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">SÁB</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">F</span>
-                </div>
-                <div class="treino-item cronograma-dia-card" onclick="ciclarSiglaCronograma(this)" style="flex-direction: column; text-align: center; gap: 6px; padding: 12px; cursor: pointer; user-select: none;">
-                    <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-secondary);">DOM</span>
-                    <span class="sigla-valor" style="font-size: 1.2rem; font-weight: 900; color: var(--accent-blue);">★</span>
-                </div>
+        <!-- PAINEL DO TEMPORIZADOR INTEGRADO -->
+        <div style="background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid rgba(59,130,246,0.3); margin-bottom: 25px;">
+            <div id="display-timer" style="font-size: 2.8rem; color: white; font-weight: 900; font-family: 'Courier New', monospace; text-shadow: 0 0 15px rgba(59,130,246,0.5);">00:00:00<span style="font-size: 1.5rem; color: #3b82f6;">.00</span></div>
+            
+            <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+                <button onclick="setTimerMode(false)" id="btn-modo-livre" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: #3b82f6; color: white; cursor: pointer; font-weight: bold;">LIVRE</button>
+                <button onclick="setTimerMode(true)" id="btn-modo-timer" style="font-size: 10px; padding: 5px 12px; border-radius: 20px; border: 1px solid #3b82f6; background: transparent; color: #3b82f6; cursor: pointer; font-weight: bold;">TIMER</button>
             </div>
-            <small style="color: var(--text-secondary); font-size: 0.7rem; display: block; text-align: center; margin-top: 10px;">Clique nos cards para alternar entre A, B, C, D, E, F, G e a Estrela (★).</small>
+
+            <div id="timer-input-container" class="hidden" style="margin-bottom: 15px;">
+                <p style="color: gray; font-size: 10px; margin-bottom: 5px;">DEFINIR TEMPO (HORAS:MIN:SEG)</p>
+                <input type="time" id="input-timer-native" step="1" value="00:00:00" 
+                    style="background: #0f172a; border: 1px solid #3b82f6; color: white; padding: 10px; border-radius: 10px; text-align: center; outline: none; font-family: monospace; font-size: 1.2rem; width: 100%; max-width: 200px;">
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btn-timer-toggle" onclick="toggleTimer()" style="background: #3b82f6; border: none; color: white; padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; flex: 2;">INICIAR</button>
+                <button onclick="resetTimer()" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 12px; border-radius: 12px; cursor: pointer; flex: 1;">ZERAR</button>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <label style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">Divisão Semanal (Clique para alterar)</label>
+                <button onclick="limparFrequencia()" style="background: rgba(239, 68, 68, 0.1); border: none; color: #ef4444; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-weight: bold;">LIMPAR SEMANA</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px;" id="calendario-semanal"></div>
+            <small style="color: var(--text-secondary); font-size: 0.7strrem; display: block; text-align: center; margin-top: 10px;">Alterna entre A, B, C, D, E, F, G e a Estrela (★).</small>
         </div>
 
         <div style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 25px;">
             <label style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 15px;">Lembretes e Notas</label>
             
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <input type="text" id="input-novo-lembrete" placeholder="Digite um lembrete rápido..." class="input-field" style="flex: 1;" onkeypress="if(event.key === 'Enter') adicionarLembreteCronograma()">
-                <button onclick="adicionarLembreteCronograma()" class="btn-primary" style="width: auto; padding: 0 20px;">ADICIONAR</button>
+                <input type="text" id="input-lembrete" placeholder="Registrar observação..." class="input-field" style="flex: 1;" onkeypress="if(event.key === 'Enter') adicionarLembrete()">
+                <button onclick="adicionarLembrete()" class="btn-primary" style="width: auto; padding: 0 20px;">+</button>
             </div>
 
-            <div id="lista-lembretes-cronograma" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;"></div>
+            <div id="lista-lembretes" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;"></div>
         </div>
 
     </div>
