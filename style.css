@@ -38,7 +38,7 @@ body {
 }
 
 /* --- CLASSE UNIVERSAL HIDDEN (PRIORIDADE ABSOLUTA) --- */
-.hidden {
+.hidden, [hidden] {
     display: none !important;
 }
 
