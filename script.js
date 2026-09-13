@@ -1452,301 +1452,138 @@ async function concluirRedefinicaoSenha() {
 // --- PÁGINA CRIAR FICHAS COM TREINOS / EXERCICIOS ---
 
 function renderizarFichas() {
-
-const container = document.getElementById('lista-fichas');
-
-if (!container) return;
-
-
-container.innerHTML = `
-
-<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-
-<button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-
-← VOLTAR
-
-</button>
-
-</div>
-
-`;
-
-
-
-if (!bancoDeDados || !bancoDeDados.fichas) {
-
-bancoDeDados = { fichas: {} };
-
+    const container = document.getElementById('lista-fichas');
+    if (!container) return;
+    container.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+    <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
+    ← VOLTAR
+    </button>
+    </div>
+    `;
+    if (!bancoDeDados || !bancoDeDados.fichas) {
+        bancoDeDados = { fichas: {} };
+    }
+    const keys = Object.keys(bancoDeDados.fichas);
+    if (keys.length === 0) {
+        container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
+        return;
+    }
+    keys.forEach(nome => {
+        const exerciciosDaFicha = bancoDeDados.fichas[nome];
+        const totalExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
+        container.innerHTML += `
+        <div class="ficha-item" onclick="abrirFicha('${nome}')" style="cursor: pointer;">
+        <div class="treino-info">
+        <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
+        <p style="font-size:10px; color:gray;">${totalExercicios} Exercícios</p>
+        </div>
+        <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+        </div>`;
+    });
 }
-
-
-
-const keys = Object.keys(bancoDeDados.fichas);
-
-if (keys.length === 0) {
-
-container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
-
-return;
-
-}
-
-
-
-keys.forEach(nome => {
-
-const exerciciosDaFicha = bancoDeDados.fichas[nome];
-
-const totalExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
-
-
-container.innerHTML += `
-
-<div class="ficha-item" onclick="abrirFicha('${nome}')" style="cursor: pointer;">
-
-<div class="treino-info">
-
-<h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
-
-<p style="font-size:10px; color:gray;">${totalExercicios} Exercícios</p>
-
-</div>
-
-<button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
-
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-
-</button>
-
-</div>`;
-
-});
-
-}
-
-
 
 async function criarNovaFicha() {
-
-solicitarNomeFichaCustom(async (nome) => {
-
-if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
-
-
-
-if (nome && !bancoDeDados.fichas[nome]) {
-
-bancoDeDados.fichas[nome] = [];
-
-
-await salvarBanco();
-
-
-if (typeof renderizarFichas === 'function') renderizarFichas();
-
-if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-
-
-
-mostrarAviso(`Treino ${nome} criado com sucesso!`);
-
-} else if (bancoDeDados.fichas[nome]) {
-
-mostrarAviso("Este nome de treino já existe.");
-
+    solicitarNomeFichaCustom(async (nome) => {
+        if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
+        if (nome && !bancoDeDados.fichas[nome]) {
+            bancoDeDados.fichas[nome] = [];
+            await salvarBanco();
+            if (typeof renderizarFichas === 'function') renderizarFichas();
+            if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+            mostrarAviso(`Treino ${nome} criado com sucesso!`);
+        } else if (bancoDeDados.fichas[nome]) {
+            mostrarAviso("Este nome de treino já existe.");
+        }
+    });
 }
-
-});
-
-}
-
-
 
 async function carregarBancoDoFirebase() {
-
-const user = auth.currentUser;
-
-if (!user) return;
-
-
-
-try {
-
-const docRef = await db.collection('usuarios').doc(user.uid).get();
-
-if (docRef.exists) {
-
-const dadosDoBanco = docRef.data().bancoDeDados;
-
-if (dadosDoBanco) {
-
-bancoDeDados = dadosDoBanco;
-
-if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
-
-
-if (typeof renderizarFichas === 'function') renderizarFichas();
-
-if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-
+    const user = auth.currentUser;
+    if (!user) return;
+    try {
+        const docRef = await db.collection('usuarios').doc(user.uid).get();
+        if (docRef.exists) {
+            const dadosDoBanco = docRef.data().bancoDeDados;
+            if (dadosDoBanco) {
+                bancoDeDados = dadosDoBanco;
+                if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
+                if (typeof renderizarFichas === 'function') renderizarFichas();
+                if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao carregar dados do Firebase:", error);
+    }
 }
-
-}
-
-} catch (error) {
-
-console.error("Erro ao carregar dados do Firebase:", error);
-
-}
-
-}
-
-
 
 async function salvarBanco() {
-
-const user = auth.currentUser;
-
-if (!user) {
-
-console.warn("Usuário não autenticado. Impossível salvar no Firebase.");
-
-return;
-
+    const user = auth.currentUser;
+    if (!user) {
+        console.warn("Usuário não autenticado. Impossível salvar no Firebase.");
+        return;
+    }
+    try {
+        await db.collection('usuarios').doc(user.uid).set({
+            bancoDeDados: bancoDeDados
+        }, { merge: true });
+        console.log("Banco de dados sincronizado com o Firebase com sucesso!");
+    } catch (error) {
+        console.error("Erro ao salvar no Firebase:", error);
+        mostrarAviso("Erro ao salvar dados na nuvem.");
+    }
 }
-
-
-
-try {
-
-await db.collection('usuarios').doc(user.uid).set({
-
-bancoDeDados: bancoDeDados
-
-}, { merge: true });
-
-console.log("Banco de dados sincronizado com o Firebase com sucesso!");
-
-} catch (error) {
-
-console.error("Erro ao salvar no Firebase:", error);
-
-mostrarAviso("Erro ao salvar dados na nuvem.");
-
-}
-
-}
-
-
 
 function solicitarNomeFichaCustom(callback) {
-
-const modalInput = document.createElement('div');
-
-modalInput.style = `
-
-position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-
-background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
-
-display: flex; align-items: center; justify-content: center;
-
-z-index: 100000; padding: 20px;
-
-`;
-
-
-
-modalInput.innerHTML = `
-
-<div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
-
-<div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-
-<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-
-</div>
-
-<h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
-
-<p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
-
-
-
-<div class="form-group" style="margin-bottom: 25px;">
-
-<input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
-
-</div>
-
-
-
-<div style="display: flex; gap: 12px;">
-
-<button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
-
-<button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
-
-</div>
-
-</div>
-
-`;
-
-
-
-document.body.appendChild(modalInput);
-
-const inputField = document.getElementById('input-nome-ficha');
-
-inputField.focus();
-
-
-
-document.getElementById('btn-cancelar-nome').onclick = () => modalInput.remove();
-
-
-
-document.getElementById('btn-confirmar-nome').onclick = () => {
-
-const nome = inputField.value.trim().toUpperCase();
-
-if (nome) {
-
-callback(nome);
-
-modalInput.remove();
-
-} else {
-
-inputField.style.borderColor = "#ef4444";
-
+    const modalInput = document.createElement('div');
+    modalInput.style = `
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(12px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100000; padding: 20px;
+    `;
+    modalInput.innerHTML = `
+    <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
+    <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    </div>
+    <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
+    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
+    <div class="form-group" style="margin-bottom: 25px;">
+    <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
+    </div>
+    <div style="display: flex; gap: 12px;">
+    <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
+    <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
+    </div>
+    </div>
+    `;
+    document.body.appendChild(modalInput);
+    const inputField = document.getElementById('input-nome-ficha');
+    inputField.focus();
+    document.getElementById('btn-cancelar-nome').onclick = () => modalInput.remove();
+    document.getElementById('btn-confirmar-nome').onclick = () => {
+        const nome = inputField.value.trim().toUpperCase();
+        if (nome) {
+            callback(nome);
+            modalInput.remove();
+        } else {
+            inputField.style.borderColor = "#ef4444";
+        }
+    };
+    inputField.onkeydown = (e) => {
+        if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
+    };
 }
-
-};
-
-
-
-inputField.onkeydown = (e) => {
-
-if (e.key === 'Enter') document.getElementById('btn-confirmar-nome').click();
-
-};
-
-}
-
-
 
 function abrirFicha(nome) {
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
-    
-    // Utiliza a função global showView para garantir que a view de registro abra corretamente com o display adequado
     if (typeof showView === 'function') {
         showView('view-registro');
     } else {
-        // Fallback caso showView falhe
         document.querySelectorAll('main, section, .page-container').forEach(el => {
             el.classList.add('hidden');
             el.style.display = 'none';
@@ -1757,73 +1594,70 @@ function abrirFicha(nome) {
             viewRegistro.style.display = 'grid';
         }
     }
-    
-    // Atualiza o título da ficha ativa na tela
     const titulo = document.getElementById('nome-ficha-ativa');
     if (titulo) {
         titulo.innerText = nome.toUpperCase();
     }
-    
-    // Popula o select de grupos/exercícios ao abrir a ficha
     if (typeof atualizarListaExercicios === 'function') {
         atualizarListaExercicios();
     }
-    
-    // Renderiza os exercícios salvos da ficha no log de performance
     if (typeof renderizarResumoFicha === 'function') {
         renderizarResumoFicha(nome);
     }
 }
 
 function voltarParaFichas() {
-
-// Garante que a lista de treinos seja renderizada com os dados atualizados antes de exibir
-
-if (typeof renderizarFichas === 'function') {
-
-renderizarFichas();
-
+    if (typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    }
+    showView('fichas');
 }
 
-showView('fichas'); // Altere para o nome correto da view de listagem de fichas se necessário
-
+function mascaraTempo(input) {
+    let v = input.value.replace(/\D/g, '');
+    if (v.length > 6) v = v.slice(0, 6);
+    if (v.length >= 5) {
+        v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
+    } else if (v.length >= 3) {
+        v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
+    }
+    input.value = v;
 }
 
+function formatarTempoParaExibicao(valor) {
+    if (!valor) return "";
+    const partes = valor.split(':');
+    if (partes.length === 3) {
+        return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
+    } else if (partes.length === 2) {
+        return `${partes[0]}m ${partes[1]}s`;
+    }
+    return valor + "s";
+}
 
 
 function mascaraTempo(input) {
-
 let v = input.value.replace(/\D/g, '');
 
 if (v.length > 6) v = v.slice(0, 6);
-
-
 
 if (v.length >= 5) {
 
 v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
 
 } else if (v.length >= 3) {
-
 v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
-
 }
-
 input.value = v;
-
 }
-
 
 
 function formatarTempoParaExibicao(valor) {
-
 if (!valor) return "";
 
 const partes = valor.split(':');
 
-
 if (partes.length === 3) {
-
 return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
 } else if (partes.length === 2) {
 return `${partes[0]}m ${partes[1]}s`;
