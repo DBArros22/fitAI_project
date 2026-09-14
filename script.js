@@ -978,8 +978,9 @@ function showView(viewId) {
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('section, main:not(#view-login), .page-container').forEach(el => {
-            if (el.id !== 'view-login') el.classList.add('hidden');
+        document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
+        tela.classList.add('hidden');
+        tela.style.cssText = ''; // Limpa todos os estilos inline de uma vez para evitar conflitos residuais
         });
         window.currentView = cleanId;
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
