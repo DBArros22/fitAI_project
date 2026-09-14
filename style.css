@@ -649,30 +649,27 @@ html {
 }
 
 /* renderização forçada */ 
+
 #view-crossfit-lobby.page-container {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
+    display: block !important;
     width: 100% !important;
     min-height: 100vh !important;
-    padding: 20px 5% 60px 5% !important; /* Respiro inferior essencial para evitar vazamento */
+    padding: 20px 5% 100px 5% !important; /* Aumenta o respiro no rodapé para barrar o vazamento */
     box-sizing: border-box !important;
+    overflow-y: auto !important;
 }
 
 #view-crossfit-lobby .container-central {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
     width: 100% !important;
-    max-width: 1000px !important; /* Alargado para suportar perfeitamente a grade */
+    max-width: 650px !important; /* Retorna ao limite original do container */
     margin: 0 auto !important;
     box-sizing: border-box !important;
 }
 
-/* Grade unificada e limpa (3 colunas que acomodam os 10 cards sem estourar) */
+/* Restaura exatamente a grade original de 2 colunas com larguras fixas */
 #view-crossfit-lobby .crossfit-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, minmax(260px, 1fr)) !important;
+    grid-template-columns: repeat(2, 280px) !important;
     gap: 20px !important;
     justify-content: center !important;
     justify-items: center !important;
@@ -682,21 +679,18 @@ html {
 }
 
 #view-crossfit-lobby .crossfit-grid .menu-card {
-    width: 100% !important;
+    width: 280px !important;
     min-height: 200px !important;
     box-sizing: border-box !important;
 }
 
-/* Responsividade fluida para telas menores */
-@media (max-width: 950px) {
-    #view-crossfit-lobby .crossfit-grid {
-        grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
-    }
-}
-
+/* Ajuste responsivo para telas menores para evitar quebra horizontal */
 @media (max-width: 600px) {
     #view-crossfit-lobby .crossfit-grid {
         grid-template-columns: 1fr !important;
     }
+    #view-crossfit-lobby .crossfit-grid .menu-card {
+        width: 100% !important;
+        max-width: 280px !important;
+    }
 }
-
