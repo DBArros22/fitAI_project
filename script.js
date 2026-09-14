@@ -1017,13 +1017,19 @@ function showView(viewId) {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
-        } else if (targetId === 'view-crossfit-lobby' || targetId === 'lobby' || cleanId === 'crossfit-lobby' || cleanId === 'lobby') {
+        } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
             viewAlvo.style.display = 'grid';
-            // Alargados ligeiramente na horizontal (de 260px para 310px) mantendo as 3 colunas centralizadas
+            // Alargados ligeiramente na horizontal mantendo as colunas do crossfit centralizadas
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, minmax(280px, 310px))', 'important');
             viewAlvo.style.setProperty('justify-content', 'center', 'important');
             viewAlvo.style.setProperty('gap', '25px', 'important');
             viewAlvo.style.setProperty('max-width', '1020px', 'important');
+            viewAlvo.style.setProperty('margin', '0 auto', 'important');
+        } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
+            viewAlvo.style.display = 'grid';
+            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
+            viewAlvo.style.setProperty('gap', '24px', 'important');
+            viewAlvo.style.setProperty('max-width', '1100px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
