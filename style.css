@@ -649,12 +649,13 @@ html {
 }
 
 /* renderização forçada */ 
-
 #view-crossfit-lobby.page-container {
     display: flex !important;
-    justify-content: center !important;
+    flex-direction: column !important;
     align-items: center !important;
     width: 100% !important;
+    min-height: 100vh !important;
+    padding: 20px 5% 60px 5% !important; /* Respiro inferior essencial para evitar vazamento */
     box-sizing: border-box !important;
 }
 
@@ -663,25 +664,39 @@ html {
     flex-direction: column !important;
     align-items: center !important;
     width: 100% !important;
-    max-width: 650px !important;
+    max-width: 1000px !important; /* Alargado para suportar perfeitamente a grade */
     margin: 0 auto !important;
     box-sizing: border-box !important;
 }
 
-/* Centraliza perfeitamente a grade de cards */
-.crossfit-grid {
+/* Grade unificada e limpa (3 colunas que acomodam os 10 cards sem estourar) */
+#view-crossfit-lobby .crossfit-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, 280px) !important;
+    grid-template-columns: repeat(3, minmax(260px, 1fr)) !important;
     gap: 20px !important;
     justify-content: center !important;
     justify-items: center !important;
     margin: 0 auto !important;
     width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-.crossfit-grid .menu-card {
-    width: 280px !important;
+#view-crossfit-lobby .crossfit-grid .menu-card {
+    width: 100% !important;
     min-height: 200px !important;
     box-sizing: border-box !important;
+}
+
+/* Responsividade fluida para telas menores */
+@media (max-width: 950px) {
+    #view-crossfit-lobby .crossfit-grid {
+        grid-template-columns: repeat(2, minmax(240px, 1fr)) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    #view-crossfit-lobby .crossfit-grid {
+        grid-template-columns: 1fr !important;
+    }
 }
 
