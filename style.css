@@ -667,7 +667,27 @@ html {
 }
 
 /* Restaura exatamente a grade original de 2 colunas com larguras fixas */
-#view-crossfit-lobby .crossfit-grid {
+
+#view-crossfit-lobby.page-container {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#view-crossfit-lobby .container-central {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    max-width: 650px !important;
+    margin: 0 auto !important;
+    box-sizing: border-box !important;
+}
+
+/* Centraliza perfeitamente a grade de cards */
+.crossfit-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 280px) !important;
     gap: 20px !important;
@@ -675,22 +695,10 @@ html {
     justify-items: center !important;
     margin: 0 auto !important;
     width: 100% !important;
-    box-sizing: border-box !important;
 }
 
-#view-crossfit-lobby .crossfit-grid .menu-card {
+.crossfit-grid .menu-card {
     width: 280px !important;
     min-height: 200px !important;
     box-sizing: border-box !important;
-}
-
-/* Ajuste responsivo para telas menores para evitar quebra horizontal */
-@media (max-width: 600px) {
-    #view-crossfit-lobby .crossfit-grid {
-        grid-template-columns: 1fr !important;
-    }
-    #view-crossfit-lobby .crossfit-grid .menu-card {
-        width: 100% !important;
-        max-width: 280px !important;
-    }
 }
