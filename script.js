@@ -979,8 +979,8 @@ function showView(viewId) {
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
-        tela.classList.add('hidden');
-        tela.style.cssText = ''; // Limpa todos os estilos inline de uma vez para evitar conflitos residuais
+            tela.classList.add('hidden');
+            tela.style.cssText = ''; // Limpa todos os estilos inline de uma vez para evitar conflitos residuais
         });
         window.currentView = cleanId;
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -1018,13 +1018,8 @@ function showView(viewId) {
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
-            viewAlvo.style.display = 'grid';
-            // Alargados ligeiramente na horizontal mantendo as colunas do crossfit centralizadas
-            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, minmax(280px, 310px))', 'important');
-            viewAlvo.style.setProperty('justify-content', 'center', 'important');
-            viewAlvo.style.setProperty('gap', '25px', 'important');
-            viewAlvo.style.setProperty('max-width', '1020px', 'important');
-            viewAlvo.style.setProperty('margin', '0 auto', 'important');
+            // CORREÇÃO APLICADA AQUI: Deixamos como block/flex e deixamos o CSS cuidar da grade interna (.crossfit-grid)
+            viewAlvo.style.display = 'block';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
