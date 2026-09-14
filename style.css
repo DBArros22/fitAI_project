@@ -200,30 +200,29 @@ body:has(#view-login:not(.hidden)) .navbar {
 
 /* --- SAGUÃO / LOBBY (AJUSTADO PARA 3 COLUNAS FIXAS) --- */
 
-.content-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-    padding: 40px 5%;
-    max-width: 1100px;
-    margin: 0 auto;
-    width: 100%;
-    justify-content: center;
-    justify-items: center;
+.crossfit-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(260px, 300px)) !important;
+    gap: 20px !important;
+    width: 100% !important;
+    max-width: 1000px !important;
+    margin: 0 auto !important;
+    justify-content: center !important;
+    justify-items: center !important;
+    padding-bottom: 40px !important; /* Cria um respiro para evitar qualquer vazamento no rodapé */
 }
 
-@media (max-width: 900px) {
-    .content-grid {
-        grid-template-columns: repeat(2, 1fr);
+@media (max-width: 950px) {
+    .crossfit-grid {
+        grid-template-columns: repeat(2, minmax(260px, 300px)) !important;
     }
 }
 
 @media (max-width: 600px) {
-    .content-grid {
-        grid-template-columns: 1fr;
+    .crossfit-grid {
+        grid-template-columns: 1fr !important;
     }
 }
-
 /* CROSSFIT GRID ISOLADO */
 .crossfit-grid {
     display: grid !important;
@@ -236,8 +235,8 @@ body:has(#view-login:not(.hidden)) .navbar {
 }
 
 .crossfit-grid .menu-card {
-    width: 280px !important;
-    min-height: 220px !important;
+    width: 100% !important;
+    min-height: 200px !important;
 }
 
 .menu-card {
