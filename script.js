@@ -968,7 +968,7 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) viewId = 'view-login'; // Blindado para nunca puxar o crossfit por engano se vier vazio
+    if (!viewId) viewId = 'view-crossfit-lobby';
 
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
@@ -978,7 +978,6 @@ function showView(viewId) {
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        // SELETOR AMPLIADO: Captura qualquer tag que seja uma view ou container de tela
         document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container').forEach(tela => {
             tela.classList.add('hidden');
             tela.style.cssText = ''; 
@@ -990,8 +989,7 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // CORREÇÃO CRUCIAL AQUI: Adicionado 'div[id^="view-"]' e '[id*="crossfit-lobby"]' 
-    // para garantir que o CrossFit Lobby seja SEMPRE encontrado e ocultado nas trocas de tela.
+    // Varredura rigorosa para garantir que o crossfit-lobby receba display: none e hidden
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container, [id*="crossfit-lobby"]').forEach(tela => {
         tela.classList.add('hidden');
         tela.style.display = 'none';
@@ -1024,7 +1022,6 @@ function showView(viewId) {
             viewAlvo.style.display = 'flex';
             viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
-            // MANTÉM EXATAMENTE O SEU FORMATO ORIGINAL INTACTO:
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
@@ -1059,7 +1056,7 @@ function showView(viewId) {
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'crossfit-lobby') {
-        // Tratamento limpo isolado para o crossfit lobby sem misturar fichas
+        // Isola o crossfit lobby
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
