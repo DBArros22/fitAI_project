@@ -970,18 +970,17 @@ function mostrarAviso(mensagem) {
 function showView(viewId) {
     if (!viewId) viewId = 'view-crossfit-lobby';
 
-    // Fecha modais globais se houverem
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
 
     const cleanId = viewId.replace('view-', '');
     const viewLogin = document.getElementById('view-login');
 
-    // Tratamento especial para a tela de login
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
             tela.classList.add('hidden');
+            tela.style.cssText = ''; 
         });
         window.currentView = cleanId;
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -990,14 +989,12 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Esconde absolutamente todas as telas adicionando a classe 'hidden'
+    // Reseta todas as telas escondendo-as e limpando estilos inline anteriores
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
         tela.classList.add('hidden');
-        // Remove qualquer estilo injetado anteriormente para liberar o CSS original
-        tela.style.cssText = ''; 
+        tela.style.cssText = '';
     });
 
-    // Encontra a view alvo por ID direto ou variações
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
@@ -1006,13 +1003,27 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
     }
 
-    // Exibe a tela alvo apenas removendo a classe 'hidden'
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
+        
+        const targetId = viewAlvo.id;
+        
+        // Restaura exatamente o formato original do seu lobby principal e demais telas
+        if (targetId === 'view-registro' || targetId === 'registro') {
+            viewAlvo.style.display = 'grid';
+        } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
+            viewAlvo.style.display = 'grid';
+            viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
+            viewAlvo.style.setProperty('gap', '24px', 'important');
+            viewAlvo.style.setProperty('max-width', '1100px', 'important');
+            viewAlvo.style.setProperty('margin', '0 auto', 'important');
+        } else {
+            // Para o crossfit-lobby e outras views, deixa o display padrão/CSS assumirem o controle
+            viewAlvo.style.display = '';
+        }
     }
 
-    // Gatilhos de renderização específicos de cada tela
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
@@ -1034,6 +1045,8 @@ function showView(viewId) {
         }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
+    } else if (cleanId === 'crossfit-lobby') {
+        // Mantém isolado
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
