@@ -152,6 +152,24 @@ flex-direction: column;
     display: none !important;
 }
 
+/* Classe tela view-lobby-principal */
+
+#view-lobby.content-grid {
+    /* Garante que o grid ocupe o espaço central e tenha respiro simétrico */
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 24px !important;
+    max-width: 1100px !important;
+    
+    /* Centralização absoluta e margem de respiro para afastar da barra do topo */
+    margin: auto !important;
+    min-height: calc(100vh - 100px) !important;
+    align-content: center !important;
+    justify-content: center !important;
+    padding: 40px 20px !important;
+    box-sizing: border-box !important;
+}
+
 /* --- NAVBAR PREMIUM --- */
 
 .navbar {
