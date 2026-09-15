@@ -113,73 +113,49 @@ flex-direction: column;
 /* --- TELA DE LOGIN/CADASTRO --- */
 
 #view-login {
-
-position: fixed;
-
-top: 0;
-
-left: 0;
-
-width: 100vw;
-
-height: 100vh;
-
-z-index: 99999;
-
-display: flex !important;
-
-align-items: center;
-
-justify-content: center;
-
-padding: 20px;
-
-background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
-
-overflow-y: auto;
-
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 99999;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+    overflow-y: auto;
 }
 
-
+/* AJUSTE SÊNIOR: Garante que o painel interno de login fique maior e centralizado */
+#view-login > div,
+#view-login .glass-panel,
+#view-login form {
+    width: 100% !important;
+    max-width: 440px !important;
+    margin: auto !important;
+    box-sizing: border-box !important;
+}
 
 #view-login.hidden {
-
-display: none !important;
-
+    display: none !important;
 }
-
-
 
 .input-pendente {
-
-border: 1px solid #f59e0b !important;
-
-background: rgba(245, 158, 11, 0.05) !important;
-
-box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
-
+    border: 1px solid #f59e0b !important;
+    background: rgba(245, 158, 11, 0.05) !important;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
 }
-
-
 
 input:disabled {
-
-cursor: default;
-
+    cursor: default;
 }
 
-
-
 #view-login:not(.hidden) ~ #app-shell,
-
 #view-login:not(.hidden) ~ .navbar,
-
 body:has(#view-login:not(.hidden)) #app-shell,
-
 body:has(#view-login:not(.hidden)) .navbar {
-
-display: none !important;
-
+    display: none !important;
 }
 
 
