@@ -968,7 +968,11 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) viewId = 'view-crossfit-lobby';
+    // CORREÇÃO CRUCIAL: Se vier vazio, tenta recuperar a última tela salva (ex: perfil ou lobby) 
+    // ou cai no login apenas se realmente não houver histórico.
+    if (!viewId) {
+        viewId = localStorage.getItem('currentView') || localStorage.getItem('ultimaTela') || 'view-login';
+    }
 
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
@@ -989,7 +993,7 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Varredura rigorosa para garantir que o crossfit-lobby receba display: none e hidden
+    // Varredura blindada: Oculta rigorosamente TODAS as telas e containers para o CrossFit Lobby nunca vazar
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container, [id*="crossfit-lobby"]').forEach(tela => {
         tela.classList.add('hidden');
         tela.style.display = 'none';
@@ -1005,8 +1009,9 @@ function showView(viewId) {
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
+    // Se a view alvo não for encontrada, protege o perfil e o login em vez de jogar pro crossfit
     if (!viewAlvo) {
-        viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
+        viewAlvo = document.getElementById('view-perfil') || document.getElementById('view-login');
     }
 
     if (viewAlvo) {
@@ -1022,6 +1027,7 @@ function showView(viewId) {
             viewAlvo.style.display = 'flex';
             viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
+            // Mantém rigorosamente o seu formato original de cards quadrados (3 colunas)
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
@@ -1030,10 +1036,12 @@ function showView(viewId) {
         } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
             viewAlvo.style.display = 'block';
         } else {
+            // Garante que o Perfil e outras páginas usem display block corretamente sem sumir
             viewAlvo.style.display = 'block';
         }
     }
 
+    // Execução dos ganchos (Hooks) por tela
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
@@ -1062,7 +1070,10 @@ function showView(viewId) {
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
     }
 
+    // Salva a view atual no localStorage para preservar o estado caso a página seja recarregada na aba de Perfil/Lobby
     window.currentView = cleanId;
+    localStorage.setItem('currentView', viewId);
+    
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
