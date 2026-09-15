@@ -968,112 +968,122 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    // CORREÇÃO CRUCIAL: Se vier vazio, tenta recuperar a última tela salva (ex: perfil ou lobby) 
-    // ou cai no login apenas se realmente não houver histórico.
-    if (!viewId) {
-        viewId = localStorage.getItem('currentView') || localStorage.getItem('ultimaTela') || 'view-login';
-    }
-
+    const viewLogin = document.getElementById('view-login');
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
 
+    // 1. TRATAMENTO DE SEGURANÇA PARA O LOGIN NO RECARREGAMENTO
+    // Se não veio parâmetro, verificamos se o Firebase tem usuário logado. Se não tiver, força o login!
+    if (!viewId) {
+        const usuarioLogado = window.auth && window.auth.currentUser;
+        if (!usuarioLogado && !localStorage.getItem('firebaseAuthPersist')) {
+            viewId = 'view-login';
+        } else {
+            viewId = localStorage.getItem('currentView') || 'view-lobby';
+        }
+    }
+
     const cleanId = viewId.replace('view-', '');
-    const viewLogin = document.getElementById('view-login');
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container').forEach(tela => {
+        
+        // Oculta rigorosamente tudo
+        document.querySelectorAll('main, section, div[id^="view-"], .page-container, div[id*="crossfit"], div[id*="hub"]').forEach(tela => {
             tela.classList.add('hidden');
-            tela.style.cssText = ''; 
+            tela.style.cssText = 'display: none !important;'; 
         });
-        window.currentView = cleanId;
+        
+        if (viewLogin) {
+            viewLogin.classList.remove('hidden');
+            viewLogin.style.cssText = 'display: block !important;';
+        }
+
+        window.currentView = 'view-login';
+        localStorage.setItem('currentView', 'view-login');
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
         return;
     }
 
-    if (viewLogin) viewLogin.classList.add('hidden');
-
-    // Varredura blindada: Oculta rigorosamente TODAS as telas e containers para o CrossFit Lobby nunca vazar
-    document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container, [id*="crossfit-lobby"]').forEach(tela => {
+    // 2. VARREDURA BLINDADA ABSOLUTA (Elimina o vazamento do CrossFit Lobby)
+    // Coleta TUDO o que é tela/container na SPA e força display none com important
+    const todasAsTelas = document.querySelectorAll('main, section, div[id^="view-"], .page-container, div[id*="crossfit"], div[id*="hub"], div[id*="timer"]');
+    
+    todasAsTelas.forEach(tela => {
+        // Ignora o modal de aviso global para não quebrá-lo
+        if (tela.id === 'modal-aviso' || tela.closest('#modal-aviso')) return;
+        
         tela.classList.add('hidden');
-        tela.style.display = 'none';
-        tela.style.gridTemplateColumns = '';
-        tela.style.gap = '';
-        tela.style.alignItems = '';
-        tela.style.justifyContent = '';
-        tela.style.maxWidth = '';
-        tela.style.margin = '';
+        tela.style.setProperty('display', 'none', 'important');
+        tela.style.removeProperty('grid-template-columns');
+        tela.style.removeProperty('gap');
+        tela.style.removeProperty('max-width');
+        tela.style.removeProperty('margin');
     });
 
+    if (viewLogin) {
+        viewLogin.classList.add('hidden');
+        viewLogin.style.setProperty('display', 'none', 'important');
+    }
+
+    // 3. LOCALIZAÇÃO DA VIEW ALVO COM PRECISÃO DE ID
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
-    // Se a view alvo não for encontrada, protege o perfil e o login em vez de jogar pro crossfit
+    // Fallback caso a view não exista
     if (!viewAlvo) {
-        viewAlvo = document.getElementById('view-perfil') || document.getElementById('view-login');
+        viewAlvo = document.getElementById('view-lobby') || viewLogin;
     }
 
+    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
         
         const targetId = viewAlvo.id;
+
+        // Regras específicas de layout por tipo de container
         if (targetId === 'view-registro' || targetId === 'registro') {
-            viewAlvo.style.display = 'grid';
-            viewAlvo.style.gridTemplateColumns = '';
-            viewAlvo.style.gap = '';
-        } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
-            viewAlvo.style.display = 'flex';
-            viewAlvo.style.flexDirection = 'column';
+            viewAlvo.style.setProperty('display', 'grid', 'important');
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
-            // Mantém rigorosamente o seu formato original de cards quadrados (3 colunas)
-            viewAlvo.style.display = 'grid';
+            // Mantém rigorosamente o grid de 3 colunas do Lobby Principal
+            viewAlvo.style.setProperty('display', 'grid', 'important');
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
             viewAlvo.style.setProperty('max-width', '1100px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
-        } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
-            viewAlvo.style.display = 'block';
+        } else if (targetId.includes('crossfit') || targetId.includes('hub') || targetId.includes('timer') || targetId.includes('calc')) {
+            // Garante que todas as sub-telas do ecossistema CrossFit abran como bloco flexível/visível sem vazar
+            viewAlvo.style.setProperty('display', 'block', 'important');
         } else {
-            // Garante que o Perfil e outras páginas usem display block corretamente sem sumir
-            viewAlvo.style.display = 'block';
+            viewAlvo.style.setProperty('display', 'block', 'important');
         }
     }
 
-    // Execução dos ganchos (Hooks) por tela
+    // 5. GANCHOS ESPECÍFICOS (HOOKS)
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
         if (!window.fichaAtiva) {
             window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
         }
-        
         const nomeFichaEl = document.getElementById('nome-ficha-ativa');
         if (nomeFichaEl && window.fichaAtiva) {
             nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
         }
-
-        if (typeof renderizarResumoFicha === 'function') {
-            renderizarResumoFicha(window.fichaAtiva);
-        }
-
-        if (typeof atualizarListaExercicios === 'function') {
-            atualizarListaExercicios();
-        }
+        if (typeof renderizarResumoFicha === 'function') renderizarResumoFicha(window.fichaAtiva);
+        if (typeof atualizarListaExercicios === 'function') atualizarListaExercicios();
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
-    } else if (cleanId === 'crossfit-lobby') {
-        // Isola o crossfit lobby
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
     }
 
-    // Salva a view atual no localStorage para preservar o estado caso a página seja recarregada na aba de Perfil/Lobby
+    // Persistência de estado
     window.currentView = cleanId;
     localStorage.setItem('currentView', viewId);
-    
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
 
