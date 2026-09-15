@@ -155,19 +155,49 @@ flex-direction: column;
 /* Classe tela view-lobby-principal */
 
 #view-lobby.content-grid {
-    /* Garante que o grid ocupe o espaço central e tenha respiro simétrico */
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 24px !important;
-    max-width: 1100px !important;
-    
-    /* Centralização absoluta e margem de respiro para afastar da barra do topo */
+    gap: 28px !important; /* Espaçamento um pouco maior entre os cards */
+    max-width: 1280px !important; /* Aumentado de 1100px para 1280px para esticar proporcionalmente */
     margin: auto !important;
-    min-height: calc(100vh - 100px) !important;
+    min-height: calc(100vh - 80px) !important;
     align-content: center !important;
     justify-content: center !important;
-    padding: 40px 20px !important;
+    padding: 30px 40px !important;
     box-sizing: border-box !important;
+}
+
+/* Redimensionamento proporcional dos cards individuais */
+#view-lobby .menu-card {
+    padding: 35px 30px !important; /* Aumenta o espaço interno do card, dando corpo a ele */
+    border-radius: 24px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Aumenta proporcionalmente o ícone dentro do card */
+#view-lobby .menu-card .card-icon {
+    width: 56px !important;
+    height: 56px !important;
+    margin-bottom: 16px !important;
+}
+
+#view-lobby .menu-card .card-icon svg {
+    width: 28px !important;
+    height: 28px !important;
+}
+
+/* Aumenta proporcionalmente os títulos e textos dos cards */
+#view-lobby .menu-card h3 {
+    font-size: 1.15rem !important;
+    margin-bottom: 8px !important;
+}
+
+#view-lobby .menu-card p {
+    font-size: 0.95rem !important;
+    opacity: 0.85;
 }
 
 /* --- NAVBAR PREMIUM --- */
