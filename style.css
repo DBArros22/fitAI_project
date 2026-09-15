@@ -121,20 +121,17 @@ flex-direction: column;
     height: 100vh;
     z-index: 99999;
     
-    /* ALTERAÇÃO SÊNIOR: Mudamos para flex-direction column e justify/align center 
-       com padding interno generoso para forçar o card a flutuar exatamente no meio */
     display: flex !important;
-    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     
-    padding: 30px 20px !important;
+    padding: 20px !important;
     background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
     overflow-y: auto !important;
     box-sizing: border-box !important;
 }
 
-/* Garante que o card de autenticação se mantenha centralizado e responsivo */
+/* Garante a centralização absoluta e o comportamento responsivo do card */
 .auth-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -144,9 +141,9 @@ flex-direction: column;
     max-width: 440px;
     box-shadow: var(--shadow-pro);
     
-    /* PONTO CHAVE: Anula qualquer tendência do flexbox de alinhar ao topo */
-    margin: auto !important; 
-    flex-shrink: 0 !important;
+    /* O 'margin: auto' dentro de um flexbox centralizado força o elemento a flutuar no meio exato */
+    margin: auto !important;
+    box-sizing: border-box !important;
 }
 
 #view-login.hidden {
