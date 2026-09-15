@@ -120,20 +120,23 @@ flex-direction: column;
     height: 100vh;
     z-index: 99999;
     display: flex !important;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px; /* Aumentado o padding superior/inferior para dar respiro */
+    align-items: center;     /* Garante o eixo vertical centralizado */
+    justify-content: center; /* Garante o eixo horizontal centralizado */
+    padding: 20px;
     background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
-    overflow-y: auto;
+    overflow-y: auto;        /* Permite rolar caso a tela do celular seja menor que o formulário */
 }
 
-/* AJUSTE SÊNIOR: Centralização e espaçamento exatos */
+/* AJUSTE SÊNIOR DE CENTRALIZAÇÃO EXATA */
 #view-login > div,
 #view-login .glass-panel,
 #view-login form {
     width: 100% !important;
     max-width: 440px !important;
-    margin: auto !important; /* O 'auto' no flexbox empurra o conteúdo para o centro exato */
+    /* DICA DE AJUSTE MANUAL: Se quiser mover o card alguns pixels para baixo ou para cima, 
+       basta alterar o primeiro valor do margin (ex: de 'auto' para '40px auto auto auto'). 
+       Deixando 'auto' em tudo, ele fica cravado no centro exato da tela. */
+    margin: auto !important; 
     box-sizing: border-box !important;
 }
 
