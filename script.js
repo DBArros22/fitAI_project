@@ -989,10 +989,15 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // Reseta todas as telas escondendo-as e limpando estilos inline anteriores
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
         tela.classList.add('hidden');
-        tela.style.cssText = '';
+        tela.style.display = 'none';
+        tela.style.gridTemplateColumns = '';
+        tela.style.gap = '';
+        tela.style.alignItems = '';
+        tela.style.justifyContent = '';
+        tela.style.maxWidth = '';
+        tela.style.margin = '';
     });
 
     let viewAlvo = document.getElementById(viewId) || 
@@ -1008,19 +1013,24 @@ function showView(viewId) {
         viewAlvo.removeAttribute('hidden');
         
         const targetId = viewAlvo.id;
-        
-        // Restaura exatamente o formato original do seu lobby principal e demais telas
         if (targetId === 'view-registro' || targetId === 'registro') {
             viewAlvo.style.display = 'grid';
+            viewAlvo.style.gridTemplateColumns = '';
+            viewAlvo.style.gap = '';
+        } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
+            // CORREÇÃO APLICADA: Mantém flex column para respeitar o layout interno sem estourar
+            viewAlvo.style.display = 'flex';
+            viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
             viewAlvo.style.setProperty('max-width', '1100px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
+        } else if (targetId === 'view-planilhas' || targetId === 'planilhas') {
+            viewAlvo.style.display = 'block';
         } else {
-            // Para o crossfit-lobby e outras views, deixa o display padrão/CSS assumirem o controle
-            viewAlvo.style.display = '';
+            viewAlvo.style.display = 'block';
         }
     }
 
@@ -1046,7 +1056,7 @@ function showView(viewId) {
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'crossfit-lobby') {
-        // Mantém isolado
+        // Tratamento limpo isolado para o crossfit lobby sem misturar fichas
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
