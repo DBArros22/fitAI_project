@@ -122,18 +122,18 @@ flex-direction: column;
     display: flex !important;
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 40px 20px; /* Aumentado o padding superior/inferior para dar respiro */
     background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
     overflow-y: auto;
 }
 
-/* AJUSTE SÊNIOR: Garante que o painel interno de login fique maior e centralizado */
+/* AJUSTE SÊNIOR: Centralização e espaçamento exatos */
 #view-login > div,
 #view-login .glass-panel,
 #view-login form {
     width: 100% !important;
     max-width: 440px !important;
-    margin: auto !important;
+    margin: auto !important; /* O 'auto' no flexbox empurra o conteúdo para o centro exato */
     box-sizing: border-box !important;
 }
 
@@ -157,7 +157,6 @@ body:has(#view-login:not(.hidden)) #app-shell,
 body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
-
 
 
 /* --- NAVBAR PREMIUM --- */
