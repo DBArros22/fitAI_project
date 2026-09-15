@@ -968,7 +968,7 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) viewId = 'view-crossfit-lobby';
+    if (!viewId) viewId = 'view-login'; // Blindado para nunca puxar o crossfit por engano se vier vazio
 
     const modalAvisoGlobal = document.getElementById('modal-aviso');
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
@@ -978,7 +978,8 @@ function showView(viewId) {
 
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
-        document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
+        // SELETOR AMPLIADO: Captura qualquer tag que seja uma view ou container de tela
+        document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container').forEach(tela => {
             tela.classList.add('hidden');
             tela.style.cssText = ''; 
         });
@@ -989,7 +990,9 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
+    // CORREÇÃO CRUCIAL AQUI: Adicionado 'div[id^="view-"]' e '[id*="crossfit-lobby"]' 
+    // para garantir que o CrossFit Lobby seja SEMPRE encontrado e ocultado nas trocas de tela.
+    document.querySelectorAll('main[id^="view-"], section[id^="view-"], div[id^="view-"], .page-container, [id*="crossfit-lobby"]').forEach(tela => {
         tela.classList.add('hidden');
         tela.style.display = 'none';
         tela.style.gridTemplateColumns = '';
@@ -1018,10 +1021,10 @@ function showView(viewId) {
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
-            // CORREÇÃO APLICADA: Mantém flex column para respeitar o layout interno sem estourar
             viewAlvo.style.display = 'flex';
             viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
+            // MANTÉM EXATAMENTE O SEU FORMATO ORIGINAL INTACTO:
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
