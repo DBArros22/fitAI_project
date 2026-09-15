@@ -968,7 +968,8 @@ function mostrarAviso(mensagem) {
 // --- 1. NAVEGAÇÃO ---
 
 function showView(viewId) {
-    if (!viewId) viewId = 'view-crossfit-lobby';
+    // CORREÇÃO: O padrão inicial ao recarregar a página agora é o login, e não o CrossFit Lobby
+    if (!viewId) viewId = 'view-login';
 
     // 1. Oculta modais globais
     const modalAvisoGlobal = document.getElementById('modal-aviso');
@@ -990,20 +991,20 @@ function showView(viewId) {
 
     if (viewLogin) viewLogin.classList.add('hidden');
 
-    // 2. CORREÇÃO CRUCIAL: Varre e oculta absolutamente TODAS as telas do sistema para evitar vazamentos
+    // 2. Varre e oculta absolutamente TODAS as telas do sistema
     document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container, [id^="view-"]').forEach(tela => {
         tela.classList.add('hidden');
         tela.style.display = 'none';
-        tela.style.cssText = ''; // Limpa qualquer sujeira de estilo inline anterior
+        tela.style.cssText = ''; 
     });
 
-    // 3. Localiza a view alvo com segurança expandida
+    // 3. Localiza a view alvo
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
     if (!viewAlvo) {
-        viewAlvo = document.getElementById('view-crossfit-lobby') || document.getElementById('view-perfil');
+        viewAlvo = document.getElementById('view-login') || document.getElementById('view-perfil');
     }
 
     // 4. Exibe a tela alvo e aplica o layout específico correspondente
@@ -1019,7 +1020,7 @@ function showView(viewId) {
             viewAlvo.style.display = 'flex';
             viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
-            // Restaura rigorosamente o seu formato original de cards quadrados (3 colunas)
+            // Mantém rigorosamente o grid de 3 colunas dos cards quadrados
             viewAlvo.style.display = 'grid';
             viewAlvo.style.gridTemplateColumns = 'repeat(3, 1fr)';
             viewAlvo.style.gap = '24px';
@@ -1030,7 +1031,7 @@ function showView(viewId) {
         }
     }
 
-    // 5. Execução de hooks e funções vinculadas à tela ativa
+    // 5. Execução de hooks específicos
     if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'registro') {
@@ -1052,6 +1053,8 @@ function showView(viewId) {
         }
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
+    } else if (cleanId === 'crossfit-lobby') {
+        // Isola o crossfit lobby
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
