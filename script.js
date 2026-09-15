@@ -973,7 +973,6 @@ function showView(viewId) {
     if (modalAvisoGlobal) modalAvisoGlobal.classList.add('hidden');
 
     // 1. TRATAMENTO DE SEGURANÇA PARA O LOGIN NO RECARREGAMENTO
-    // Se não veio parâmetro, verificamos se o Firebase tem usuário logado. Se não tiver, força o login!
     if (!viewId) {
         const usuarioLogado = window.auth && window.auth.currentUser;
         if (!usuarioLogado && !localStorage.getItem('firebaseAuthPersist')) {
@@ -996,7 +995,8 @@ function showView(viewId) {
         
         if (viewLogin) {
             viewLogin.classList.remove('hidden');
-            viewLogin.style.cssText = 'display: block !important;';
+            // CORREÇÃO SÊNIOR: Força o display flex para respeitar o CSS de centralização do card
+            viewLogin.style.cssText = 'display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;';
         }
 
         window.currentView = 'view-login';
@@ -1006,7 +1006,6 @@ function showView(viewId) {
     }
 
     // 2. VARREDURA BLINDADA ABSOLUTA (Elimina o vazamento do CrossFit Lobby)
-    // Coleta TUDO o que é tela/container na SPA e força display none com important
     const todasAsTelas = document.querySelectorAll('main, section, div[id^="view-"], .page-container, div[id*="crossfit"], div[id*="hub"], div[id*="timer"]');
     
     todasAsTelas.forEach(tela => {
@@ -1047,14 +1046,12 @@ function showView(viewId) {
         if (targetId === 'view-registro' || targetId === 'registro') {
             viewAlvo.style.setProperty('display', 'grid', 'important');
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
-            // Mantém rigorosamente o grid de 3 colunas do Lobby Principal
             viewAlvo.style.setProperty('display', 'grid', 'important');
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
             viewAlvo.style.setProperty('gap', '24px', 'important');
             viewAlvo.style.setProperty('max-width', '1100px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
         } else if (targetId.includes('crossfit') || targetId.includes('hub') || targetId.includes('timer') || targetId.includes('calc')) {
-            // Garante que todas as sub-telas do ecossistema CrossFit abran como bloco flexível/visível sem vazar
             viewAlvo.style.setProperty('display', 'block', 'important');
         } else {
             viewAlvo.style.setProperty('display', 'block', 'important');
