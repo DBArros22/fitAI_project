@@ -1018,6 +1018,7 @@ function showView(viewId) {
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
+            // CORREÇÃO APLICADA: Mantém flex column para respeitar o layout interno sem estourar
             viewAlvo.style.display = 'flex';
             viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
@@ -1055,7 +1056,7 @@ function showView(viewId) {
     } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
     } else if (cleanId === 'crossfit-lobby') {
-        // Mantém isolado
+        // Tratamento limpo isolado para o crossfit lobby sem misturar fichas
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
