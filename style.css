@@ -176,10 +176,7 @@ flex-direction: column;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 28px !important;
-    
-    /* Aumenta significativamente a área útil interna do card (deixando-o maior e mais alto) */
-    padding: 45px 35px !important; 
-    
+    padding: 50px 60px !important;      /* tamanho dos cards */
     display: flex;
     flex-direction: column;
     justify-content: center;
