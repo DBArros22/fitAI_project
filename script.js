@@ -980,7 +980,7 @@ function showView(viewId) {
         if (viewLogin) viewLogin.classList.remove('hidden');
         document.querySelectorAll('main[id^="view-"], section[id^="view-"], .page-container').forEach(tela => {
             tela.classList.add('hidden');
-            tela.style.cssText = ''; // Limpa todos os estilos inline de uma vez para evitar conflitos residuais
+            tela.style.cssText = ''; 
         });
         window.currentView = cleanId;
         window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -1018,8 +1018,9 @@ function showView(viewId) {
             viewAlvo.style.gridTemplateColumns = '';
             viewAlvo.style.gap = '';
         } else if (targetId === 'view-crossfit-lobby' || cleanId === 'crossfit-lobby') {
-            // CORREÇÃO APLICADA AQUI: Deixamos como block/flex e deixamos o CSS cuidar da grade interna (.crossfit-grid)
-            viewAlvo.style.display = 'block';
+            // CORREÇÃO APLICADA: Mantém flex column para respeitar o layout interno sem estourar
+            viewAlvo.style.display = 'flex';
+            viewAlvo.style.flexDirection = 'column';
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
             viewAlvo.style.display = 'grid';
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
@@ -1052,8 +1053,10 @@ function showView(viewId) {
         if (typeof atualizarListaExercicios === 'function') {
             atualizarListaExercicios();
         }
-    } else if ((cleanId === 'lobby' || cleanId === 'crossfit-lobby') && typeof renderizarFichas === 'function') {
+    } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
         renderizarFichas();
+    } else if (cleanId === 'crossfit-lobby') {
+        // Tratamento limpo isolado para o crossfit lobby sem misturar fichas
     } else if (cleanId === 'perfil') {
         if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
         if (typeof renderizarPerfil === 'function') renderizarPerfil();
