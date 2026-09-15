@@ -112,6 +112,7 @@ flex-direction: column;
 
 /* --- TELA DE LOGIN/CADASTRO --- */
 
+
 #view-login {
     position: fixed;
     top: 0;
@@ -119,25 +120,33 @@ flex-direction: column;
     width: 100vw;
     height: 100vh;
     z-index: 99999;
+    
+    /* ALTERAÇÃO SÊNIOR: Mudamos para flex-direction column e justify/align center 
+       com padding interno generoso para forçar o card a flutuar exatamente no meio */
     display: flex !important;
-    align-items: center;     /* Garante o eixo vertical centralizado */
-    justify-content: center; /* Garante o eixo horizontal centralizado */
-    padding: 20px;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    
+    padding: 30px 20px !important;
     background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
-    overflow-y: auto;        /* Permite rolar caso a tela do celular seja menor que o formulário */
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
 }
 
-/* AJUSTE SÊNIOR DE CENTRALIZAÇÃO EXATA */
-#view-login > div,
-#view-login .glass-panel,
-#view-login form {
-    width: 100% !important;
-    max-width: 440px !important;
-    /* DICA DE AJUSTE MANUAL: Se quiser mover o card alguns pixels para baixo ou para cima, 
-       basta alterar o primeiro valor do margin (ex: de 'auto' para '40px auto auto auto'). 
-       Deixando 'auto' em tudo, ele fica cravado no centro exato da tela. */
+/* Garante que o card de autenticação se mantenha centralizado e responsivo */
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    padding: 40px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: var(--shadow-pro);
+    
+    /* PONTO CHAVE: Anula qualquer tendência do flexbox de alinhar ao topo */
     margin: auto !important; 
-    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
 }
 
 #view-login.hidden {
