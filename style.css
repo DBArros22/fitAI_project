@@ -114,24 +114,25 @@ flex-direction: column;
 
 
 #view-login {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 99999;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 99999 !important;
     
+    /* Força o Flexbox e garante espaçamento simétrico em cima e embaixo */
     display: flex !important;
+    flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     
-    padding: 20px !important;
-    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%);
+    padding: 40px 20px !important;
+    background: radial-gradient(circle at top, #0f172a 0%, #020617 100%) !important;
     overflow-y: auto !important;
     box-sizing: border-box !important;
 }
 
-/* Garante a centralização absoluta e o comportamento responsivo do card */
 .auth-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
@@ -141,29 +142,13 @@ flex-direction: column;
     max-width: 440px;
     box-shadow: var(--shadow-pro);
     
-    /* O 'margin: auto' dentro de um flexbox centralizado força o elemento a flutuar no meio exato */
+    /* Garante que o card flutue exatamente no meio e nunca encolha */
     margin: auto !important;
+    flex-shrink: 0 !important;
     box-sizing: border-box !important;
 }
 
 #view-login.hidden {
-    display: none !important;
-}
-
-.input-pendente {
-    border: 1px solid #f59e0b !important;
-    background: rgba(245, 158, 11, 0.05) !important;
-    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2) !important;
-}
-
-input:disabled {
-    cursor: default;
-}
-
-#view-login:not(.hidden) ~ #app-shell,
-#view-login:not(.hidden) ~ .navbar,
-body:has(#view-login:not(.hidden)) #app-shell,
-body:has(#view-login:not(.hidden)) .navbar {
     display: none !important;
 }
 
