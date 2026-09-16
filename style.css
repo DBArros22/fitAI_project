@@ -157,11 +157,11 @@ flex-direction: column;
 #view-lobby.content-grid {
     display: grid !important;
     grid-template-columns: repeat(3, 1fr) !important;
-    gap: 32px !important; /* Espaçamento proporcional entre os cards maiores */
+    gap: 36px !important; /* Espaçamento maior entre os cards */
     
-    /* Aumenta a largura máxima permitida para o grid ocupar mais espaço na horizontal */
-    max-width: 1400px !important; 
-    width: 92% !important;        /* Ocupa 92% da largura da tela, evitando colar nas bordas */
+    /* AUMENTADO AQUI: Expande o grid para aproveitar mais as laterais da tela */
+    max-width: 1600px !important; 
+    width: 95% !important;        
     
     margin: auto !important;
     min-height: calc(100vh - 80px) !important;
@@ -171,12 +171,14 @@ flex-direction: column;
     box-sizing: border-box !important;
 }
 
-/* Redimensionamento proporcional e robusto de cada card */
 #view-lobby .menu-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 28px !important;
-    padding: 50px 60px !important;      /* tamanho dos cards */
+    
+    /* AUMENTADO AQUI: Deixa os cards fisicamente maiores e mais encorpados */
+    padding: 60px 45px !important; 
+    
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -185,32 +187,30 @@ flex-direction: column;
     box-sizing: border-box !important;
 }
 
-/* Ícones maiores e proporcionais */
 #view-lobby .menu-card .card-icon {
-    width: 64px !important;
-    height: 64px !important;
-    border-radius: 16px !important;
+    width: 72px !important;  /* Ícone proporcionalmente maior */
+    height: 72px !important;
+    border-radius: 18px !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px !important;
+    margin-bottom: 24px !important;
 }
 
 #view-lobby .menu-card .card-icon svg {
-    width: 32px !important;
-    height: 32px !important;
+    width: 36px !important;
+    height: 36px !important;
 }
 
-/* Tipografia ampliada para acompanhar o novo porte dos cards */
 #view-lobby .menu-card h3 {
-    font-size: 1.25rem !important;
-    margin-bottom: 10px !important;
+    font-size: 1.4rem !important; /* Título maior */
+    margin-bottom: 12px !important;
 }
 
 #view-lobby .menu-card p {
-    font-size: 1rem !important;
+    font-size: 1.05rem !important; /* Texto descritivo maior */
     opacity: 0.85;
-    line-height: 1.4;
+    line-height: 1.5;
 }
 
 /* --- NAVBAR PREMIUM --- */
