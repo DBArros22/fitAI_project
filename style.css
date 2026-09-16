@@ -775,35 +775,20 @@ transform: translateY(-3px) scale(1.1);
 /* --- REGISTRO CONTAINER --- */
 
 .registro-container {
-
-display: grid;
-
-grid-template-columns: 1fr 1fr;
-
-gap: 30px;
-
-padding: 30px 5%;
-
-max-width: 1400px;
-
-margin: 0 auto;
-
-align-items: start;
-
-width: 100%;
-
+    display: grid;
+    grid-template-columns: 1fr 1.2fr; /* Dá um pouco mais de largura para o log de performance */
+    gap: 30px;
+    padding: 30px 5%;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+    width: 100%;
 }
-
-
 
 @media (max-width: 900px) {
-
-.registro-container {
-
-grid-template-columns: 1fr;
-
-}
-
+    .registro-container {
+        grid-template-columns: 1fr;
+    }
 }
 
 
