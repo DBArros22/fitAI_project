@@ -2044,7 +2044,8 @@ function voltarListaConsulta() {
 }
 
 function atualizarListaExercicios() {
-    const campoGrupo = document.getElementById('select-grupo-sub');
+    // CORRIGIDO: O ID correto no HTML é 'select-grupo'
+    const campoGrupo = document.getElementById('select-grupo');
     if (!campoGrupo) return;
 
     const grupo = campoGrupo.value;
@@ -2065,6 +2066,7 @@ function atualizarListaExercicios() {
         if (camposForca) camposForca.classList.remove('hidden');
         if (camposCardio) camposCardio.classList.add('hidden');
     }
+    
     const lista = dicionarioExercicios[grupo] || [];
     selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
