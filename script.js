@@ -1043,8 +1043,13 @@ function showView(viewId) {
         const targetId = viewAlvo.id;
 
         // Regras específicas de layout por tipo de container
-        if (targetId === 'view-registro' || targetId === 'registro') {
+        if (targetId === 'view-registro' || targetId === 'registro' || cleanId === 'registro') {
             viewAlvo.style.setProperty('display', 'grid', 'important');
+            viewAlvo.style.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
+            viewAlvo.style.setProperty('gap', '30px', 'important');
+            viewAlvo.style.setProperty('max-width', '1300px', 'important');
+            viewAlvo.style.setProperty('margin', '0 auto', 'important');
+            viewAlvo.style.setProperty('align-items', 'start', 'important');
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
             viewAlvo.style.setProperty('display', 'grid', 'important');
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
