@@ -1615,28 +1615,44 @@ function solicitarNomeFichaCustom(callback) {
 }
 
 function abrirFicha(nome) {
+    // 1. Define a ficha ativa globalmente e persiste
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
+    localStorage.setItem('ultimaFicha', nome);
+
+    // 2. Aciona o roteador SPA para exibir a tela de registro de forma segura
     if (typeof showView === 'function') {
         showView('view-registro');
     } else {
+        // Fallback robusto caso o roteador falhe
         document.querySelectorAll('main, section, .page-container').forEach(el => {
             el.classList.add('hidden');
-            el.style.display = 'none';
+            el.style.setProperty('display', 'none', 'important');
         });
         const viewRegistro = document.getElementById('view-registro');
         if (viewRegistro) {
             viewRegistro.classList.remove('hidden');
-            viewRegistro.style.display = 'grid';
+            viewRegistro.style.setProperty('display', 'grid', 'important');
+            viewRegistro.style.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
+            viewRegistro.style.setProperty('gap', '30px', 'important');
         }
     }
+
+    // 3. Atualiza o título da ficha ativa no topo do formulário
     const titulo = document.getElementById('nome-ficha-ativa');
     if (titulo) {
         titulo.innerText = nome.toUpperCase();
     }
-    if (typeof atualizarListaExercicios === 'function') {
-        atualizarListaExercicios();
+
+    // 4. Reseta os selects para evitar dados residuais da ficha anterior
+    const selectGrupo = document.getElementById('select-grupo');
+    const selectExercicio = document.getElementById('select-exercicio');
+    if (selectGrupo) selectGrupo.value = "";
+    if (selectExercicio) {
+        selectExercicio.innerHTML = '<option value="">Selecione o Grupo primeiro...</option>';
     }
+
+    // 5. Renderiza o log de performance (à direita) com os dados da ficha atual
     if (typeof renderizarResumoFicha === 'function') {
         renderizarResumoFicha(nome);
     }
