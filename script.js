@@ -1617,46 +1617,41 @@ function solicitarNomeFichaCustom(callback) {
 function abrirFicha(nome) {
     console.log("👉 1. Clique detectado na ficha:", nome);
 
+    if (!nome) {
+        nome = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    }
+    if (!nome) {
+        console.error("Nenhuma ficha ativa encontrada para abrir.");
+        return;
+    }
+
     // Salva o estado global
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
     localStorage.setItem('ultimaFicha', nome);
 
-    // 2. Dispara o roteador de forma forçada
+    // Dispara o roteador para exibir a view de registro
     if (typeof showView === 'function') {
         showView('view-registro');
-    } else {
-        console.warn("⚠️ showView não encontrada, acionando fallback manual...");
-        document.querySelectorAll('main, section, .page-container').forEach(el => {
-            el.classList.add('hidden');
-            el.style.setProperty('display', 'none', 'important');
-        });
-        const viewRegistro = document.getElementById('view-registro');
-        if (viewRegistro) {
-            viewRegistro.classList.remove('hidden');
-            viewRegistro.removeAttribute('hidden');
-            viewRegistro.style.setProperty('display', 'grid', 'important');
-        }
     }
 
-    // 3. Força a exibição visível do container e remove qualquer hidden interno
+    // Força a exibição visível do container principal e remove qualquer classe hidden interna
     const viewRegistro = document.getElementById('view-registro');
     if (viewRegistro) {
         viewRegistro.classList.remove('hidden');
         viewRegistro.removeAttribute('hidden');
         viewRegistro.style.setProperty('display', 'grid', 'important');
         
-        // Remove classes hidden de elementos filhos (como o log de performance)
+        // Remove classes hidden de qualquer elemento filho (garantindo o log de performance)
         viewRegistro.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
     }
 
-    // 4. Atualiza o título
-    const titulo = document.getElementById('nome-ficha-ativa');
-    if (titulo) {
+    // Atualiza todos os títulos da ficha ativa na tela
+    document.querySelectorAll('#nome-ficha-ativa').forEach(titulo => {
         titulo.innerText = nome.toUpperCase();
-    }
+    });
 
-    // 5. Executa os hooks com tratamento de erro individual para não travar a tela
+    // Executa os hooks de renderização e preenchimento
     try {
         if (typeof renderizarResumoFicha === 'function') {
             renderizarResumoFicha(nome);
@@ -1673,7 +1668,7 @@ function abrirFicha(nome) {
         console.error("Erro em atualizarListaExercicios:", e);
     }
 
-    console.log("✅ 3. Processo de abertura de ficha finalizado.");
+    console.log("✅ 3. Processo de abertura de ficha finalizado para:", nome);
 }
 
 function voltarParaFichas() {
