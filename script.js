@@ -1615,16 +1615,18 @@ function solicitarNomeFichaCustom(callback) {
 }
 
 function abrirFicha(nome) {
-    // 1. Define a ficha ativa globalmente e persiste
+    console.log("👉 1. Clique detectado na ficha:", nome);
+
+    // Salva o estado global
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
     localStorage.setItem('ultimaFicha', nome);
 
-    // 2. Aciona o roteador SPA para exibir a tela de registro de forma segura
+    // 2. Dispara o roteador de forma forçada
     if (typeof showView === 'function') {
         showView('view-registro');
     } else {
-        // Fallback robusto caso o roteador falhe
+        console.warn("⚠️ showView não encontrada, acionando fallback manual...");
         document.querySelectorAll('main, section, .page-container').forEach(el => {
             el.classList.add('hidden');
             el.style.setProperty('display', 'none', 'important');
@@ -1632,30 +1634,46 @@ function abrirFicha(nome) {
         const viewRegistro = document.getElementById('view-registro');
         if (viewRegistro) {
             viewRegistro.classList.remove('hidden');
+            viewRegistro.removeAttribute('hidden');
             viewRegistro.style.setProperty('display', 'grid', 'important');
-            viewRegistro.style.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
-            viewRegistro.style.setProperty('gap', '30px', 'important');
         }
     }
 
-    // 3. Atualiza o título da ficha ativa no topo do formulário
+    // 3. Força a exibição visível do container e remove qualquer hidden interno
+    const viewRegistro = document.getElementById('view-registro');
+    if (viewRegistro) {
+        viewRegistro.classList.remove('hidden');
+        viewRegistro.removeAttribute('hidden');
+        viewRegistro.style.setProperty('display', 'grid', 'important');
+        
+        // Remove classes hidden de elementos filhos (como o log de performance)
+        viewRegistro.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+    }
+
+    // 4. Atualiza o título
     const titulo = document.getElementById('nome-ficha-ativa');
     if (titulo) {
         titulo.innerText = nome.toUpperCase();
     }
 
-    // 4. Reseta os selects para evitar dados residuais da ficha anterior
-    const selectGrupo = document.getElementById('select-grupo');
-    const selectExercicio = document.getElementById('select-exercicio');
-    if (selectGrupo) selectGrupo.value = "";
-    if (selectExercicio) {
-        selectExercicio.innerHTML = '<option value="">Selecione o Grupo primeiro...</option>';
+    // 5. Executa os hooks com tratamento de erro individual para não travar a tela
+    try {
+        if (typeof renderizarResumoFicha === 'function') {
+            renderizarResumoFicha(nome);
+        }
+    } catch (e) {
+        console.error("Erro em renderizarResumoFicha:", e);
     }
 
-    // 5. Renderiza o log de performance (à direita) com os dados da ficha atual
-    if (typeof renderizarResumoFicha === 'function') {
-        renderizarResumoFicha(nome);
+    try {
+        if (typeof atualizarListaExercicios === 'function') {
+            atualizarListaExercicios();
+        }
+    } catch (e) {
+        console.error("Erro em atualizarListaExercicios:", e);
     }
+
+    console.log("✅ 3. Processo de abertura de ficha finalizado.");
 }
 
 function voltarParaFichas() {
