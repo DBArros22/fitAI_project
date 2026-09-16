@@ -1064,23 +1064,31 @@ function showView(viewId) {
     }
 
     // 5. GANCHOS ESPECÍFICOS (HOOKS)
-    if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    } else if (cleanId === 'registro') {
-        if (!window.fichaAtiva) {
-            window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+    try {
+        if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
+            renderizarFichas();
+        } else if (cleanId === 'registro') {
+            if (!window.fichaAtiva) {
+                window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+            }
+            const nomeFichaEl = document.getElementById('nome-ficha-ativa');
+            if (nomeFichaEl && window.fichaAtiva) {
+                nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
+            }
+            if (typeof renderizarResumoFicha === 'function') {
+                renderizarResumoFicha(window.fichaAtiva);
+            }
+            if (typeof atualizarListaExercicios === 'function') {
+                atualizarListaExercicios();
+            }
+        } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
+            renderizarFichas();
+        } else if (cleanId === 'perfil') {
+            if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
+            if (typeof renderizarPerfil === 'function') renderizarPerfil();
         }
-        const nomeFichaEl = document.getElementById('nome-ficha-ativa');
-        if (nomeFichaEl && window.fichaAtiva) {
-            nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
-        }
-        if (typeof renderizarResumoFicha === 'function') renderizarResumoFicha(window.fichaAtiva);
-        if (typeof atualizarListaExercicios === 'function') atualizarListaExercicios();
-    } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    } else if (cleanId === 'perfil') {
-        if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
-        if (typeof renderizarPerfil === 'function') renderizarPerfil();
+    } catch (erroHook) {
+        console.error("Erro crítico executando o hook da view:", erroHook);
     }
 
     // Persistência de estado
