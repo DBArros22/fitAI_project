@@ -1733,9 +1733,16 @@ return valor + "s";
 
 
 function renderizarResumoFicha(nome) {
-    // Aponta para o ID correto existente no seu HTML da view-registro: 'lista-treino'
+    if (!nome) {
+        nome = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    }
+
+    // Aponta para o ID correto existente no HTML da view-registro
     const container = document.getElementById('lista-treino') || document.getElementById('lista-exercicios-estaticos');
-    if (!container) return;
+    if (!container) {
+        console.warn("Container #lista-treino não encontrado na tela atual.");
+        return;
+    }
     
     container.innerHTML = "";
     const exercicios = bancoDeDados.fichas && bancoDeDados.fichas[nome] ? bancoDeDados.fichas[nome] : [];
@@ -1766,7 +1773,7 @@ function renderizarResumoFicha(nome) {
             </div>
         </div>`;
     });
-} 
+}
 
 
 
