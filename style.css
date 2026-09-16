@@ -772,25 +772,32 @@ transform: translateY(-3px) scale(1.1);
 
 
 
-/* --- REGISTRO CONTAINER --- */
+/* -------------- conteiners pagina registro ------- */
+
 
 .registro-container {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr; /* Dá um pouco mais de largura para o log de performance */
-    gap: 30px;
-    padding: 30px 5%;
-    max-width: 1400px;
-    margin: 0 auto;
-    align-items: start;
-    width: 100%;
+    display: none; /* Mantém oculto por padrão até o roteador chamar */
 }
 
+/* Quando a classe .hidden for removida, ele assume o Grid perfeitamente */
+.registro-container:not(.hidden) {
+    display: grid !important;
+    grid-template-columns: 1fr 1.2fr !important; /* Coluna do form e log proporcional */
+    gap: 30px !important;
+    padding: 30px 5% !important;
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    align-items: start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Responsividade para telas menores */
 @media (max-width: 900px) {
-    .registro-container {
-        grid-template-columns: 1fr;
+    .registro-container:not(.hidden) {
+        grid-template-columns: 1fr !important;
     }
 }
-
 
 
 /* --- PLANO B --- */
