@@ -191,70 +191,69 @@
     </div>
 </main>
 
-<main id="view-registro" class="hidden registro-container">
-    <aside class="form-group">
-        <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-            <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVO SET</h3>
-            
-            <div class="form-group">
-        <select id="select-grupo" onchange="atualizarListaExercicios()">
-             <option value="">Selecione o Grupo...</option>
-             <option value="Peitoral">Peitoral</option>
-             <option value="Dorsais">Dorsais (Costas)</option>
-             <option value="Trapézio">Trapézio</option>
-             <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
-             <option value="Quadríceps">Quadríceps</option>
-             <option value="Posteriores de Coxa">Posteriores de Coxa</option>
-             <option value="Glúteos">Glúteos</option>
-             <option value="Bíceps/Braquial">Bíceps/Braquial</option>
-             <option value="Tríceps Braquial">Tríceps Braquial</option>
-             <option value="Antebraço">Antebraço</option>
-             <option value="Core/Abdominal">Core/Abdominal</option>
-             <option value="Panturrilhas">Panturrilhas</option>
-             <option value="Cardio & Aeróbico">Cardio & Aeróbico</option>
-        </select>
-                 
-                <select id="select-exercicio" class="input-field"></select>
+<main id="view-registro" class="registro-container hidden">
+    
+    <aside class="glass-panel">
+        <h3 id="nome-ficha-ativa" class="italic-bold" style="margin-bottom: 20px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px;">NOVA FICHA</h3>
+        
+        <div class="form-group">
+            <select id="select-grupo" onchange="atualizarListaExercicios()">
+                 <option value="">Selecione o Grupo...</option>
+                 <option value="Peitoral">Peitoral</option>
+                 <option value="Dorsais">Dorsais (Costas)</option>
+                 <option value="Trapézio">Trapézio</option>
+                 <option value="Deltoides (Ombros)">Deltoides (Ombros)</option>
+                 <option value="Quadríceps">Quadríceps</option>
+                 <option value="Posteriores de Coxa">Posteriores de Coxa</option>
+                 <option value="Glúteos">Glúteos</option>
+                 <option value="Bíceps/Braquial">Bíceps/Braquial</option>
+                 <option value="Tríceps Braquial">Tríceps Braquial</option>
+                 <option value="Antebraço">Antebraço</option>
+                 <option value="Core/Abdominal">Core/Abdominal</option>
+                 <option value="Panturrilhas">Panturrilhas</option>
+                 <option value="Cardio &amp; Aeróbico">Cardio &amp; Aeróbico</option>
+            </select>
+             
+            <select id="select-exercicio" class="input-field" style="margin-top: 15px;"></select>
 
-                <div id="campos-forca" class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 5px;">
-                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 20px;">
-                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 900; font-style: italic;">x</span>
-                    </div>
-                    
-                    <div class="input-wrapper">
-                        <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field" style="text-align: center;">
-                    </div>
-                    
-                    <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
-                        <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 25px;">
-                        <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 800; font-size: 0.7rem;">KG</span>
-                    </div>
+            <div id="campos-forca" class="grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px;">
+                <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                    <input type="text" id="series-ex" placeholder="Sets" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 20px;">
+                    <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 900; font-style: italic;">x</span>
                 </div>
-
-                <div id="campos-cardio" class="hidden">                 
-                    <div style="position: relative; width: 100%;">
-                        <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="text-align: center; letter-spacing: 2px; font-weight: 800;">
-                        <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 8px; text-transform: uppercase;">Formato: HH:MM:SS</small>
-                    </div>
+                
+                <div class="input-wrapper">
+                    <input type="text" id="reps-ex" placeholder="Reps" inputmode="numeric" class="input-field" style="text-align: center;">
                 </div>
-
-                <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-                    <button onclick="adicionarExercicio()" class="btn-primary" style="width: 100%;">SALVAR SET</button>
-                    <button onclick="showView('planilhas')" class="btn-recuperar-senha" style="margin: 0 auto;">← Voltar para Planilhas</button>
+                
+                <div class="input-wrapper" style="position: relative; display: flex; align-items: center;">
+                    <input type="text" id="carga-ex" placeholder="Kg" inputmode="numeric" class="input-field" style="text-align: center; padding-right: 25px;">
+                    <span style="position: absolute; right: 10px; color: var(--accent-blue); font-weight: 800; font-size: 0.7rem;">KG</span>
                 </div>
             </div>
-        </section>
+
+            <div id="campos-cardio" style="margin-top: 15px;">                 
+                <div style="position: relative; width: 100%;">
+                    <input type="text" id="tempo-ex" placeholder="00:00:00" inputmode="numeric" oninput="mascaraTempo(this)" class="input-field" style="text-align: center; letter-spacing: 2px; font-weight: 800;">
+                    <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 8px; text-transform: uppercase;">Formato: HH:MM:SS</small>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+                <button onclick="adicionarExercicio()" class="btn-primary" style="width: 100%;">SALVAR SET</button>
+                <button onclick="showView('fichas')" class="btn-recuperar-senha" style="margin: 0 auto; background: none; border: none; cursor: pointer; color: var(--text-secondary);">← Voltar para Fichas</button>
+            </div>
+        </div>
     </aside>
 
-    <section class="glass-panel" style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 30px; box-shadow: var(--shadow-pro);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
-            <h2 class="italic-bold" style="font-size: 1rem; letter-spacing: 1px;">LOG DE PERFORMANCE</h2>
-            <button onclick="limparTreino()" style="color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; transition: 0.3s;">LIMPAR</button>
+   >
+    <section class="glass-panel">
+        <h3 class="italic-bold" style="margin-bottom: 20px; color: white; text-transform: uppercase; letter-spacing: 1px; font-size: 1.1rem;">LOG DE PERFORMANCE</h3>
+        <div id="lista-treino">
+            
         </div>
-        <div id="lista-treino" class="fade-in" style="max-height: 500px; overflow-y: auto;">
-            </div>
     </section>
+
 </main>
 
 <main id="view-blog" class="hidden" style="padding: 20px 5%;">
