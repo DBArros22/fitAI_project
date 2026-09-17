@@ -141,8 +141,6 @@ flex-direction: column;
     width: 100%;
     max-width: 440px;
     box-shadow: var(--shadow-pro);
-    
-    /* Garante que o card flutue exatamente no meio e nunca encolha */
     margin: auto !important;
     flex-shrink: 0 !important;
     box-sizing: border-box !important;
@@ -238,16 +236,6 @@ top: 0;
 z-index: 50;
 
 }
-
-
-
-
-
-
-
-
-
-
 
 
 .logo-main {
