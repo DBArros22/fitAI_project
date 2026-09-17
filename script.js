@@ -2544,19 +2544,27 @@ function renderizarLogTreino(nomeFicha) {
     if (!container) return;
     container.innerHTML = "";
 
-    if (!bancoDeDados || !bancoDeDados.fichas || !bancoDeDados.fichas[ativa]) {
+    // Tenta buscar do localStorage de forma segura
+    let dadosSalvos = null;
+    try {
+        // Se o seu app salva tudo num objeto chamado 'bancoDeDados' no localStorage:
+        const dbLocal = JSON.parse(localStorage.getItem('bancoDeDados'));
+        if (dbLocal && dbLocal.fichas && dbLocal.fichas[ativa]) {
+            dadosSalvos = dbLocal.fichas[ativa];
+        } else {
+            // Plano B: Tenta buscar direto pela chave específica da ficha
+            dadosSalvos = JSON.parse(localStorage.getItem(`ficha_${ativa}`)) || [];
+        }
+    } catch (e) {
+        dadosSalvos = [];
+    }
+
+    if (!dadosSalvos || dadosSalvos.length === 0) {
         container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
         return;
     }
 
-    const exercicios = bancoDeDados.fichas[ativa];
-
-    if (exercicios.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
-        return;
-    }
-
-    exercicios.forEach(ex => {
+    dadosSalvos.forEach(ex => {
         let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
             ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${typeof formatarTempoParaExibicao === 'function' ? formatarTempoParaExibicao(ex.tempo) : ex.tempo}</span>`
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
@@ -2575,7 +2583,7 @@ function renderizarLogTreino(nomeFicha) {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                 </div>
-            </div>`;
+            `;
     });
 }
 
