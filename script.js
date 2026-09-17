@@ -1651,13 +1651,15 @@ function abrirFicha(nome) {
         titulo.innerText = nome.toUpperCase();
     });
 
-    // Executa os hooks de renderização e preenchimento
+    // Executa os hooks de renderização e preenchimento de forma blindada
     try {
-        if (typeof renderizarResumoFicha === 'function') {
+        if (typeof renderizarLogTreino === 'function') {
+            renderizarLogTreino(nome);
+        } else if (typeof renderizarResumoFicha === 'function') {
             renderizarResumoFicha(nome);
         }
     } catch (e) {
-        console.error("Erro em renderizarResumoFicha:", e);
+        console.error("Erro ao renderizar o log da ficha:", e);
     }
 
     try {
