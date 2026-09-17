@@ -428,6 +428,13 @@ transform: translateY(-3px) scale(1.1);
     }
 }
 
+#lista-treino {
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 /* --- PLANO B --- */
 #view-aparelho-ocupado {
 justify-content: center;
