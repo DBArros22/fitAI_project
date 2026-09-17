@@ -776,13 +776,12 @@ transform: translateY(-3px) scale(1.1);
 
 
 .registro-container {
-    display: none; /* Mantém oculto por padrão até o roteador chamar */
+    display: none !important;
 }
 
-/* Quando a classe .hidden for removida, ele assume o Grid perfeitamente */
 .registro-container:not(.hidden) {
     display: grid !important;
-    grid-template-columns: 1fr 1.2fr !important; /* Coluna do form e log proporcional */
+    grid-template-columns: 1fr 1.2fr !important; /* Coluna 1: Formulário | Coluna 2: Log de Performance */
     gap: 30px !important;
     padding: 30px 5% !important;
     max-width: 1400px !important;
@@ -792,8 +791,7 @@ transform: translateY(-3px) scale(1.1);
     box-sizing: border-box !important;
 }
 
-/* Responsividade para telas menores */
-@media (max-width: 900px) {
+@media (max-width: 950px) {
     .registro-container:not(.hidden) {
         grid-template-columns: 1fr !important;
     }
