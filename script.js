@@ -2535,29 +2535,41 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-
-function renderizarLogTreino() {
+function renderizarLogTreino(nomeFicha) {
+    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva');
     const container = document.getElementById('lista-treino');
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if(!container || !ativa) return;
+    
+    if (!container) return;
     container.innerHTML = "";
-    const exercicios = bancoDeDados.fichas[ativa] || [];
+
+    if (!bancoDeDados || !bancoDeDados.fichas || !bancoDeDados.fichas[ativa]) {
+        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+        return;
+    }
+
+    const exercicios = bancoDeDados.fichas[ativa];
+
+    if (exercicios.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+        return;
+    }
+
     exercicios.forEach(ex => {
-        let infoBadge = ex.tipo === 'tempo'
-            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
-            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series}x${ex.reps} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga}kg</span></span>`;
+        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
+            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${typeof formatarTempoParaExibicao === 'function' ? formatarTempoParaExibicao(ex.tempo) : ex.tempo}</span>`
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
 
         container.innerHTML += `
             <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
                 <div style="flex: 1;">
-                    <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
+                    <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome || ex.exercicio}</h4>
                     <div id="dados-log-${ex.id}" style="margin-top: 5px;">${infoBadge}</div>
                 </div>
                 <div id="acoes-log-${ex.id}" style="display: flex; gap: 10px;">
-                    <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')">
+                    <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')" title="Editar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome} do treino atual?', () => removerExercicio(${ex.id}, 'log'))">
+                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome || ex.exercicio} do treino atual?', () => removerExercicio(${ex.id}, 'log'))" title="Excluir">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                 </div>
@@ -2565,233 +2577,92 @@ function renderizarLogTreino() {
     });
 }
 
-
-
-function ativarEdicaoInline(id, tipo) {
-
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
-
-    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-
-   
-
-    const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
-
-    const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
-
-
-
-    const estiloEsconderSetas = `
-
-        <style>
-
-            input::-webkit-outer-spin-button,
-
-            input::-webkit-inner-spin-button {
-
-                -webkit-appearance: none;
-
-                margin: 0;
-
-            }
-
-            input[type=number] {
-
-                -moz-appearance: textfield;
-
-            }
-
-        </style>
-
-    `;
-
-
-
-    // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
-
-    if (ex.tempo && ex.tempo.toString().trim() !== "") {
-
-        const valorTempo = ex.tempo || "00:00:00";
-
-
-
-        // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
-
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-
-            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
-
-                <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric"
-
-                    oninput="automatizarMascaraTempo(this)"
-
-                    style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
-
-                <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">
-
-            </div>`;
-
-    } else {
-
-        // Formato para Musculação Pura (Séries x Reps — KG)
-
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-
-            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-
-               
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-
-               
-
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
-
-            </div>`;
-
-    }
-
-    // Botões de Confirmação e Cancelamento Inline
-
-    document.getElementById(acoesId).innerHTML = `
-
-        <div style="display: flex; gap: 8px; align-items: center;">
-
-            <button onclick="salvarEdicaoInline(${id}, '${tipo}')"
-
-                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-
-                onmouseover="this.style.background='#10b981'; this.style.color='white'"
-
-                onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
-
-                ✓
-
-            </button>
-
-            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}"
-
-                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-
-                onmouseover="this.style.background='#ef4444'; this.style.color='white'"
-
-                onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
-
-                ✕
-
-            </button>
-
-        </div>`;
-
+// Mantém o alias para evitar que qualquer outra chamada antiga quebre
+function renderizarResumoFicha(nome) {
+    renderizarLogTreino(nome);
 }
 
-
-
+// --- EDIÇÃO INLINE (Versão única limpa e sem duplicidade) ---
 function ativarEdicaoInline(id, tipo) {
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
-    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
+    const ativa = window.fichaAtivaNoMomento || window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas[ativa]) return;
     
+    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
+    if (!ex) return;
+
     const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
     const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
 
     const estiloEsconderSetas = `
         <style>
-            input::-webkit-outer-spin-button,
-            input::-webkit-inner-spin-button {
-                -webkit-appearance: none;
-                margin: 0;
-            }
-            input[type=number] {
-                -moz-appearance: textfield;
-            }
+            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+            input[type=number] { -moz-appearance: textfield; }
         </style>
     `;
 
-    // DISTINÇÃO GARANTIDA: Se o exercício possui a propriedade tempo preenchida, assume o formato Cardio
     if (ex.tempo && ex.tempo.toString().trim() !== "") {
         const valorTempo = ex.tempo || "00:00:00";
-
-        // inputmode definido para numérico e evento chamando a automação da máscara em tempo real
         document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
             <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
                 <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric" 
-                    oninput="automatizarMascaraTempo(this)"
+                    oninput="if(typeof automatizarMascaraTempo==='function') automatizarMascaraTempo(this)"
                     style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
-                <small style="color: var(--text-secondary); font-size: 9px; display: block; text-align: center; margin-top: 4px; text-transform: uppercase;">Formato: HH:MM:SS</small>
             </div>`;
     } else {
-        // Formato para Musculação Pura (Séries x Reps — KG)
         document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
             <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-                
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-                
                 <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
                 <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
             </div>`;
     }
 
-    // Botões de Confirmação e Cancelamento Inline
     document.getElementById(acoesId).innerHTML = `
         <div style="display: flex; gap: 8px; align-items: center;">
             <button onclick="salvarEdicaoInline(${id}, '${tipo}')" 
-                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-                onmouseover="this.style.background='#10b981'; this.style.color='white'" 
-                onmouseout="this.style.background='rgba(16, 185, 129, 0.15)'; this.style.color='#10b981'">
+                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold;" title="Salvar">
                 ✓
             </button>
-            <button onclick="${tipo === 'resumo' ? 'renderizarResumoFicha(fichaAtiva)' : 'renderizarLogTreino()'}" 
-                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold; transition: all 0.2s;"
-                onmouseover="this.style.background='#ef4444'; this.style.color='white'" 
-                onmouseout="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#ef4444'">
+            <button onclick="renderizarLogTreino('${ativa}')" 
+                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold;" title="Cancelar">
                 ✕
             </button>
         </div>`;
 }
 
 function salvarEdicaoInline(id, tipo) {
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
+    const ativa = window.fichaAtivaNoMomento || window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas[ativa]) return;
+    
     const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
     
     if (ex) {
         const inputTempo = document.getElementById(`edit-tempo-${id}`);
         
         if (inputTempo) {
-            // Atualiza o tempo digitado no formato correto
             ex.tempo = inputTempo.value || "00:00:00";
             ex.series = "";
             ex.reps = "";
             ex.carga = "";
         } else {
-            // Atualiza os valores convencionais de musculação
             ex.series = parseInt(document.getElementById(`edit-series-${id}`).value) || 0;
             ex.reps = parseInt(document.getElementById(`edit-reps-${id}`).value) || 0;
             ex.carga = parseFloat(document.getElementById(`edit-carga-${id}`).value) || 0;
             ex.tempo = "";
         }
 
-        if (typeof salvarBancoDeDadosLocal === 'function') {
+        if (typeof salvarBanco === 'function') {
+            salvarBanco();
+        } else if (typeof salvarBancoDeDadosLocal === 'function') {
             salvarBancoDeDadosLocal();
         } else {
             localStorage.setItem('assistfit_banco', JSON.stringify(bancoDeDados));
         }
 
-        if (tipo === 'resumo') {
-            renderizarResumoFicha(ativa);
-        } else {
-            renderizarLogTreino();
-        }
+        renderizarLogTreino(ativa);
     }
 }
 
