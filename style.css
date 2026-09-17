@@ -241,18 +241,12 @@ z-index: 50;
 
 
 
-.auth-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 28px;
-    padding: 40px;
-    width: 100%;
-    max-width: 440px;
-    box-shadow: var(--shadow-pro);
-    
-    /* AJUSTE SÊNIOR: Força o card a ficar no centro absoluto e ter respiro em qualquer tela */
-    margin: auto !important; 
-}
+
+
+
+
+
+
 
 
 
