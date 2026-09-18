@@ -367,19 +367,7 @@ align-items: center;
 transition: 0.3s ease;
 }
 
-.treino-item {
-background: var(--bg-input);
-border: 1px solid var(--border-color);
-border-radius: 18px;
-padding: 16px;
-margin-bottom: 12px;
-display: flex;
-justify-content: space-between;
-align-items: center;
-transition: 0.3s ease;
-}
-
-.treino-item:hover, .ficha-item:hover {
+.ficha-item:hover {
 border-color: var(--accent-blue);
 transform: scale(1.01);
 }
@@ -405,7 +393,7 @@ border-color: var(--accent-blue);
 transform: translateY(-3px) scale(1.1);
 }
 
-/* -------------- conteiners pagina registro ------- */
+/* -------------- CONTEINERS PÁGINA REGISTRO & LOG DE PERFORMANCE ------- */
 .registro-container {
     display: none !important;
 }
@@ -429,10 +417,43 @@ transform: translateY(-3px) scale(1.1);
 }
 
 #lista-treino {
-    min-height: 150px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    width: 100% !important;
+    min-height: 150px !important;
+    box-sizing: border-box !important;
+}
+
+#lista-treino .treino-item {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: var(--bg-input) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 18px !important;
+    padding: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    transition: 0.3s ease !important;
+}
+
+#lista-treino .treino-item:hover {
+    border-color: var(--accent-blue) !important;
+    transform: scale(1.01) !important;
+}
+
+#lista-treino .treino-item h4 {
+    color: var(--text-primary) !important;
+    font-size: 0.95rem !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    margin: 0 0 4px 0 !important;
+}
+
+#lista-treino .treino-item span {
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
 }
 
 /* --- PLANO B --- */
@@ -671,7 +692,7 @@ html {
 overflow-y: scroll;
 }
 
-/* ajute exclusivo nos cards de treinos na pagina consulta-geral */
+/* AJUSTE EXCLUSIVO NOS CARDS DE TREINOS NA PÁGINA CONSULTA-GERAL */
 #lista-nomes-treinos {
 display: grid !important;
 grid-template-columns: repeat(2, 1fr) !important;
@@ -683,7 +704,7 @@ align-items: start !important;
 background: var(--bg-card) !important;
 border: 1px solid var(--border-color) !important;
 border-radius: 16px !important;
-padding: 05px 10px !important;
+padding: 5px 10px !important;
 height: auto !important;
 min-height: unset !important;
 display: flex !important;
@@ -692,7 +713,7 @@ justify-content: space-between !important;
 box-sizing: border-box !important;
 }
 
-/* renderização forçada */
+/* RENDERIZAÇÃO FORÇADA */
 #view-crossfit-lobby.page-container {
 display: flex !important;
 justify-content: center !important;
