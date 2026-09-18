@@ -2078,7 +2078,9 @@ function atualizarListaExercicios() {
 
 // ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
 function adicionarExercicio() {
-    // 1. Resgata a ficha ativa de forma 100% segura (Variável global, localStorage ou pega direto do título na tela)
+    console.log("=== INICIO DO FLUXO DE SALVAR ===");
+
+    // 1. Identifica a ficha ativa
     let fichaAtiva = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     
     if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
@@ -2088,15 +2090,15 @@ function adicionarExercicio() {
         }
     }
 
-    // Se continuar sem ficha, barra com aviso claro
     if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
-        alert("Erro crítico: Nenhuma ficha ativa identificada. Por favor, volte e selecione a ficha novamente.");
+        alert("Erro: Nenhuma ficha ativa identificada.");
         return;
     }
+    console.log("Ficha ativa identificada:", fichaAtiva);
 
-    // 2. Coleta os valores dos inputs do formulário
+    // 2. Coleta os campos
     const grupo = document.getElementById('select-grupo').value;
-    const exercicio = document.getElementById('select-exercicio').value || grupo; // fallback se o select de exercício estiver vazio
+    const exercicio = document.getElementById('select-exercicio').value || grupo;
     const series = document.getElementById('series-ex').value;
     const reps = document.getElementById('reps-ex').value;
     const carga = document.getElementById('carga-ex').value;
@@ -2107,7 +2109,7 @@ function adicionarExercicio() {
         return;
     }
 
-    // 3. Monta o objeto do novo exercício
+    // 3. Monta o objeto
     const novoItem = {
         id: Date.now(),
         nome: exercicio,
@@ -2119,37 +2121,39 @@ function adicionarExercicio() {
         tipo: tempo ? "cardio" : "forca"
     };
 
-    // 4. Salva no banco de dados real do localStorage ('assistfit_banco')
-    let bancoStr = localStorage.getItem('assistfit_banco');
-    let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
+    console.log("Item montado:", novoItem);
 
-    if (!banco.fichas) {
-        banco.fichas = {};
+    // 4. Salva no localStorage com tratamento de erro rigoroso
+    try {
+        let bancoStr = localStorage.getItem('assistfit_banco');
+        let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
+
+        if (!banco.fichas) banco.fichas = {};
+        if (!banco.fichas[fichaAtiva]) banco.fichas[fichaAtiva] = [];
+
+        banco.fichas[fichaAtiva].push(novoItem);
+        
+        localStorage.setItem('assistfit_banco', JSON.stringify(banco));
+        localStorage.setItem('fichaAtiva', fichaAtiva);
+        window.fichaAtiva = fichaAtiva;
+
+        console.log("Salvo com sucesso no localStorage!");
+    } catch (err) {
+        console.error("ERRO CRÍTICO AO SALVAR NO LOCALSTORAGE:", err);
+        alert("Erro ao salvar dados no navegador.");
+        return;
     }
-    if (!banco.fichas[fichaAtiva]) {
-        banco.fichas[fichaAtiva] = [];
-    }
 
-    banco.fichas[fichaAtiva].push(novoItem);
-    
-    // Salva atualizado
-    localStorage.setItem('assistfit_banco', JSON.stringify(banco));
-    localStorage.setItem('fichaAtiva', fichaAtiva);
-    window.fichaAtiva = fichaAtiva;
-
-    // 5. Limpa os inputs do formulário para o próximo cadastro
+    // 5. Limpa os inputs
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
     if (document.getElementById('tempo-ex')) document.getElementById('tempo-ex').value = '';
 
-    // 6. DISPARA O LOG DE PERFORMANCE IMEDIATAMENTE NA TELA
+    // 6. Atualiza o Log de Performance imediatamente
+    console.log("Chamando renderizarLogTreino para:", fichaAtiva);
     renderizarLogTreino(fichaAtiva);
-    
-    // Opcional: Feedback visual rápido
-    if (typeof mostrarToast === 'function') {
-        mostrarToast("Exercício salvo com sucesso!", "sucesso");
-    }
+    console.log("=== FIM DO FLUXO COM SUCESSO ===");
 }
 
 function formatarTempoParaExibicao(valor) {
