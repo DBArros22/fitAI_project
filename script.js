@@ -2077,10 +2077,9 @@ function atualizarListaExercicios() {
 }
 
 // ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
-function adicionarExercicio() {
-    console.log("=== INICIO DO FLUXO DE SALVAR ===");
+function adicionarExercicio(event) {
+    if (event) event.preventDefault(); // Impede qualquer reload nativo do form
 
-    // 1. Identifica a ficha ativa
     let fichaAtiva = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     
     if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
@@ -2094,9 +2093,7 @@ function adicionarExercicio() {
         alert("Erro: Nenhuma ficha ativa identificada.");
         return;
     }
-    console.log("Ficha ativa identificada:", fichaAtiva);
 
-    // 2. Coleta os campos
     const grupo = document.getElementById('select-grupo').value;
     const exercicio = document.getElementById('select-exercicio').value || grupo;
     const series = document.getElementById('series-ex').value;
@@ -2109,7 +2106,6 @@ function adicionarExercicio() {
         return;
     }
 
-    // 3. Monta o objeto
     const novoItem = {
         id: Date.now(),
         nome: exercicio,
@@ -2121,39 +2117,27 @@ function adicionarExercicio() {
         tipo: tempo ? "cardio" : "forca"
     };
 
-    console.log("Item montado:", novoItem);
+    // Salva no localStorage
+    let bancoStr = localStorage.getItem('assistfit_banco');
+    let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
 
-    // 4. Salva no localStorage com tratamento de erro rigoroso
-    try {
-        let bancoStr = localStorage.getItem('assistfit_banco');
-        let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
+    if (!banco.fichas) banco.fichas = {};
+    if (!banco.fichas[fichaAtiva]) banco.fichas[fichaAtiva] = [];
 
-        if (!banco.fichas) banco.fichas = {};
-        if (!banco.fichas[fichaAtiva]) banco.fichas[fichaAtiva] = [];
+    banco.fichas[fichaAtiva].push(novoItem);
+    
+    localStorage.setItem('assistfit_banco', JSON.stringify(banco));
+    localStorage.setItem('fichaAtiva', fichaAtiva);
+    window.fichaAtiva = fichaAtiva;
 
-        banco.fichas[fichaAtiva].push(novoItem);
-        
-        localStorage.setItem('assistfit_banco', JSON.stringify(banco));
-        localStorage.setItem('fichaAtiva', fichaAtiva);
-        window.fichaAtiva = fichaAtiva;
-
-        console.log("Salvo com sucesso no localStorage!");
-    } catch (err) {
-        console.error("ERRO CRÍTICO AO SALVAR NO LOCALSTORAGE:", err);
-        alert("Erro ao salvar dados no navegador.");
-        return;
-    }
-
-    // 5. Limpa os inputs
+    // Limpa os inputs
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
     if (document.getElementById('tempo-ex')) document.getElementById('tempo-ex').value = '';
 
-    // 6. Atualiza o Log de Performance imediatamente
-    console.log("Chamando renderizarLogTreino para:", fichaAtiva);
+    // Renderiza o log instantaneamente sem piscar a tela
     renderizarLogTreino(fichaAtiva);
-    console.log("=== FIM DO FLUXO COM SUCESSO ===");
 }
 
 function formatarTempoParaExibicao(valor) {
