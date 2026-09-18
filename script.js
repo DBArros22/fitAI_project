@@ -987,15 +987,15 @@ function showView(viewId) {
     if (cleanId === 'login' || viewId === 'login') {
         if (viewLogin) viewLogin.classList.remove('hidden');
         
-        // Oculta rigorosamente tudo
-        document.querySelectorAll('main, section, div[id^="view-"], .page-container, div[id*="crossfit"], div[id*="hub"]').forEach(tela => {
-            tela.classList.add('hidden');
-            tela.style.cssText = 'display: none !important;'; 
+        document.querySelectorAll('main, section, div[id^="view-"], .page-container').forEach(tela => {
+            if (tela.id !== 'modal-aviso') {
+                tela.classList.add('hidden');
+                tela.style.setProperty('display', 'none', 'important');
+            }
         });
         
         if (viewLogin) {
             viewLogin.classList.remove('hidden');
-            // CORREÇÃO SÊNIOR: Força o display flex para respeitar o CSS de centralização do card
             viewLogin.style.cssText = 'display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important;';
         }
 
@@ -1005,19 +1005,17 @@ function showView(viewId) {
         return;
     }
 
-    // 2. VARREDURA BLINDADA ABSOLUTA (Elimina o vazamento do CrossFit Lobby)
-    const todasAsTelas = document.querySelectorAll('main, section, div[id^="view-"], .page-container, div[id*="crossfit"], div[id*="hub"], div[id*="timer"]');
+    // 2. VARREDURA BLINDADA CORRIGIDA (Exclui a view alvo e seus filhos de sumirem)
+    const todasAsTelas = document.querySelectorAll('main, section, div[id^="view-"], .page-container');
     
     todasAsTelas.forEach(tela => {
-        // Ignora o modal de aviso global para não quebrá-lo
         if (tela.id === 'modal-aviso' || tela.closest('#modal-aviso')) return;
         
+        // CORREÇÃO: Não esconde a view que vamos abrir agora
+        if (tela.id === viewId || tela.id === `view-${cleanId}` || tela.id === cleanId) return;
+
         tela.classList.add('hidden');
         tela.style.setProperty('display', 'none', 'important');
-        tela.style.removeProperty('grid-template-columns');
-        tela.style.removeProperty('gap');
-        tela.style.removeProperty('max-width');
-        tela.style.removeProperty('margin');
     });
 
     if (viewLogin) {
@@ -1030,15 +1028,15 @@ function showView(viewId) {
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
 
-    // Fallback caso a view não exista
     if (!viewAlvo) {
         viewAlvo = document.getElementById('view-lobby') || viewLogin;
     }
 
-    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA
+    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA (Com limpeza de estilos inline agressivos)
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
+        viewAlvo.style.removeProperty('display'); // Limpa qualquer display none residual
         
         const targetId = viewAlvo.id;
 
@@ -1056,8 +1054,6 @@ function showView(viewId) {
             viewAlvo.style.setProperty('gap', '24px', 'important');
             viewAlvo.style.setProperty('max-width', '1100px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
-        } else if (targetId.includes('crossfit') || targetId.includes('hub') || targetId.includes('timer') || targetId.includes('calc')) {
-            viewAlvo.style.setProperty('display', 'block', 'important');
         } else {
             viewAlvo.style.setProperty('display', 'block', 'important');
         }
@@ -1078,8 +1074,9 @@ function showView(viewId) {
             if (typeof renderizarResumoFicha === 'function') {
                 renderizarResumoFicha(window.fichaAtiva);
             }
-            if (typeof atualizarListaExercicios === 'function') {
-                atualizarListaExercicios();
+            // Chama a renderização do log para garantir que os dados apareçam ao abrir a tela
+            if (typeof renderizarLogTreino === 'function' && window.fichaAtiva) {
+                renderizarLogTreino(window.fichaAtiva);
             }
         } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
             renderizarFichas();
@@ -1098,7 +1095,6 @@ function showView(viewId) {
 }
 
 window.showView = showView;
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('modal-aviso');
