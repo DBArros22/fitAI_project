@@ -2077,78 +2077,79 @@ function atualizarListaExercicios() {
 }
 
 // ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
-async function adicionarExercicio() {
-    const ativa = fichaAtivaNoMomento || fichaAtiva;
-    if (!ativa) return mostrarAviso("Selecione uma ficha!");
+function adicionarExercicio() {
+    // 1. Resgata a ficha ativa de forma 100% segura (Variável global, localStorage ou pega direto do título na tela)
+    let fichaAtiva = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    
+    if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
+        const elementoTitulo = document.getElementById('nome-ficha-ativa');
+        if (elementoTitulo && elementoTitulo.innerText && elementoTitulo.innerText !== "NOVA FICHA") {
+            fichaAtiva = elementoTitulo.innerText.trim();
+        }
+    }
 
-    const campoGrupo = document.getElementById('select-grupo-sub');
-    const campoExercicio = document.getElementById('select-exercicio');
-    const campoSeries = document.getElementById('series-ex');
-    const campoReps = document.getElementById('reps-ex');
-    const campoCarga = document.getElementById('carga-ex');
-    const campoTempo = document.getElementById('tempo-ex');
-
-    if (!campoGrupo || !campoExercicio) return;
-
-    const grupo = campoGrupo.value;
-    const exercicio = campoExercicio.value;
-
-    if (!grupo || !exercicio) {
-        mostrarAviso("Por favor, selecione o grupo e o exercício.");
+    // Se continuar sem ficha, barra com aviso claro
+    if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
+        alert("Erro crítico: Nenhuma ficha ativa identificada. Por favor, volte e selecione a ficha novamente.");
         return;
     }
 
-    const isCardio = (grupo === "Cardio & Aeróbico");
-    const seriesValue = campoSeries ? campoSeries.value : "";
-    const repsValue = campoReps ? campoReps.value : "";
-    const tempoValue = campoTempo ? campoTempo.value : "";
+    // 2. Coleta os valores dos inputs do formulário
+    const grupo = document.getElementById('select-grupo').value;
+    const exercicio = document.getElementById('select-exercicio').value || grupo; // fallback se o select de exercício estiver vazio
+    const series = document.getElementById('series-ex').value;
+    const reps = document.getElementById('reps-ex').value;
+    const carga = document.getElementById('carga-ex').value;
+    const tempo = document.getElementById('tempo-ex') ? document.getElementById('tempo-ex').value : "";
 
-    if (isCardio) {
-        if (!tempoValue) return mostrarAviso("Informe o tempo do cardio!");
-    } else {
-        if (!seriesValue || !repsValue) return mostrarAviso("Preencha séries e repetições!");
+    if (!grupo) {
+        alert("Por favor, selecione um grupo muscular.");
+        return;
     }
 
-    const novo = {
+    // 3. Monta o objeto do novo exercício
+    const novoItem = {
         id: Date.now(),
-        grupo: grupo,
         nome: exercicio,
-        series: seriesValue,
-        reps: repsValue,
-        carga: campoCarga ? (campoCarga.value || 0) : 0,
-        tempo: tempoValue,
-        tipo: isCardio ? 'tempo' : 'forca'
+        grupo: grupo,
+        series: series,
+        reps: reps,
+        carga: carga,
+        tempo: tempo,
+        tipo: tempo ? "cardio" : "forca"
     };
 
-    if (!bancoDeDados.fichas[ativa]) {
-        bancoDeDados.fichas[ativa] = [];
+    // 4. Salva no banco de dados real do localStorage ('assistfit_banco')
+    let bancoStr = localStorage.getItem('assistfit_banco');
+    let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
+
+    if (!banco.fichas) {
+        banco.fichas = {};
     }
-    bancoDeDados.fichas[ativa].unshift(novo);
-    
-    // 1. Aguarda o salvamento no Firebase
-    await salvarBanco();
-    
-    // 2. ATUALIZAÇÃO DINÂMICA: Renderiza a lista de fichas (atualiza o contador imediatamente)
-    if (typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    }
-    
-    // 3. Atualiza os detalhes da tela de consulta e logs
-    if (typeof renderizarLogTreino === 'function') {
-        renderizarLogTreino();
-    }
-    renderizarResumoFicha(ativa);
-    if (typeof renderizarFichasConsulta === 'function') {
-        renderizarFichasConsulta();
+    if (!banco.fichas[fichaAtiva]) {
+        banco.fichas[fichaAtiva] = [];
     }
 
-    // Limpa campos
-    if (campoSeries) campoSeries.value = "";
-    if (campoReps) campoReps.value = "";
-    if (campoCarga) campoCarga.value = "";
-    if (campoTempo) campoTempo.value = "";
+    banco.fichas[fichaAtiva].push(novoItem);
     
-    mostrarAviso("Exercício adicionado com sucesso!");
+    // Salva atualizado
+    localStorage.setItem('assistfit_banco', JSON.stringify(banco));
+    localStorage.setItem('fichaAtiva', fichaAtiva);
+    window.fichaAtiva = fichaAtiva;
+
+    // 5. Limpa os inputs do formulário para o próximo cadastro
+    document.getElementById('series-ex').value = '';
+    document.getElementById('reps-ex').value = '';
+    document.getElementById('carga-ex').value = '';
+    if (document.getElementById('tempo-ex')) document.getElementById('tempo-ex').value = '';
+
+    // 6. DISPARA O LOG DE PERFORMANCE IMEDIATAMENTE NA TELA
+    renderizarLogTreino(fichaAtiva);
+    
+    // Opcional: Feedback visual rápido
+    if (typeof mostrarToast === 'function') {
+        mostrarToast("Exercício salvo com sucesso!", "sucesso");
+    }
 }
 
 function formatarTempoParaExibicao(valor) {
