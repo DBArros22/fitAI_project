@@ -2523,53 +2523,104 @@ window.addEventListener('DOMContentLoaded', () => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarLogTreino(nomeFicha) {
-    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
     const container = document.getElementById('lista-treino');
     
-    if (!container) return;
+    if (!container) {
+        console.warn("AVISO: O container 'lista-treino' não foi encontrado no DOM.");
+        return;
+    }
+    
     container.innerHTML = "";
 
     let exercicios = [];
+    
     try {
-        // Lê diretamente da chave real encontrada no seu localStorage: 'assistfit_banco'
+        // TENTATIVA 1: Busca na chave padrão 'assistfit_banco'
         const dbString = localStorage.getItem('assistfit_banco');
         if (dbString) {
             const db = JSON.parse(dbString);
-            if (db && db.fichas && db.fichas[ativa]) {
-                exercicios = db.fichas[ativa];
+            if (db) {
+                // Se o formato for { fichas: { 'NOME': [...] } }
+                if (db.fichas && ativa && db.fichas[ativa]) {
+                    exercicios = db.fichas[ativa];
+                } 
+                // Se o objeto raiz já for um dicionário de fichas
+                else if (ativa && db[ativa]) {
+                    exercicios = db[ativa];
+                }
+                // Se for um array direto salvo
+                else if (Array.isArray(db)) {
+                    exercicios = db;
+                }
             }
         }
+
+        // TENTATIVA 2: Se ainda estiver vazio, busca em chaves dinâmicas de usuário (fitai_user_data_...)
+        if ((!exercicios || exercicios.length === 0)) {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('user_data') || key.includes('banco') || key.includes('fitai'))) {
+                    const val = localStorage.getItem(key);
+                    if (val && val.startsWith('{')) {
+                        const parsedVal = JSON.parse(val);
+                        if (parsedVal.fichas && ativa && parsedVal.fichas[ativa]) {
+                            exercicios = parsedVal.fichas[ativa];
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // TENTATIVA 3: Fallback direto por chave isolada da ficha
+        if ((!exercicios || exercicios.length === 0) && ativa) {
+            const chaveFichaIsolada = localStorage.getItem(`ficha_${ativa}`) || localStorage.getItem(ativa);
+            if (chaveFichaIsolada) {
+                const parsedFicha = JSON.parse(chaveFichaIsolada);
+                if (Array.isArray(parsedFicha)) exercicios = parsedFicha;
+            }
+        }
+
     } catch (e) {
-        console.error("Erro ao carregar o log:", e);
+        console.error("Erro crítico ao carregar o log de treino:", e);
     }
 
-    if (!exercicios || exercicios.length === 0) {
+    // Se após todas as tentativas não houver exercícios
+    if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
         container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
         return;
     }
 
-    exercicios.forEach(ex => {
+    // Renderização iterativa limpa
+    exercicios.forEach((ex, index) => {
+        // Garante um ID seguro mesmo se o exercício salvo não tiver ex.id
+        const exId = ex.id !== undefined ? ex.id : index;
+        const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
+
         let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
             ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${typeof formatarTempoParaExibicao === 'function' ? formatarTempoParaExibicao(ex.tempo) : ex.tempo}</span>`
             : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
 
         container.innerHTML += `
-            <div id="item-log-${ex.id}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
+            <div id="item-log-${exId}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
                 <div style="flex: 1;">
-                    <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome || ex.exercicio}</h4>
-                    <div id="dados-log-${ex.id}" style="margin-top: 5px;">${infoBadge}</div>
+                    <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${nomeExercicio}</h4>
+                    <div id="dados-log-${exId}" style="margin-top: 5px;">${infoBadge}</div>
                 </div>
-                <div id="acoes-log-${ex.id}" style="display: flex; gap: 10px;">
-                    <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'log')" title="Editar">
+                <div id="acoes-log-${exId}" style="display: flex; gap: 10px;">
+                    <button class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     </button>
-                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${ex.nome || ex.exercicio} do treino atual?', () => removerExercicio(${ex.id}, 'log'))" title="Excluir">
+                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${nomeExercicio} do treino atual?', () => removerExercicio(${exId}, 'log'))" title="Excluir">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                     </button>
                 </div>
             </div>`;
     });
 }
+
+window.renderizarLogTreino = renderizarLogTreino;
 
 // Mantém o alias para evitar que qualquer outra chamada antiga quebre
 function renderizarResumoFicha(nome) {
