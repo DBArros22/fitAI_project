@@ -395,10 +395,18 @@ transform: translateY(-3px) scale(1.1);
 
 /* -------------- CONTEINERS PÁGINA REGISTRO & LOG DE PERFORMANCE ------- */
 
-#view-registro .glass-panel {
+#view-registro {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+#view-registro:not(.hidden) {
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    width: 100% !important;
+}
+
+.registro-container {
+    display: none; /* Controlado via JS/classes */
 }
 
 .registro-container:not(.hidden) {
@@ -419,12 +427,21 @@ transform: translateY(-3px) scale(1.1);
     }
 }
 
+#view-registro .glass-panel {
+    display: flex !important;
+    flex-direction: column !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
 #lista-treino {
     display: flex !important;
     flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
-    min-height: 150px !important;
+    min-height: 200px !important; /* Garante espaço físico mesmo vazio */
     box-sizing: border-box !important;
 }
 
