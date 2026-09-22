@@ -394,8 +394,11 @@ transform: translateY(-3px) scale(1.1);
 }
 
 /* -------------- CONTEINERS PÁGINA REGISTRO & LOG DE PERFORMANCE ------- */
-.registro-container {
-    display: none !important;
+
+#view-registro .glass-panel {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .registro-container:not(.hidden) {
