@@ -2555,7 +2555,7 @@ function renderizarLogTreino(nomeFicha) {
         <div class="treino-item" id="treino-item-${idUnico}">
             <div style="flex: 1;">
                 <h4>${item.nome || 'EXERCÍCIO'}</h4>
-                <span>${item.detalhes || `${item.series || 0}x${item.reps \vert{}\vert{} 0} —${item.carga || 0}kg`}</span>
+                <span>${item.detalhes || `${item.series || 0}x${item.reps || 0} — ${item.carga || 0}kg`}</span>
             </div>
             <div style="display: flex; gap: 8px;">
                 <button class="btn-action" onclick="editarLogItem(${idUnico})" title="Editar">
