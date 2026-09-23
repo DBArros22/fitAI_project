@@ -2514,60 +2514,68 @@ window.addEventListener('DOMContentLoaded', () => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarLogTreino(nomeFicha) {
-    if (!nomeFicha) {
-        nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    }
-
+    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
     const container = document.getElementById('lista-treino');
+    
     if (!container) {
-        console.warn("Elemento #lista-treino não encontrado no DOM atual.");
+        console.warn("AVISO: O container 'lista-treino' não foi encontrado no DOM.");
         return;
     }
+    
+    // Força o container a ter comportamento visível e block/flex estruturado
+    container.style.cssText = "display: flex !important; flex-direction: column !important; width: 100% !important; min-height: 80px !important;";
 
-    // Limpa o container antes de desenhar
     container.innerHTML = "";
 
-    // Recupera os dados salvos no localStorage (ajuste a chave conforme o seu padrão de salvamento)
-    // Exemplo: 'log_treino_' + nomeFicha ou do bancoDeDados geral
-    let dadosLog = [];
+    let exercicios = [];
+    
     try {
-        const salvo = localStorage.getItem(`log_${nomeFicha}`) || localStorage.getItem('bancoDeDadosLogs');
-        if (salvo) {
-            const parsed = JSON.parse(salvo);
-            dadosLog = Array.isArray(parsed) ? parsed : (parsed[nomeFicha] || []);
+        const dbString = localStorage.getItem('assistfit_banco');
+        if (dbString) {
+            const db = JSON.parse(dbString);
+            if (db.fichas && ativa && db.fichas[ativa]) {
+                exercicios = db.fichas[ativa];
+            } else if (ativa && db[ativa]) {
+                exercicios = db[ativa];
+            } else if (Array.isArray(db)) {
+                exercicios = db;
+            }
         }
     } catch (e) {
-        console.error("Erro ao ler dados do log:", e);
+        console.error("Erro crítico ao carregar o log de treino:", e);
     }
 
-    // Se não houver registros, exibe mensagem amigável
-    if (!dadosLog || dadosLog.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 0.9rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
-                Nenhum registro de performance encontrado para esta ficha. Adicione seu primeiro set!
-            </div>`;
+    if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
         return;
     }
 
-    // Renderiza cada exercício/set salvo um abaixo do outro
-    dadosLog.forEach((item, index) => {
-        const idUnico = item.id || index;
+    // Renderização iterativa limpa com forçagem de estilo inline nos itens
+    exercicios.forEach((ex, index) => {
+        const exId = ex.id !== undefined ? ex.id : index;
+        const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
+
+        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
+            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${ex.tempo}</span>`
+            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
+
+        // Criação de elemento estruturado para garantir que a altura não fique zerada (0px)
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'treino-item';
+        itemDiv.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 10px !important; background: rgba(255,255,255,0.05) !important; padding: 15px !important; border-radius: 12px !important; width: 100% !important; box-sizing: border-box !important;";
         
-        container.innerHTML += `
-        <div class="treino-item" id="treino-item-${idUnico}">
+        itemDiv.innerHTML = `
             <div style="flex: 1;">
-                <h4>${item.nome || 'EXERCÍCIO'}</h4>
-                <span>${item.detalhes || `${item.series || 0}x${item.reps || 0} — ${item.carga || 0}kg`}</span>
+                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${nomeExercicio}</h4>
+                <div style="margin-top: 5px;">${infoBadge}</div>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button class="btn-action" onclick="editarLogItem(${idUnico})" title="Editar">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button class="btn-action btn-delete-action" onclick="removerLogItem(${idUnico})" title="Excluir">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">✏️</button>
+                <button class="btn-action btn-delete-action" onclick="removerExercicio(${exId}, 'log')" title="Excluir">🗑️</button>
             </div>
-        </div>`;
+        `;
+        
+        container.appendChild(itemDiv);
     });
 }
 
