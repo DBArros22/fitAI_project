@@ -1063,21 +1063,23 @@ function showView(viewId) {
     try {
         if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
             renderizarFichas();
-        } else if (cleanId === 'registro') {
-            if (!window.fichaAtiva) {
-                window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+        if (targetId === 'view-registro' || targetId === 'registro' || cleanId === 'registro') {
+            viewAlvo.style.setProperty('display', 'grid', 'important');
+            viewAlvorstyle = viewAlvo.style; // referencia limpa
+            viewAlvorstyle.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
+            viewAlvorstyle.setProperty('gap', '30px', 'important');
+            viewAlvorstyle.setProperty('max-width', '1300px', 'important');
+            viewAlvorstyle.setProperty('margin', '0 auto', 'important');
+            viewAlvorstyle.setProperty('align-items', 'start', 'important');
+
+            // Garante que a seção do log de performance dentro do registro assuma largura total da coluna
+            const listaTreinoContainer = viewAlvo.querySelector('#lista-treino');
+            if (listaTreinoContainer) {
+                listaTreinoContainer.style.setProperty('display', 'flex', 'important');
+                listaTreinoContainer.style.setProperty('flex-direction', 'column', 'important');
+                listaTreinoContainer.style.setProperty('width', '100%', 'important');
             }
-            const nomeFichaEl = document.getElementById('nome-ficha-ativa');
-            if (nomeFichaEl && window.fichaAtiva) {
-                nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
-            }
-            if (typeof renderizarResumoFicha === 'function') {
-                renderizarResumoFicha(window.fichaAtiva);
-            }
-            // Chama a renderização do log para garantir que os dados apareçam ao abrir a tela
-            if (typeof renderizarLogTreino === 'function' && window.fichaAtiva) {
-                renderizarLogTreino(window.fichaAtiva);
-            }
+        }
         } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
             renderizarFichas();
         } else if (cleanId === 'perfil') {
