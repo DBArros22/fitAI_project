@@ -1005,13 +1005,12 @@ function showView(viewId) {
         return;
     }
 
-    // 2. VARREDURA BLINDADA CORRIGIDA (Exclui a view alvo e seus filhos de sumirem)
+    // 2. VARREDURA BLINDADA CORRIGIDA
     const todasAsTelas = document.querySelectorAll('main, section, div[id^="view-"], .page-container');
     
     todasAsTelas.forEach(tela => {
         if (tela.id === 'modal-aviso' || tela.closest('#modal-aviso')) return;
         
-        // CORREÇÃO: Não esconde a view que vamos abrir agora
         if (tela.id === viewId || tela.id === `view-${cleanId}` || tela.id === cleanId) return;
 
         tela.classList.add('hidden');
@@ -1023,7 +1022,7 @@ function showView(viewId) {
         viewLogin.style.setProperty('display', 'none', 'important');
     }
 
-    // 3. LOCALIZAÇÃO DA VIEW ALVO COM PRECISÃO DE ID
+    // 3. LOCALIZAÇÃO DA VIEW ALVO
     let viewAlvo = document.getElementById(viewId) || 
                    document.getElementById(`view-${cleanId}`) || 
                    document.getElementById(cleanId);
@@ -1032,15 +1031,14 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-lobby') || viewLogin;
     }
 
-    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA (Com limpeza de estilos inline agressivos)
+    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
-        viewAlvo.style.removeProperty('display'); // Limpa qualquer display none residual
+        viewAlvo.style.removeProperty('display');
         
         const targetId = viewAlvo.id;
 
-        // Regras específicas de layout por tipo de container
         if (targetId === 'view-registro' || targetId === 'registro' || cleanId === 'registro') {
             viewAlvo.style.setProperty('display', 'grid', 'important');
             viewAlvo.style.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
@@ -1048,6 +1046,13 @@ function showView(viewId) {
             viewAlvo.style.setProperty('max-width', '1300px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
             viewAlvo.style.setProperty('align-items', 'start', 'important');
+
+            const listaTreinoContainer = viewAlvo.querySelector('#lista-treino');
+            if (listaTreinoContainer) {
+                listaTreinoContainer.style.setProperty('display', 'flex', 'important');
+                listaTreinoContainer.style.setProperty('flex-direction', 'column', 'important');
+                listaTreinoContainer.style.setProperty('width', '100%', 'important');
+            }
         } else if (targetId === 'view-lobby' || targetId === 'lobby' || cleanId === 'lobby') {
             viewAlvo.style.setProperty('display', 'grid', 'important');
             viewAlvo.style.setProperty('grid-template-columns', 'repeat(3, 1fr)', 'important');
@@ -1059,27 +1064,24 @@ function showView(viewId) {
         }
     }
 
-    // 5. GANCHOS ESPECÍFICOS (HOOKS)
+    // 5. GANCHOS ESPECÍFICOS (HOOKS) - LIMPOS E CORRETOS
     try {
         if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
             renderizarFichas();
-        if (targetId === 'view-registro' || targetId === 'registro' || cleanId === 'registro') {
-            viewAlvo.style.setProperty('display', 'grid', 'important');
-            viewAlvorstyle = viewAlvo.style; // referencia limpa
-            viewAlvorstyle.setProperty('grid-template-columns', '1fr 1.2fr', 'important');
-            viewAlvorstyle.setProperty('gap', '30px', 'important');
-            viewAlvorstyle.setProperty('max-width', '1300px', 'important');
-            viewAlvorstyle.setProperty('margin', '0 auto', 'important');
-            viewAlvorstyle.setProperty('align-items', 'start', 'important');
-
-            // Garante que a seção do log de performance dentro do registro assuma largura total da coluna
-            const listaTreinoContainer = viewAlvo.querySelector('#lista-treino');
-            if (listaTreinoContainer) {
-                listaTreinoContainer.style.setProperty('display', 'flex', 'important');
-                listaTreinoContainer.style.setProperty('flex-direction', 'column', 'important');
-                listaTreinoContainer.style.setProperty('width', '100%', 'important');
+        } else if (cleanId === 'registro') {
+            if (!window.fichaAtiva) {
+                window.fichaAtiva = localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
             }
-        }
+            const nomeFichaEl = document.getElementById('nome-ficha-ativa');
+            if (nomeFichaEl && window.fichaAtiva) {
+                nomeFichaEl.innerText = window.fichaAtiva.toUpperCase();
+            }
+            if (typeof renderizarResumoFicha === 'function') {
+                renderizarResumoFicha(window.fichaAtiva);
+            }
+            if (typeof renderizarLogTreino === 'function' && window.fichaAtiva) {
+                renderizarLogTreino(window.fichaAtiva);
+            }
         } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
             renderizarFichas();
         } else if (cleanId === 'perfil') {
