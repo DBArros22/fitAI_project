@@ -2524,9 +2524,7 @@ function renderizarLogTreino(nomeFicha) {
         return;
     }
     
-    // Força o container a ter comportamento visível e block/flex estruturado
-    container.style.cssText = "display: flex !important; flex-direction: column !important; width: 100% !important; min-height: 80px !important;";
-
+    // Limpa apenas o conteúdo interno para desenhar os exercícios atualizados
     container.innerHTML = "";
 
     let exercicios = [];
@@ -2547,33 +2545,33 @@ function renderizarLogTreino(nomeFicha) {
         console.error("Erro crítico ao carregar o log de treino:", e);
     }
 
+    // Se estiver vazio, exibe o aviso mantendo o design do painel
     if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+        container.innerHTML = `<p style="color: var(--text-secondary, #94a3b8); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
         return;
     }
 
-    // Renderização iterativa limpa com forçagem de estilo inline nos itens
+    // Renderização iterativa dos exercícios salvos
     exercicios.forEach((ex, index) => {
         const exId = ex.id !== undefined ? ex.id : index;
         const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
 
         let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
             ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${ex.tempo}</span>`
-            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
+            : `<span style="color: var(--text-secondary, #94a3b8); font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
 
-        // Criação de elemento estruturado para garantir que a altura não fique zerada (0px)
         const itemDiv = document.createElement('div');
         itemDiv.className = 'treino-item';
-        itemDiv.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 10px !important; background: rgba(255,255,255,0.05) !important; padding: 15px !important; border-radius: 12px !important; width: 100% !important; box-sizing: border-box !important;";
+        itemDiv.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 12px !important; background: rgba(255,255,255,0.05) !important; padding: 15px !important; border-radius: 12px !important; width: 100% !important; box-sizing: border-box !important;";
         
         itemDiv.innerHTML = `
-            <div style="flex: 1;">
-                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${nomeExercicio}</h4>
-                <div style="margin-top: 5px;">${infoBadge}</div>
+            <div style="flex: 1; padding-right: 10px;">
+                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0 0 5px 0; font-size: 14px;">${nomeExercicio}</h4>
+                <div>${infoBadge}</div>
             </div>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">✏️</button>
-                <button class="btn-action btn-delete-action" onclick="removerExercicio(${exId}, 'log')" title="Excluir">🗑️</button>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar" style="background: transparent; border: none; cursor: pointer; font-size: 16px;">✏️</button>
+                <button type="button" class="btn-action btn-delete-action" onclick="removerExercicio(${exId}, 'log')" title="Excluir" style="background: transparent; border: none; cursor: pointer; font-size: 16px;">🗑️</button>
             </div>
         `;
         
