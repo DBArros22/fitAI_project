@@ -2074,67 +2074,56 @@ function atualizarListaExercicios() {
 
 // ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
 function adicionarExercicio(event) {
-    if (event) event.preventDefault(); // Impede qualquer reload nativo do form
+    if (event) event.preventDefault();
 
-    let fichaAtiva = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    
-    if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
-        const elementoTitulo = document.getElementById('nome-ficha-ativa');
-        if (elementoTitulo && elementoTitulo.innerText && elementoTitulo.innerText !== "NOVA FICHA") {
-            fichaAtiva = elementoTitulo.innerText.trim();
-        }
-    }
-
-    if (!fichaAtiva || fichaAtiva === "NOVA FICHA") {
-        alert("Erro: Nenhuma ficha ativa identificada.");
-        return;
-    }
-
+    // 1. Pega os valores dos inputs do seu HTML
     const grupo = document.getElementById('select-grupo').value;
-    const exercicio = document.getElementById('select-exercicio').value || grupo;
+    const exercicio = document.getElementById('select-exercicio').value;
     const series = document.getElementById('series-ex').value;
     const reps = document.getElementById('reps-ex').value;
     const carga = document.getElementById('carga-ex').value;
-    const tempo = document.getElementById('tempo-ex') ? document.getElementById('tempo-ex').value : "";
+    const tempo = document.getElementById('tempo-ex').value;
 
-    if (!grupo) {
-        alert("Por favor, selecione um grupo muscular.");
+    if (!exercicio) {
+        alert("Por favor, selecione um exercício.");
         return;
     }
 
+    // 2. Cria o objeto do novo item
     const novoItem = {
         id: Date.now(),
         nome: exercicio,
         grupo: grupo,
         series: series,
         reps: reps,
-        carga: carga,
+        carga: carga || '0',
         tempo: tempo,
-        tipo: tempo ? "cardio" : "forca"
+        tipo: tempo ? 'tempo' : 'forca'
     };
 
-    // Salva no localStorage
-    let bancoStr = localStorage.getItem('assistfit_banco');
-    let banco = bancoStr ? JSON.parse(bancoStr) : { fichas: {} };
+    // 3. Recupera a ficha ativa atual
+    const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || 'GERAL';
 
-    if (!banco.fichas) banco.fichas = {};
-    if (!banco.fichas[fichaAtiva]) banco.fichas[fichaAtiva] = [];
+    // 4. Salva no localStorage (organizado por ficha)
+    let logsSalvos = JSON.parse(localStorage.getItem(`log_${fichaAtual}`)) || [];
+    logsSalvos.push(novoItem);
+    localStorage.setItem(`log_${fichaAtual}`, JSON.stringify(logsSalvos));
 
-    banco.fichas[fichaAtiva].push(novoItem);
-    
-    localStorage.setItem('assistfit_banco', JSON.stringify(banco));
-    localStorage.setItem('fichaAtiva', fichaAtiva);
-    window.fichaAtiva = fichaAtiva;
-
-    // Limpa os inputs
+    // 5. Limpa os campos de input para o próximo cadastro
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
-    if (document.getElementById('tempo-ex')) document.getElementById('tempo-ex').value = '';
+    document.getElementById('tempo-ex').value = '';
 
-    // Renderiza o log instantaneamente sem piscar a tela
-    renderizarLogTreino(fichaAtiva);
+    // 6. DISPARO IMEDIATO: Atualiza a tela desenhando os itens um abaixo do outro no #lista-treino
+    if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino(fichaAtual);
+    }
+
+    console.log("✅ Set adicionado e log atualizado com sucesso!");
 }
+
+window.adicionarExercicio = adicionarExercicio;
 
 function formatarTempoParaExibicao(valor) {
     if (!valor) return "00s";
@@ -2523,100 +2512,60 @@ window.addEventListener('DOMContentLoaded', () => {
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 function renderizarLogTreino(nomeFicha) {
-    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+    if (!nomeFicha) {
+        nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    }
+
     const container = document.getElementById('lista-treino');
-    
     if (!container) {
-        console.warn("AVISO: O container 'lista-treino' não foi encontrado no DOM.");
+        console.warn("Elemento #lista-treino não encontrado no DOM atual.");
         return;
     }
-    
+
+    // Limpa o container antes de desenhar
     container.innerHTML = "";
 
-    let exercicios = [];
-    
+    // Recupera os dados salvos no localStorage (ajuste a chave conforme o seu padrão de salvamento)
+    // Exemplo: 'log_treino_' + nomeFicha ou do bancoDeDados geral
+    let dadosLog = [];
     try {
-        // TENTATIVA 1: Busca na chave padrão 'assistfit_banco'
-        const dbString = localStorage.getItem('assistfit_banco');
-        if (dbString) {
-            const db = JSON.parse(dbString);
-            if (db) {
-                // Se o formato for { fichas: { 'NOME': [...] } }
-                if (db.fichas && ativa && db.fichas[ativa]) {
-                    exercicios = db.fichas[ativa];
-                } 
-                // Se o objeto raiz já for um dicionário de fichas
-                else if (ativa && db[ativa]) {
-                    exercicios = db[ativa];
-                }
-                // Se for um array direto salvo
-                else if (Array.isArray(db)) {
-                    exercicios = db;
-                }
-            }
+        const salvo = localStorage.getItem(`log_${nomeFicha}`) || localStorage.getItem('bancoDeDadosLogs');
+        if (salvo) {
+            const parsed = JSON.parse(salvo);
+            dadosLog = Array.isArray(parsed) ? parsed : (parsed[nomeFicha] || []);
         }
-
-        // TENTATIVA 2: Se ainda estiver vazio, busca em chaves dinâmicas de usuário (fitai_user_data_...)
-        if ((!exercicios || exercicios.length === 0)) {
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && (key.includes('user_data') || key.includes('banco') || key.includes('fitai'))) {
-                    const val = localStorage.getItem(key);
-                    if (val && val.startsWith('{')) {
-                        const parsedVal = JSON.parse(val);
-                        if (parsedVal.fichas && ativa && parsedVal.fichas[ativa]) {
-                            exercicios = parsedVal.fichas[ativa];
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        // TENTATIVA 3: Fallback direto por chave isolada da ficha
-        if ((!exercicios || exercicios.length === 0) && ativa) {
-            const chaveFichaIsolada = localStorage.getItem(`ficha_${ativa}`) || localStorage.getItem(ativa);
-            if (chaveFichaIsolada) {
-                const parsedFicha = JSON.parse(chaveFichaIsolada);
-                if (Array.isArray(parsedFicha)) exercicios = parsedFicha;
-            }
-        }
-
     } catch (e) {
-        console.error("Erro crítico ao carregar o log de treino:", e);
+        console.error("Erro ao ler dados do log:", e);
     }
 
-    // Se após todas as tentativas não houver exercícios
-    if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+    // Se não houver registros, exibe mensagem amigável
+    if (!dadosLog || dadosLog.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: var(--text-secondary); font-size: 0.9rem; background: rgba(255,255,255,0.02); border-radius: 16px; border: 1px dashed var(--border-color);">
+                Nenhum registro de performance encontrado para esta ficha. Adicione seu primeiro set!
+            </div>`;
         return;
     }
 
-    // Renderização iterativa limpa
-    exercicios.forEach((ex, index) => {
-        // Garante um ID seguro mesmo se o exercício salvo não tiver ex.id
-        const exId = ex.id !== undefined ? ex.id : index;
-        const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
-
-        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
-            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${typeof formatarTempoParaExibicao === 'function' ? formatarTempoParaExibicao(ex.tempo) : ex.tempo}</span>`
-            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
-
+    // Renderiza cada exercício/set salvo um abaixo do outro
+    dadosLog.forEach((item, index) => {
+        const idUnico = item.id || index;
+        
         container.innerHTML += `
-            <div id="item-log-${exId}" class="treino-item" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px;">
-                <div style="flex: 1;">
-                    <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${nomeExercicio}</h4>
-                    <div id="dados-log-${exId}" style="margin-top: 5px;">${infoBadge}</div>
-                </div>
-                <div id="acoes-log-${exId}" style="display: flex; gap: 10px;">
-                    <button class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                    </button>
-                    <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover ${nomeExercicio} do treino atual?', () => removerExercicio(${exId}, 'log'))" title="Excluir">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                    </button>
-                </div>
-            </div>`;
+        <div class="treino-item" id="treino-item-${idUnico}">
+            <div style="flex: 1;">
+                <h4>${item.nome || 'EXERCÍCIO'}</h4>
+                <span>${item.detalhes || `${item.series || 0}x${item.reps \vert{}\vert{} 0} —${item.carga || 0}kg`}</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-action" onclick="editarLogItem(${idUnico})" title="Editar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button class="btn-action btn-delete-action" onclick="removerLogItem(${idUnico})" title="Excluir">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+        </div>`;
     });
 }
 
