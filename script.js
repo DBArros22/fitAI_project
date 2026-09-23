@@ -1735,10 +1735,10 @@ function renderizarResumoFicha(nome) {
         nome = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     }
 
-    // Aponta para o ID correto existente no HTML da view-registro
-    const container = document.getElementById('lista-treino') || document.getElementById('lista-exercicios-estaticos');
+    // Aponta exclusivamente para o container de exercícios da ficha (evita conflito com o log)
+    const container = document.getElementById('lista-exercicios-estaticos') || document.getElementById('lista-treino');
     if (!container) {
-        console.warn("Container #lista-treino não encontrado na tela atual.");
+        console.warn("Container de listagem não encontrado na tela atual.");
         return;
     }
     
