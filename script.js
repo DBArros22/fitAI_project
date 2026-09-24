@@ -2151,6 +2151,9 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
+
+
+
 // Fuynções da pagina cronograma
 
 function renderizarPaginaCronograma() {
