@@ -2087,7 +2087,7 @@ function atualizarListaExercicios() {
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
-// ATENÇÃO: Modificada para 'async' para aguardar o salvamento na nuvem via await salvarBanco()
+
 function adicionarExercicio(event) {
     if (event) event.preventDefault();
 
@@ -2117,12 +2117,33 @@ function adicionarExercicio(event) {
     };
 
     // 3. Recupera a ficha ativa atual
-    const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || 'GERAL';
+    const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha') || 'GERAL';
 
-    // 4. Salva no localStorage (organizado por ficha)
-    let logsSalvos = JSON.parse(localStorage.getItem(`log_${fichaAtual}`)) || [];
-    logsSalvos.push(novoItem);
-    localStorage.setItem(`log_${fichaAtual}`, JSON.stringify(logsSalvos));
+    // 4. CORREÇÃO CRUCIAL: Salva diretamente no banco unificado 'assistfit_banco' que o renderizarLogTreino lê
+    try {
+        let db = { fichas: {} };
+        const dbString = localStorage.getItem('assistfit_banco');
+        if (dbString) {
+            db = JSON.parse(dbString);
+        }
+
+        if (!db.fichas) {
+            db.fichas = {};
+        }
+        if (!db.fichas[fichaAtual] || !Array.isArray(db.fichas[fichaAtual])) {
+            db.fichas[fichaAtual] = [];
+        }
+
+        // Insere o exercício na ficha ativa do banco central
+        db.fichas[fichaAtual].push(novoItem);
+
+        // Salva o banco atualizado no localStorage
+        localStorage.setItem('assistfit_banco', JSON.stringify(db));
+    } catch (e) {
+        console.error("Erro crítico ao salvar no banco:", e);
+        alert("Erro ao salvar exercício.");
+        return;
+    }
 
     // 5. Limpa os campos de input para o próximo cadastro
     document.getElementById('series-ex').value = '';
@@ -2130,12 +2151,16 @@ function adicionarExercicio(event) {
     document.getElementById('carga-ex').value = '';
     document.getElementById('tempo-ex').value = '';
 
-    // 6. DISPARO IMEDIATO: Atualiza a tela desenhando os itens um abaixo do outro no #lista-treino
+    // 6. DISPARO IMEDIATO: Atualiza o log visualmente na tela e atualiza o resumo/contador da ficha
     if (typeof renderizarLogTreino === 'function') {
         renderizarLogTreino(fichaAtual);
     }
+    
+    if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(fichaAtual);
+    }
 
-    console.log("✅ Set adicionado e log atualizado com sucesso!");
+    console.log("✅ Set adicionado, salvo no banco unificado e tela atualizada com sucesso!");
 }
 
 window.adicionarExercicio = adicionarExercicio;
