@@ -1835,6 +1835,36 @@ function confirmarAcaoOriginal(titulo, mensagem, callbackSim) {
     };
 }
 
+async function removerExercicio(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!nomeFicha || !bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) {
+        console.error("Ficha ativa não encontrada para remoção.");
+        return;
+    }
+
+    // Filtra o array removendo o exercício pelo ID
+    bancoDeDados.fichas[nomeFicha] = bancoDeDados.fichas[nomeFicha].filter(ex => ex.id !== id);
+
+    // Sincroniza com o Firebase e salva localmente
+    await salvarBanco();
+
+    // Re-renderiza o resumo da ficha atual
+    if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nomeFicha);
+    } else if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino(nomeFicha);
+    }
+
+    // 🔥 ATUALIZAÇÃO CRUCIAL: Atualiza o contador na página anterior imediatamente!
+    if (typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    }
+
+    if (typeof mostrarAviso === 'function') {
+        mostrarAviso("Exercício removido com sucesso!");
+    }
+}
+
 
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
 
