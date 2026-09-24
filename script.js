@@ -1865,6 +1865,164 @@ async function removerExercicio(id, origem) {
     }
 }
 
+function renderizarLogTreino(nomeFicha) {
+    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
+    window.fichaAtiva = ativa; // Sincroniza a ficha ativa globalmente
+    
+    const container = document.getElementById('lista-treino');
+    if (!container) return;
+    
+    container.innerHTML = "";
+
+    let exercicios = [];
+    try {
+        if (bancoDeDados && bancoDeDados.fichas && bancoDeDados.fichas[ativa]) {
+            exercicios = bancoDeDados.fichas[ativa];
+        } else {
+            const dbString = localStorage.getItem('assistfit_banco');
+            if (dbString) {
+                const db = JSON.parse(dbString);
+                if (db.fichas && db.fichas[ativa]) exercicios = db.fichas[ativa];
+            }
+        }
+    } catch (e) {
+        console.error("Erro ao carregar o log de treino:", e);
+    }
+
+    if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
+        container.innerHTML = `<p style="color: var(--text-secondary, #94a3b8); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
+        return;
+    }
+
+    exercicios.forEach((ex, index) => {
+        const exId = ex.id !== undefined ? ex.id : index;
+        const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
+
+        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
+            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${ex.tempo}</span>`
+            : `<span style="color: var(--text-secondary, #94a3b8); font-size: 12px;"><strong id="val-series-${exId}">${ex.series || 0}</strong>x<strong id="val-reps-${exId}">${ex.reps || 0}</strong> — <span style="color: #3b82f6; font-weight:bold;"><strong id="val-carga-${exId}">${ex.carga || 0}</strong>kg</span></span>`;
+
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'treino-item';
+        itemDiv.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 12px !important; background: rgba(255,255,255,0.03) !important; border: 1px solid var(--border-color, rgba(255,255,255,0.05)) !important; padding: 15px !important; border-radius: 18px !important; width: 100% !important; box-sizing: border-box !important;";
+        
+        itemDiv.innerHTML = `
+            <div style="flex: 1; padding-right: 10px;">
+                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0 0 5px 0; font-size: 14px;">${nomeExercicio}</h4>
+                <div id="dados-resumo-${exId}">${infoBadge}</div>
+            </div>
+            <div id="acoes-resumo-${exId}" style="display: flex; gap: 8px; align-items: center;">
+                <button type="button" class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </button>
+                <button type="button" class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Deseja remover este exercício da ficha?', () => removerExercicio(${exId}, 'log'))" title="Excluir">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+            </div>
+        `;
+        
+        container.appendChild(itemDiv);
+    });
+}
+
+window.renderizarLogTreino = renderizarLogTreino;
+function renderizarResumoFicha(nome) {
+    renderizarLogTreino(nome);
+}
+
+// --- EDIÇÃO INLINE PERFEITA ALINHADA AO SEU LOG ---
+function ativarEdicaoInline(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
+
+    const exercicios = bancoDeDados.fichas[nomeFicha];
+    const exercicio = exercicios.find(ex => (ex.id !== undefined ? ex.id : exercicios.indexOf(ex)) === id);
+    if (!exercicio) return;
+
+    const containerDados = document.getElementById(`dados-resumo-${id}`);
+    const containerAcoes = document.getElementById(`acoes-resumo-${id}`);
+    if (!containerDados || !containerAcoes) return;
+
+    if (exercicio.tipo === 'tempo') {
+        containerDados.innerHTML = `
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
+                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
+            </div>
+        `;
+    } else {
+        containerDados.innerHTML = `
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px;">
+                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 45px; text-align: center; font-size: 13px;">
+                <span style="color: gray;">×</span>
+                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 45px; text-align: center; font-size: 13px;">
+                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 60px; text-align: center; font-size: 13px;">
+                <span style="color: var(--accent-blue); font-size: 12px; font-weight: bold;">kg</span>
+            </div>
+        `;
+    }
+
+    containerAcoes.innerHTML = `
+        <button type="button" class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border-color: #10b981 !important;">✓</button>
+        <button type="button" class="btn-action" onclick="renderizarLogTreino('${nomeFicha}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important;">✕</button>
+    `;
+}
+
+// --- SALVAR EDIÇÃO E SINCRONIZAR COM O BANCO / FIREBASE ---
+async function salvarEdicaoInline(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
+
+    const exercicios = bancoDeDados.fichas[nomeFicha];
+    const exercicio = exercicios.find(ex => (ex.id !== undefined ? ex.id : exercicios.indexOf(ex)) === id);
+    if (!exercicio) return;
+
+    if (exercicio.tipo === 'tempo') {
+        const inputTempo = document.getElementById(`edit-tempo-${id}`);
+        if (inputTempo) exercicio.tempo = inputTempo.value.trim();
+    } else {
+        const inputSeries = document.getElementById(`edit-series-${id}`);
+        const inputReps = document.getElementById(`edit-reps-${id}`);
+        const inputCarga = document.getElementById(`edit-carga-${id}`);
+
+        if (inputSeries) exercicio.series = inputSeries.value.trim();
+        if (inputReps) exercicio.reps = inputReps.value.trim();
+        if (inputCarga) exercicio.carga = inputCarga.value.trim();
+    }
+
+    await salvarBanco();
+
+    renderizarLogTreino(nomeFicha);
+    if (typeof renderizarFichas === 'function') renderizarFichas();
+
+    if (typeof mostrarAviso === 'function') {
+        mostrarAviso("Exercício atualizado com sucesso!");
+    }
+}
+
+// --- REMOÇÃO SEGURO COM MODAL E ATUALIZAÇÃO DO CONTADOR ---
+async function removerExercicio(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!nomeFicha || !bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
+
+    bancoDeDados.fichas[nomeFicha] = bancoDeDados.fichas[nomeFicha].filter((ex, index) => {
+        const exId = ex.id !== undefined ? ex.id : index;
+        return exId !== id;
+    });
+
+    await salvarBanco();
+
+    renderizarLogTreino(nomeFicha);
+    if (typeof renderizarFichas === 'function') {
+        renderizarFichas();
+    }
+
+    if (typeof mostrarAviso === 'function') {
+        mostrarAviso("Exercício removido com sucesso!");
+    }
+}
+
+
+
 
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
 
@@ -2584,165 +2742,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxx   Fim da pagina cronograma   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
-function renderizarLogTreino(nomeFicha) {
-    const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
-    const container = document.getElementById('lista-treino');
-    
-    if (!container) {
-        console.warn("AVISO: O container 'lista-treino' não foi encontrado no DOM.");
-        return;
-    }
-    
-    // Limpa apenas o conteúdo interno para desenhar os exercícios atualizados
-    container.innerHTML = "";
 
-    let exercicios = [];
-    
-    try {
-        const dbString = localStorage.getItem('assistfit_banco');
-        if (dbString) {
-            const db = JSON.parse(dbString);
-            if (db.fichas && ativa && db.fichas[ativa]) {
-                exercicios = db.fichas[ativa];
-            } else if (ativa && db[ativa]) {
-                exercicios = db[ativa];
-            } else if (Array.isArray(db)) {
-                exercicios = db;
-            }
-        }
-    } catch (e) {
-        console.error("Erro crítico ao carregar o log de treino:", e);
-    }
-
-    // Se estiver vazio, exibe o aviso mantendo o design do painel
-    if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary, #94a3b8); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
-        return;
-    }
-
-    // Renderização iterativa dos exercícios salvos
-    exercicios.forEach((ex, index) => {
-        const exId = ex.id !== undefined ? ex.id : index;
-        const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
-
-        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
-            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${ex.tempo}</span>`
-            : `<span style="color: var(--text-secondary, #94a3b8); font-size: 12px;">${ex.series || 0}x${ex.reps || 0} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
-
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'treino-item';
-        itemDiv.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; margin-bottom: 12px !important; background: rgba(255,255,255,0.05) !important; padding: 15px !important; border-radius: 12px !important; width: 100% !important; box-sizing: border-box !important;";
-        
-        itemDiv.innerHTML = `
-            <div style="flex: 1; padding-right: 10px;">
-                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0 0 5px 0; font-size: 14px;">${nomeExercicio}</h4>
-                <div>${infoBadge}</div>
-            </div>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <button type="button" class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar" style="background: transparent; border: none; cursor: pointer; font-size: 16px;">✏️</button>
-                <button type="button" class="btn-action btn-delete-action" onclick="removerExercicio(${exId}, 'log')" title="Excluir" style="background: transparent; border: none; cursor: pointer; font-size: 16px;">🗑️</button>
-            </div>
-        `;
-        
-        container.appendChild(itemDiv);
-    });
-}
-
-window.renderizarLogTreino = renderizarLogTreino;
-
-// Mantém o alias para evitar que qualquer outra chamada antiga quebre
-function renderizarResumoFicha(nome) {
-    renderizarLogTreino(nome);
-}
-
-//  edição do exercicio na linha do log de performace  
-
-function ativarEdicaoInline(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
-
-    const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => ex.id === id);
-    if (!exercicio) return;
-
-    const containerDados = document.getElementById(`dados-resumo-${id}`);
-    const containerAcoes = document.getElementById(`acoes-resumo-${id}`);
-    if (!containerDados || !containerAcoes) return;
-
-    // Salva o HTML original dos botões para poder restaurar se cancelar
-    const acoesOriginais = containerAcoes.innerHTML;
-
-    // Transforma o bloco de informações em inputs editáveis baseados no tipo
-    if (exercicio.tipo === 'tempo') {
-        containerDados.innerHTML = `
-            <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
-                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
-            </div>
-        `;
-    } else {
-        containerDados.innerHTML = `
-            <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px;">
-                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 50px; text-align: center; font-size: 13px;">
-                <span style="color: gray;">×</span>
-                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 50px; text-align: center; font-size: 13px;">
-                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 65px; text-align: center; font-size: 13px;">
-                <span style="color: var(--accent-blue); font-size: 12px; font-weight: bold;">kg</span>
-            </div>
-        `;
-    }
-
-    // Substitui os botões de ação padrão por Salvar / Cancelar
-    containerAcoes.innerHTML = `
-        <button class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border-color: #10b981 !important;">
-            ✓
-        </button>
-        <button class="btn-action" onclick="cancelarEdicaoInline(${id}, '${origem}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important;">
-            ✕
-        </button>
-    `;
-}
-
-async function salvarEdicaoInline(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
-
-    const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => ex.id === id);
-    if (!exercicio) return;
-
-    if (exercicio.tipo === 'tempo') {
-        const inputTempo = document.getElementById(`edit-tempo-${id}`);
-        if (inputTempo) exercicio.tempo = inputTempo.value.trim();
-    } else {
-        const inputSeries = document.getElementById(`edit-series-${id}`);
-        const inputReps = document.getElementById(`edit-reps-${id}`);
-        const inputCarga = document.getElementById(`edit-carga-${id}`);
-
-        if (inputSeries) exercicio.series = inputSeries.value.trim();
-        if (inputReps) exercicio.reps = inputReps.value.trim();
-        if (inputCarga) exercicio.carga = inputCarga.value.trim();
-    }
-
-    await salvarBanco();
-
-    // Atualiza as views de resumo e o contador da página de fichas
-    if (typeof renderizarResumoFicha === 'function') renderizarResumoFicha(nomeFicha);
-    if (typeof renderizarFichas === 'function') renderizarFichas();
-
-    if (typeof mostrarAviso === 'function') {
-        mostrarAviso("Exercício atualizado com sucesso!");
-    }
-}
-
-function cancelarEdicaoInline(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (typeof renderizarResumoFicha === 'function') {
-        renderizarResumoFicha(nomeFicha);
-    }
-}
-
-// FUNÇÃO AUXILIAR: Executa a máscara de tempo inteligente HH:MM:SS diretamente no input de edição
- 
 // Ouvinte reativo Listener global para SPA WebApp
 
 window.addEventListener('fitaiPerfilAtualizado', (e) => {
