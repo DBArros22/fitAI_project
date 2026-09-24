@@ -240,21 +240,18 @@ box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
 
 /* --- SAGUÃO / LOBBY (FONTE ÚNICA DA VERDADE) --- */
 .crossfit-grid {
-    display: grid !important;
-    grid-template-columns: repeat(2, 280px) !important;
-    gap: 20px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
     width: 100% !important;
-    max-width: 1200px !important;
+    max-width: 100% !important;
     margin: 0 auto !important;
-    justify-content: center !important;
-    justify-items: center !important;
     box-sizing: border-box !important;
 }
 
 .crossfit-grid .menu-card {
-    width: 280px !important;
-    min-height: 200px !important;
-    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 160px !important;
 }
 
 @media (max-width: 950px) {
