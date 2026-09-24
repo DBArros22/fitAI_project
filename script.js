@@ -1031,7 +1031,7 @@ function showView(viewId) {
         viewAlvo = document.getElementById('view-lobby') || viewLogin;
     }
 
-    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA
+    // 4. EXIBIÇÃO CIRÚRGICA DA TELA CORRETA (AJUSTADO PARA FORÇAR O LOG)
     if (viewAlvo) {
         viewAlvo.classList.remove('hidden');
         viewAlvo.removeAttribute('hidden');
@@ -1046,6 +1046,17 @@ function showView(viewId) {
             viewAlvo.style.setProperty('max-width', '1300px', 'important');
             viewAlvo.style.setProperty('margin', '0 auto', 'important');
             viewAlvo.style.setProperty('align-items', 'start', 'important');
+
+            // AJUSTE CRUCIAL: Garante que o aside e a section do log apareçam perfeitamente
+            const colunasRegistro = viewAlvo.querySelectorAll('aside, section');
+            colunasRegistro.forEach(coluna => {
+                coluna.classList.remove('hidden');
+                coluna.removeAttribute('hidden');
+                coluna.style.setProperty('display', 'flex', 'important');
+                coluna.style.setProperty('flex-direction', 'column', 'important');
+                coluna.style.setProperty('visibility', 'visible', 'important');
+                coluna.style.setProperty('opacity', '1', 'important');
+            });
 
             const listaTreinoContainer = viewAlvo.querySelector('#lista-treino');
             if (listaTreinoContainer) {
