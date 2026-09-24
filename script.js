@@ -5642,39 +5642,3 @@ window.adicionarBenchmarkCustom = adicionarBenchmarkCustom;
 window.removerAtletaRecordeCF = removerAtletaRecordeCF;
 window.removerBenchmarkCF = removerBenchmarkCF;
 
-(function aplicarEstilosCriticosRegistro() {
-    const estiloDinamico = document.createElement('style');
-    estiloDinamico.innerHTML = `
-        main#view-registro.registro-container {
-            display: grid !important;
-            grid-template-columns: 1fr 1.2fr !important;
-            gap: 30px !important;
-            max-width: 1300px !important;
-            margin: 0 auto !important;
-            align-items: start !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        main#view-registro.registro-container > aside,
-        main#view-registro.registro-container > section {
-            display: flex !important;
-            flex-direction: column !important;
-            width: 100% !important;
-            box-sizing: border-box !important;
-        }
-        main#view-registro.registro-container > section {
-            min-height: 200px !important;
-            background: rgba(255, 255, 255, 0.03) !important;
-            border: 1px solid rgba(255, 255, 255, 0.08) !important;
-            border-radius: 16px !important;
-            padding: 20px !important;
-        }
-        #lista-treino {
-            display: flex !important;
-            flex-direction: column !important;
-            width: 100% !important;
-            min-height: 100px !important;
-        }
-    `;
-    document.head.appendChild(estiloDinamico);
-})();
