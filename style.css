@@ -394,7 +394,6 @@ transform: translateY(-3px) scale(1.1);
 }
 
 /* -------------- CONTEINERS PÁGINA REGISTRO & LOG DE PERFORMANCE ------- */
-
 #view-registro {
     width: 100% !important;
     box-sizing: border-box !important;
@@ -427,6 +426,7 @@ transform: translateY(-3px) scale(1.1);
     }
 }
 
+/* Painéis com Glassmorphism Profundo alinhados ao tema */
 #view-registro .glass-panel {
     display: flex !important;
     flex-direction: column !important;
@@ -434,6 +434,19 @@ transform: translateY(-3px) scale(1.1);
     opacity: 1 !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.95)) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 28px !important;
+    padding: 30px !important;
+    box-shadow: var(--shadow-pro) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+/* Destaque sutil exclusivo para a coluna do Log de Performance */
+#view-registro .registro-container > section.glass-panel {
+    border-color: rgba(56, 189, 248, 0.25) !important;
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.85)) !important;
 }
 
 #lista-treino {
@@ -441,7 +454,7 @@ transform: translateY(-3px) scale(1.1);
     flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
-    min-height: 200px !important; /* Garante espaço físico mesmo vazio */
+    min-height: 200px !important;
     box-sizing: border-box !important;
 }
 
@@ -474,6 +487,41 @@ transform: translateY(-3px) scale(1.1);
 #lista-treino .treino-item span {
     color: var(--text-secondary) !important;
     font-size: 0.85rem !important;
+}
+
+/* --- PADRONIZAÇÃO DOS BOTÕES DE AÇÃO (BRANCO PLATINADO) --- */
+#view-registro .btn-action,
+#lista-treino .btn-action {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: var(--icon-platinum) !important;
+    border: 1px solid var(--border-color) !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-size: 14px !important;
+    text-decoration: none !important;
+}
+
+#view-registro .btn-action:hover,
+#lista-treino .btn-action:hover {
+    background: var(--accent-blue) !important;
+    color: var(--bg-main) !important;
+    border-color: var(--accent-blue) !important;
+    transform: translateY(-2px) scale(1.05) !important;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3) !important;
+}
+
+#view-registro .btn-action.btn-delete-action:hover,
+#lista-treino .btn-action.btn-delete-action:hover {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
 }
 
 /* --- PLANO B --- */
