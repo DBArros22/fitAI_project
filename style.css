@@ -404,10 +404,14 @@ transform: translateY(-3px) scale(1.1);
 }
 
 .registro-container:not(.hidden) {
-    grid-template-columns: 1fr !important;
-    padding: 16px !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 16px !important;
+    padding: 16px !important;
     max-width: 100% !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
 @media (max-width: 950px) {
