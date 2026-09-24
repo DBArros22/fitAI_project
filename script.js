@@ -2655,55 +2655,51 @@ function renderizarResumoFicha(nome) {
     renderizarLogTreino(nome);
 }
 
-// --- EDIÇÃO INLINE (Versão única limpa e sem duplicidade) ---
-function ativarEdicaoInline(id, tipo) {
-    const ativa = window.fichaAtivaNoMomento || window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas[ativa]) return;
-    
-    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-    if (!ex) return;
+//  edição do exercicio na linha do log de performace  
 
-    const dadosId = tipo === 'resumo' ? `dados-resumo-${id}` : `dados-log-${id}`;
-    const acoesId = tipo === 'resumo' ? `acoes-resumo-${id}` : `acoes-log-${id}`;
+function ativarEdicaoInline(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
 
-    const estiloEsconderSetas = `
-        <style>
-            input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-            input[type=number] { -moz-appearance: textfield; }
-        </style>
-    `;
+    const exercicios = bancoDeDados.fichas[nomeFicha];
+    const exercicio = exercicios.find(ex => ex.id === id);
+    if (!exercicio) return;
 
-    if (ex.tempo && ex.tempo.toString().trim() !== "") {
-        const valorTempo = ex.tempo || "00:00:00";
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-            <div style="display: flex; flex-direction: column; align-items: center; margin-top: 6px; width: 100%;">
-                <input type="text" id="edit-tempo-${id}" value="${valorTempo}" placeholder="00:00:00" inputmode="numeric" 
-                    oninput="if(typeof automatizarMascaraTempo==='function') automatizarMascaraTempo(this)"
-                    style="width: 110px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 800; letter-spacing: 2px; outline: none;">
-            </div>`;
+    const containerDados = document.getElementById(`dados-resumo-${id}`);
+    const containerAcoes = document.getElementById(`acoes-resumo-${id}`);
+    if (!containerDados || !containerAcoes) return;
+
+    // Salva o HTML original dos botões para poder restaurar se cancelar
+    const acoesOriginais = containerAcoes.innerHTML;
+
+    // Transforma o bloco de informações em inputs editáveis baseados no tipo
+    if (exercicio.tipo === 'tempo') {
+        containerDados.innerHTML = `
+            <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
+                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
+            </div>
+        `;
     } else {
-        document.getElementById(dadosId).innerHTML = estiloEsconderSetas + `
-            <div style="display: flex; gap: 6px; align-items: center; margin-top: 6px;">
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-series-${id}" value="${parseInt(ex.series) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">×</span>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-reps-${id}" value="${parseInt(ex.reps) || 0}" style="width: 42px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">—</span>
-                <input type="number" inputmode="numeric" pattern="[0-9]*" id="edit-carga-${id}" value="${parseFloat(ex.carga) || 0}" style="width: 52px; background: #0f172a; border: 1px solid #3b82f6; color: #f8fafc; border-radius: 6px; text-align: center; padding: 6px 4px; font-size: 13px; font-weight: 600; outline: none;">
-                <span style="color: #64748b; font-size: 11px; font-weight: bold;">KG</span>
-            </div>`;
+        containerDados.innerHTML = `
+            <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px;">
+                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 50px; text-align: center; font-size: 13px;">
+                <span style="color: gray;">×</span>
+                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 50px; text-align: center; font-size: 13px;">
+                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 65px; text-align: center; font-size: 13px;">
+                <span style="color: var(--accent-blue); font-size: 12px; font-weight: bold;">kg</span>
+            </div>
+        `;
     }
 
-    document.getElementById(acoesId).innerHTML = `
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <button onclick="salvarEdicaoInline(${id}, '${tipo}')" 
-                style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #10b981; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold;" title="Salvar">
-                ✓
-            </button>
-            <button onclick="renderizarLogTreino('${ativa}')" 
-                style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; color: #ef4444; font-size: 14px; display: flex; align-items: center; justify-content: center; font-weight: bold;" title="Cancelar">
-                ✕
-            </button>
-        </div>`;
+    // Substitui os botões de ação padrão por Salvar / Cancelar
+    containerAcoes.innerHTML = `
+        <button class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border-color: #10b981 !important;">
+            ✓
+        </button>
+        <button class="btn-action" onclick="cancelarEdicaoInline(${id}, '${origem}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important;">
+            ✕
+        </button>
+    `;
 }
 
 function salvarEdicaoInline(id, tipo) {
