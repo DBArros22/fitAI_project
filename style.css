@@ -490,6 +490,7 @@ transform: translateY(-3px) scale(1.1);
 }
 
 /* --- PADRONIZAÇÃO DOS BOTÕES DE AÇÃO (BRANCO PLATINADO) --- */
+
 #view-registro .btn-action,
 #lista-treino .btn-action {
     background: rgba(255, 255, 255, 0.03) !important;
