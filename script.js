@@ -2702,36 +2702,42 @@ function ativarEdicaoInline(id, origem) {
     `;
 }
 
-function salvarEdicaoInline(id, tipo) {
-    const ativa = window.fichaAtivaNoMomento || window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas[ativa]) return;
-    
-    const ex = bancoDeDados.fichas[ativa].find(t => t.id === id);
-    
-    if (ex) {
+async function salvarEdicaoInline(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
+
+    const exercicios = bancoDeDados.fichas[nomeFicha];
+    const exercicio = exercicios.find(ex => ex.id === id);
+    if (!exercicio) return;
+
+    if (exercicio.tipo === 'tempo') {
         const inputTempo = document.getElementById(`edit-tempo-${id}`);
-        
-        if (inputTempo) {
-            ex.tempo = inputTempo.value || "00:00:00";
-            ex.series = "";
-            ex.reps = "";
-            ex.carga = "";
-        } else {
-            ex.series = parseInt(document.getElementById(`edit-series-${id}`).value) || 0;
-            ex.reps = parseInt(document.getElementById(`edit-reps-${id}`).value) || 0;
-            ex.carga = parseFloat(document.getElementById(`edit-carga-${id}`).value) || 0;
-            ex.tempo = "";
-        }
+        if (inputTempo) exercicio.tempo = inputTempo.value.trim();
+    } else {
+        const inputSeries = document.getElementById(`edit-series-${id}`);
+        const inputReps = document.getElementById(`edit-reps-${id}`);
+        const inputCarga = document.getElementById(`edit-carga-${id}`);
 
-        if (typeof salvarBanco === 'function') {
-            salvarBanco();
-        } else if (typeof salvarBancoDeDadosLocal === 'function') {
-            salvarBancoDeDadosLocal();
-        } else {
-            localStorage.setItem('assistfit_banco', JSON.stringify(bancoDeDados));
-        }
+        if (inputSeries) exercicio.series = inputSeries.value.trim();
+        if (inputReps) exercicio.reps = inputReps.value.trim();
+        if (inputCarga) exercicio.carga = inputCarga.value.trim();
+    }
 
-        renderizarLogTreino(ativa);
+    await salvarBanco();
+
+    // Atualiza as views de resumo e o contador da página de fichas
+    if (typeof renderizarResumoFicha === 'function') renderizarResumoFicha(nomeFicha);
+    if (typeof renderizarFichas === 'function') renderizarFichas();
+
+    if (typeof mostrarAviso === 'function') {
+        mostrarAviso("Exercício atualizado com sucesso!");
+    }
+}
+
+function cancelarEdicaoInline(id, origem) {
+    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nomeFicha);
     }
 }
 
