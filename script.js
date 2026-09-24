@@ -1501,37 +1501,43 @@ async function concluirRedefinicaoSenha() {
 function renderizarFichas() {
     const container = document.getElementById('lista-fichas');
     if (!container) return;
+    
     container.innerHTML = `
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-    <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-    ← VOLTAR
-    </button>
+        <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
+            ← VOLTAR
+        </button>
     </div>
     `;
+
     if (!bancoDeDados || !bancoDeDados.fichas) {
         bancoDeDados = { fichas: {} };
     }
+
     const keys = Object.keys(bancoDeDados.fichas);
     if (keys.length === 0) {
         container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
         return;
     }
+
     keys.forEach(nome => {
         const exerciciosDaFicha = bancoDeDados.fichas[nome];
         const totalExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
+        
         container.innerHTML += `
         <div class="ficha-item" onclick="abrirFicha('${nome}')" style="cursor: pointer;">
-        <div class="treino-info">
-        <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
-        <p style="font-size:10px; color:gray;">${totalExercicios} Exercícios</p>
-        </div>
-        <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-        </button>
+            <div class="treino-info">
+                <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
+                <p style="font-size:10px; color:gray;">${totalExercicios} Exercícios</p>
+            </div>
+            <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </button>
         </div>`;
     });
 }
 
+// --- CRIAR NOVA FICHA ---
 async function criarNovaFicha() {
     solicitarNomeFichaCustom(async (nome) => {
         if (!bancoDeDados.fichas) bancoDeDados.fichas = {};
@@ -1547,6 +1553,7 @@ async function criarNovaFicha() {
     });
 }
 
+// --- SINCRONIZAÇÃO COM FIREBASE ---
 async function carregarBancoDoFirebase() {
     const user = auth.currentUser;
     if (!user) return;
@@ -1583,6 +1590,7 @@ async function salvarBanco() {
     }
 }
 
+// --- MODAL CUSTOMIZADO PARA NOME DE FICHA ---
 function solicitarNomeFichaCustom(callback) {
     const modalInput = document.createElement('div');
     modalInput.style = `
@@ -1593,18 +1601,18 @@ function solicitarNomeFichaCustom(callback) {
     `;
     modalInput.innerHTML = `
     <div class="glass-panel fade-in" style="max-width: 400px; width: 100%; padding: 35px; border: 1px solid var(--accent-blue); background: var(--bg-card); border-radius: 28px;">
-    <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
-    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    </div>
-    <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
-    <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
-    <div class="form-group" style="margin-bottom: 25px;">
-    <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
-    </div>
-    <div style="display: flex; gap: 12px;">
-    <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
-    <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
-    </div>
+        <div class="card-icon" style="margin: 0 auto 20px; background: rgba(56, 189, 248, 0.1); border-color: var(--accent-blue);">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <h3 class="italic-bold" style="color: white; text-align: center; margin-bottom: 10px; font-size: 1.2rem;">NOVA FICHA</h3>
+        <p style="color: var(--text-secondary); text-align: center; margin-bottom: 25px; font-size: 13px;">Como você quer chamar este novo treino?</p>
+        <div class="form-group" style="margin-bottom: 25px;">
+            <input type="text" id="input-nome-ficha" placeholder="Ex: TREINO A - SUPERIORES" class="input-field" style="text-align: center; text-transform: uppercase; font-weight: 800;">
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button id="btn-cancelar-nome" style="flex: 1; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); padding: 14px; border-radius: 14px; font-weight: 700; cursor: pointer;">CANCELAR</button>
+            <button id="btn-confirmar-nome" style="flex: 1; background: var(--accent-blue); color: #020617; border: none; padding: 14px; border-radius: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);">CRIAR</button>
+        </div>
     </div>
     `;
     document.body.appendChild(modalInput);
@@ -1625,63 +1633,38 @@ function solicitarNomeFichaCustom(callback) {
     };
 }
 
+// --- ABRIR FICHA ---
 function abrirFicha(nome) {
-    console.log("👉 1. Clique detectado na ficha:", nome);
-
     if (!nome) {
         nome = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     }
-    if (!nome) {
-        console.error("Nenhuma ficha ativa encontrada para abrir.");
-        return;
-    }
+    if (!nome) return;
 
-    // Salva o estado global
     window.fichaAtiva = nome;
     localStorage.setItem('fichaAtiva', nome);
     localStorage.setItem('ultimaFicha', nome);
 
-    // Dispara o roteador para exibir a view de registro
     if (typeof showView === 'function') {
         showView('view-registro');
     }
 
-    // Força a exibição visível do container principal e remove qualquer classe hidden interna
     const viewRegistro = document.getElementById('view-registro');
     if (viewRegistro) {
         viewRegistro.classList.remove('hidden');
         viewRegistro.removeAttribute('hidden');
         viewRegistro.style.setProperty('display', 'grid', 'important');
-        
-        // Remove classes hidden de qualquer elemento filho (garantindo o log de performance)
         viewRegistro.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
     }
 
-    // Atualiza todos os títulos da ficha ativa na tela
     document.querySelectorAll('#nome-ficha-ativa').forEach(titulo => {
         titulo.innerText = nome.toUpperCase();
     });
 
-    // Executa os hooks de renderização e preenchimento de forma blindada
-    try {
-        if (typeof renderizarLogTreino === 'function') {
-            renderizarLogTreino(nome);
-        } else if (typeof renderizarResumoFicha === 'function') {
-            renderizarResumoFicha(nome);
-        }
-    } catch (e) {
-        console.error("Erro ao renderizar o log da ficha:", e);
+    if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino(nome);
+    } else if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nome);
     }
-
-    try {
-        if (typeof atualizarListaExercicios === 'function') {
-            atualizarListaExercicios();
-        }
-    } catch (e) {
-        console.error("Erro em atualizarListaExercicios:", e);
-    }
-
-    console.log("✅ 3. Processo de abertura de ficha finalizado para:", nome);
 }
 
 function voltarParaFichas() {
@@ -1691,6 +1674,7 @@ function voltarParaFichas() {
     showView('fichas');
 }
 
+// --- MÁSCARAS E FORMATAÇÃO DE TEMPO ---
 function mascaraTempo(input) {
     let v = input.value.replace(/\D/g, '');
     if (v.length > 6) v = v.slice(0, 6);
@@ -1713,95 +1697,18 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
-
-function mascaraTempo(input) {
-let v = input.value.replace(/\D/g, '');
-
-if (v.length > 6) v = v.slice(0, 6);
-
-if (v.length >= 5) {
-
-v = v.replace(/^(\d{2})(\d{2})(\d{2}).*/, '$1:$2:$3');
-
-} else if (v.length >= 3) {
-v = v.replace(/^(\d{2})(\d{2}).*/, '$1:$2');
-}
-input.value = v;
-}
-
-
-function formatarTempoParaExibicao(valor) {
-if (!valor) return "";
-
-const partes = valor.split(':');
-
-if (partes.length === 3) {
-return `${partes[0]}h ${partes[1]}m ${partes[2]}s`;
-} else if (partes.length === 2) {
-return `${partes[0]}m ${partes[1]}s`;
-}
-return valor + "s";
-}
-
-
-
-function renderizarResumoFicha(nome) {
-    if (!nome) {
-        nome = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    }
-
-    // Aponta exclusivamente para o container de exercícios da ficha (evita conflito com o log)
-    const container = document.getElementById('lista-exercicios-estaticos') || document.getElementById('lista-treino');
-    if (!container) {
-        console.warn("Container de listagem não encontrado na tela atual.");
-        return;
-    }
-    
-    container.innerHTML = "";
-    const exercicios = bancoDeDados.fichas && bancoDeDados.fichas[nome] ? bancoDeDados.fichas[nome] : [];
-
-    if (exercicios.length === 0) {
-        container.innerHTML = `<p style="color: var(--text-secondary); text-align: center; font-size: 0.85rem; padding: 20px;">Nenhum exercício registrado nesta ficha ainda.</p>`;
-        return;
-    }
-
-    exercicios.forEach(ex => {
-        const infoExibicao = ex.tipo === 'tempo'
-            ? `<span style="color: #10b981; font-weight:bold;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
-            : `<span style="color: #94a3b8; font-size: 12px;">${ex.series || '-'}x${ex.reps || '-'} — <span style="color: #3b82f6; font-weight:bold;">${ex.carga || 0}kg</span></span>`;
-
-        container.innerHTML += `
-        <div id="item-resumo-${ex.id}" style="background:rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-            <div style="flex: 1;">
-                <h4 class="italic-bold" style="color: white; text-transform: uppercase; margin: 0; font-size: 14px;">${ex.nome}</h4>
-                <div id="dados-resumo-${ex.id}" style="margin-top: 5px;">${infoExibicao}</div>
-            </div>
-            <div id="acoes-resumo-${ex.id}" style="display: flex; gap: 10px;">
-                <button class="btn-action" onclick="ativarEdicaoInline(${ex.id}, 'resumo')" title="Editar">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </button>
-                <button class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Remover este item da sua ficha?', () => removerExercicio(${ex.id}, 'resumo'))" title="Excluir">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                </button>
-            </div>
-        </div>`;
-    });
-}
-
-
-
+// --- EXCLUIR FICHA ---
 async function excluirFicha(nome) {
-if (bancoDeDados.fichas && bancoDeDados.fichas[nome]) {
-delete bancoDeDados.fichas[nome];
-await salvarBanco();
-if (typeof renderizarFichas === 'function') renderizarFichas();
-if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
-mostrarAviso("Ficha excluída com sucesso!");
-} else {
-console.error("Ficha não encontrada para exclusão:", nome);
- }
-} 
+    if (bancoDeDados.fichas && bancoDeDados.fichas[nome]) {
+        delete bancoDeDados.fichas[nome];
+        await salvarBanco();
+        if (typeof renderizarFichas === 'function') renderizarFichas();
+        if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+        mostrarAviso("Ficha excluída com sucesso!");
+    }
+}
 
+// --- MODAL DE CONFIRMAÇÃO GLOBAL ---
 function confirmarAcaoOriginal(titulo, mensagem, callbackSim) {
     const modalExistente = document.getElementById('modal-confirmacao-global');
     if (modalExistente) modalExistente.remove();
@@ -1835,58 +1742,19 @@ function confirmarAcaoOriginal(titulo, mensagem, callbackSim) {
     };
 }
 
-async function removerExercicio(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!nomeFicha || !bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) {
-        console.error("Ficha ativa não encontrada para remoção.");
-        return;
-    }
-
-    // Filtra o array removendo o exercício pelo ID
-    bancoDeDados.fichas[nomeFicha] = bancoDeDados.fichas[nomeFicha].filter(ex => ex.id !== id);
-
-    // Sincroniza com o Firebase e salva localmente
-    await salvarBanco();
-
-    // Re-renderiza o resumo da ficha atual
-    if (typeof renderizarResumoFicha === 'function') {
-        renderizarResumoFicha(nomeFicha);
-    } else if (typeof renderizarLogTreino === 'function') {
-        renderizarLogTreino(nomeFicha);
-    }
-
-    // 🔥 ATUALIZAÇÃO CRUCIAL: Atualiza o contador na página anterior imediatamente!
-    if (typeof renderizarFichas === 'function') {
-        renderizarFichas();
-    }
-
-    if (typeof mostrarAviso === 'function') {
-        mostrarAviso("Exercício removido com sucesso!");
-    }
-}
-
+// --- RENDERIZAR LOG DE TREINO (COM SUPORTE ROBUSTO A ID / ÍNDICE) ---
 function renderizarLogTreino(nomeFicha) {
     const ativa = nomeFicha || window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha');
-    window.fichaAtiva = ativa; // Sincroniza a ficha ativa globalmente
+    window.fichaAtiva = ativa;
     
-    const container = document.getElementById('lista-treino');
+    const container = document.getElementById('lista-treino') || document.getElementById('lista-exercicios-estaticos');
     if (!container) return;
     
     container.innerHTML = "";
 
     let exercicios = [];
-    try {
-        if (bancoDeDados && bancoDeDados.fichas && bancoDeDados.fichas[ativa]) {
-            exercicios = bancoDeDados.fichas[ativa];
-        } else {
-            const dbString = localStorage.getItem('assistfit_banco');
-            if (dbString) {
-                const db = JSON.parse(dbString);
-                if (db.fichas && db.fichas[ativa]) exercicios = db.fichas[ativa];
-            }
-        }
-    } catch (e) {
-        console.error("Erro ao carregar o log de treino:", e);
+    if (bancoDeDados && bancoDeDados.fichas && bancoDeDados.fichas[ativa]) {
+        exercicios = bancoDeDados.fichas[ativa];
     }
 
     if (!exercicios || !Array.isArray(exercicios) || exercicios.length === 0) {
@@ -1895,11 +1763,13 @@ function renderizarLogTreino(nomeFicha) {
     }
 
     exercicios.forEach((ex, index) => {
-        const exId = ex.id !== undefined ? ex.id : index;
+        // Garante identificador seguro (se ex.id não existir, usa o index do array)
+        if (ex.id === undefined) ex.id = index;
+        const exId = ex.id;
         const nomeExercicio = ex.nome || ex.exercicio || 'Exercício sem nome';
 
-        let infoBadge = (ex.tempo && ex.tempo.toString().trim() !== "")
-            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${ex.tempo}</span>`
+        let infoBadge = (ex.tipo === 'tempo' || (ex.tempo && ex.tempo.toString().trim() !== ""))
+            ? `<span style="color: #10b981; font-weight:bold; font-size: 12px;">⏱️ ${formatarTempoParaExibicao(ex.tempo)}</span>`
             : `<span style="color: var(--text-secondary, #94a3b8); font-size: 12px;"><strong id="val-series-${exId}">${ex.series || 0}</strong>x<strong id="val-reps-${exId}">${ex.reps || 0}</strong> — <span style="color: #3b82f6; font-weight:bold;"><strong id="val-carga-${exId}">${ex.carga || 0}</strong>kg</span></span>`;
 
         const itemDiv = document.createElement('div');
@@ -1912,11 +1782,11 @@ function renderizarLogTreino(nomeFicha) {
                 <div id="dados-resumo-${exId}">${infoBadge}</div>
             </div>
             <div id="acoes-resumo-${exId}" style="display: flex; gap: 8px; align-items: center;">
-                <button type="button" class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                <button type="button" class="btn-action" onclick="ativarEdicaoInline(${exId}, 'log')" title="Editar" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
-                <button type="button" class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Deseja remover este exercício da ficha?', () => removerExercicio(${exId}, 'log'))" title="Excluir">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <button type="button" class="btn-action btn-delete-action" onclick="confirmarAcaoOriginal('REMOVER EXERCÍCIO?', 'Deseja remover este exercício da ficha?', () => removerExercicio(${exId}, 'log'))" title="Excluir" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #ef4444;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
             </div>
         `;
@@ -1930,13 +1800,13 @@ function renderizarResumoFicha(nome) {
     renderizarLogTreino(nome);
 }
 
-// --- EDIÇÃO INLINE PERFEITA ALINHADA AO SEU LOG ---
+// --- ATIVAR EDIÇÃO INLINE (TRANSFORMA EM INPUTS) ---
 function ativarEdicaoInline(id, origem) {
     const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
 
     const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => (ex.id !== undefined ? ex.id : exercicios.indexOf(ex)) === id);
+    const exercicio = exercicios.find(ex => ex.id === id || exercicios.indexOf(ex) === id);
     if (!exercicio) return;
 
     const containerDados = document.getElementById(`dados-resumo-${id}`);
@@ -1946,34 +1816,34 @@ function ativarEdicaoInline(id, origem) {
     if (exercicio.tipo === 'tempo') {
         containerDados.innerHTML = `
             <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
-                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
+                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
             </div>
         `;
     } else {
         containerDados.innerHTML = `
             <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px;">
-                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 45px; text-align: center; font-size: 13px;">
+                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 48px; text-align: center; font-size: 13px;">
                 <span style="color: gray;">×</span>
-                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 45px; text-align: center; font-size: 13px;">
-                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main); border: 1px solid var(--accent-blue); color: white; padding: 6px; border-radius: 8px; width: 60px; text-align: center; font-size: 13px;">
-                <span style="color: var(--accent-blue); font-size: 12px; font-weight: bold;">kg</span>
+                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 48px; text-align: center; font-size: 13px;">
+                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 62px; text-align: center; font-size: 13px;">
+                <span style="color: var(--accent-blue, #38bdf8); font-size: 12px; font-weight: bold;">kg</span>
             </div>
         `;
     }
 
     containerAcoes.innerHTML = `
-        <button type="button" class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border-color: #10b981 !important;">✓</button>
-        <button type="button" class="btn-action" onclick="renderizarLogTreino('${nomeFicha}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important;">✕</button>
+        <button type="button" class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</button>
+        <button type="button" class="btn-action" onclick="renderizarLogTreino('${nomeFicha}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
     `;
 }
 
-// --- SALVAR EDIÇÃO E SINCRONIZAR COM O BANCO / FIREBASE ---
+// --- SALVAR EDIÇÃO INLINE E PERSISTIR NO BANCO ---
 async function salvarEdicaoInline(id, origem) {
     const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
 
     const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => (ex.id !== undefined ? ex.id : exercicios.indexOf(ex)) === id);
+    const exercicio = exercicios.find(ex => ex.id === id || exercicios.indexOf(ex) === id);
     if (!exercicio) return;
 
     if (exercicio.tipo === 'tempo') {
@@ -1989,6 +1859,7 @@ async function salvarEdicaoInline(id, origem) {
         if (inputCarga) exercicio.carga = inputCarga.value.trim();
     }
 
+    // Persistência definitiva no Firebase e sincronização local
     await salvarBanco();
 
     renderizarLogTreino(nomeFicha);
@@ -1999,14 +1870,14 @@ async function salvarEdicaoInline(id, origem) {
     }
 }
 
-// --- REMOÇÃO SEGURO COM MODAL E ATUALIZAÇÃO DO CONTADOR ---
+// --- REMOVER EXERCÍCIO COM MODAL E ATUALIZAÇÃO DO CONTADOR ---
 async function removerExercicio(id, origem) {
     const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
     if (!nomeFicha || !bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
 
     bancoDeDados.fichas[nomeFicha] = bancoDeDados.fichas[nomeFicha].filter((ex, index) => {
-        const exId = ex.id !== undefined ? ex.id : index;
-        return exId !== id;
+        const currentId = ex.id !== undefined ? ex.id : index;
+        return currentId !== id;
     });
 
     await salvarBanco();
@@ -2020,7 +1891,6 @@ async function removerExercicio(id, origem) {
         mostrarAviso("Exercício removido com sucesso!");
     }
 }
-
 
 
 
