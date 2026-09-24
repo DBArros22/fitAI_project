@@ -2174,10 +2174,10 @@ function adicionarExercicio(event) {
         tipo: tempo ? 'tempo' : 'forca'
     };
 
-    // 3. Recupera a ficha ativa atual
+    // 3. Recupera a ficha ativa atual com fallback seguro
     const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha') || 'GERAL';
 
-    // 4. CORREÇÃO CRUCIAL: Salva diretamente no banco unificado 'assistfit_banco' que o renderizarLogTreino lê
+    // 4. Salva no banco unificado local
     try {
         let db = { fichas: {} };
         const dbString = localStorage.getItem('assistfit_banco');
@@ -2185,9 +2185,7 @@ function adicionarExercicio(event) {
             db = JSON.parse(dbString);
         }
 
-        if (!db.fichas) {
-            db.fichas = {};
-        }
+        if (!db.fichas) db.fichas = {};
         if (!db.fichas[fichaAtual] || !Array.isArray(db.fichas[fichaAtual])) {
             db.fichas[fichaAtual] = [];
         }
@@ -2203,19 +2201,37 @@ function adicionarExercicio(event) {
         return;
     }
 
-    // 5. Limpa os campos de input para o próximo cadastro
+    // 5. Sincroniza com variáveis globais caso seu app utilize state global
+    if (typeof bancoDados !== 'undefined') {
+        bancoDados = JSON.parse(localStorage.getItem('assistfit_banco'));
+    }
+
+    // 6. Limpa os campos de input para o próximo cadastro
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
     document.getElementById('tempo-ex').value = '';
 
-    // 6. DISPARO IMEDIATO: Atualiza o log visualmente na tela e atualiza o resumo/contador da ficha
+    // 7. CORREÇÃO DE RENDERIZAÇÃO: Força a atualização visual da tela de forma segura
     if (typeof renderizarLogTreino === 'function') {
-        renderizarLogTreino(fichaAtual);
+        try {
+            renderizarLogTreino(fichaAtual);
+        } catch (err) {
+            renderizarLogTreino(); // Tenta sem argumento caso a função não espere parâmetros
+        }
     }
     
     if (typeof renderizarResumoFicha === 'function') {
-        renderizarResumoFicha(fichaAtual);
+        try {
+            renderizarResumoFicha(fichaAtual);
+        } catch (err) {
+            renderizarResumoFicha(); 
+        }
+    }
+
+    // Se houver integração assíncrona com Firebase no seu fluxo, força o salvamento/sincronismo
+    if (typeof salvarBanco === 'function') {
+        salvarBanco();
     }
 
     console.log("✅ Set adicionado, salvo no banco unificado e tela atualizada com sucesso!");
