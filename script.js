@@ -1838,7 +1838,8 @@ function solicitarExclusaoExercicio(id) {
 }
 window.solicitarExclusaoExercicio = solicitarExclusaoExercicio;
 
-// Ativa os campos de edição direto no card do exercício
+
+ // campos de edicao do exercicio no log de perfomance
 function ativarEdicaoInline(id) {
     const row = document.getElementById(`treino-row-${id}`);
     if (!row) return;
@@ -1850,24 +1851,36 @@ function ativarEdicaoInline(id) {
 
     if (!ex) return;
 
+    // Estilo moderno e elegante para os inputs e botões inline
     row.innerHTML = `
-        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-            <h4 style="color: #38bdf8; font-size: 0.9rem; margin: 0; text-transform: uppercase;">Editando: ${ex.nome}</h4>
-            <div style="display: flex; gap: 6px; width: 100%;">
-                <input type="number" id="edit-series-${id}" value="${ex.series || ''}" placeholder="Séries" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
-                <input type="number" id="edit-reps-${id}" value="${ex.reps || ''}" placeholder="Reps" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
-                <input type="number" id="edit-carga-${id}" value="${ex.carga || ''}" placeholder="Carga" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
+        <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; background: rgba(15, 23, 42, 0.95); padding: 12px; border-radius: 14px; border: 1px solid rgba(56, 189, 248, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #38bdf8; font-size: 0.85rem; font-weight: 800; text-transform: uppercase;">Editando: ${ex.nome}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%;">
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <label style="font-size: 10px; color: #94a3b8; font-weight: 600;">SÉRIES</label>
+                    <input type="number" id="edit-series-${id}" value="${ex.series || ''}" style="width: 100%; padding: 10px; font-size: 15px; background: #020617; border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 10px; color: #fff; outline: none; text-align: center;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <label style="font-size: 10px; color: #94a3b8; font-weight: 600;">REPS</label>
+                    <input type="number" id="edit-reps-${id}" value="${ex.reps || ''}" style="width: 100%; padding: 10px; font-size: 15px; background: #020617; border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 10px; color: #fff; outline: none; text-align: center;">
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <label style="font-size: 10px; color: #94a3b8; font-weight: 600;">CARGA (KG)</label>
+                    <input type="number" id="edit-carga-${id}" value="${ex.carga || ''}" style="width: 100%; padding: 10px; font-size: 15px; background: #020617; border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 10px; color: #fff; outline: none; text-align: center;">
+                </div>
             </div>
             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
-                <button type="button" onclick="salvarEdicaoInline('${id}')" style="background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;" title="Confirmar">✔️</button>
-                <button type="button" onclick="renderizarLogTreino()" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;" title="Cancelar">❌</button>
+                <button type="button" onclick="renderizarLogTreino()" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;" title="Cancelar">❌</button>
+                <button type="button" onclick="salvarEdicaoInline('${id}')" style="background: #10b981; color: white; border: none; padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; justify-content: center;" title="Confirmar">✔️</button>
             </div>
         </div>
     `;
 }
 window.ativarEdicaoInline = ativarEdicaoInline;
 
-// Salva as alterações feitas na edição inline
+
 function salvarEdicaoInline(id) {
     const series = document.getElementById(`edit-series-${id}`).value;
     const reps = document.getElementById(`edit-reps-${id}`).value;
