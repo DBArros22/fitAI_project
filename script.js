@@ -1821,74 +1821,79 @@ function renderizarResumoFicha(nome) {
 }
 
 // --- ATIVAR EDIÇÃO INLINE (TRANSFORMA EM INPUTS) ---
-function ativarEdicaoInline(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
-
-    const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => ex.id === id || exercicios.indexOf(ex) === id);
-    if (!exercicio) return;
-
-    const containerDados = document.getElementById(`dados-resumo-${id}`);
-    const containerAcoes = document.getElementById(`acoes-resumo-${id}`);
-    if (!containerDados || !containerAcoes) return;
-
-    if (exercicio.tipo === 'tempo') {
-        containerDados.innerHTML = `
-            <div style="display: flex; gap: 8px; align-items: center; margin-top: 5px;">
-                <input type="text" id="edit-tempo-${id}" value="${exercicio.tempo || ''}" placeholder="00:00:00" oninput="mascaraTempo(this)" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px 10px; border-radius: 8px; width: 110px; font-size: 13px;">
-            </div>
-        `;
+function solicitarExclusaoExercicio(id) {
+    if (typeof confirmarAcaoOriginal === 'function') {
+        confirmarAcaoOriginal("Deseja realmente excluir este exercício?", () => {
+            if (typeof removerExercicio === 'function') {
+                removerExercicio(id);
+            }
+        });
     } else {
-        containerDados.innerHTML = `
-            <div style="display: flex; gap: 6px; align-items: center; margin-top: 5px;">
-                <input type="number" id="edit-series-${id}" value="${exercicio.series || ''}" placeholder="Sér" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 48px; text-align: center; font-size: 13px;">
-                <span style="color: gray;">×</span>
-                <input type="number" id="edit-reps-${id}" value="${exercicio.reps || ''}" placeholder="Reps" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 48px; text-align: center; font-size: 13px;">
-                <input type="number" id="edit-carga-${id}" value="${exercicio.carga || ''}" placeholder="Carga" style="background: var(--bg-main, #0f172a); border: 1px solid var(--accent-blue, #38bdf8); color: white; padding: 6px; border-radius: 8px; width: 62px; text-align: center; font-size: 13px;">
-                <span style="color: var(--accent-blue, #38bdf8); font-size: 12px; font-weight: bold;">kg</span>
-            </div>
-        `;
+        if (confirm("Deseja realmente excluir este exercício?")) {
+            if (typeof removerExercicio === 'function') {
+                removerExercicio(id);
+            }
+        }
     }
+}
+window.solicitarExclusaoExercicio = solicitarExclusaoExercicio;
 
-    containerAcoes.innerHTML = `
-        <button type="button" class="btn-action" onclick="salvarEdicaoInline(${id}, '${origem}')" title="Salvar" style="background: #10b981 !important; color: white !important; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">✓</button>
-        <button type="button" class="btn-action" onclick="renderizarLogTreino('${nomeFicha}')" title="Cancelar" style="background: rgba(255,255,255,0.1) !important; color: white !important; border: none; width: 36px; height: 36px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+// Ativa os campos de edição direto no card do exercício
+function ativarEdicaoInline(id) {
+    const row = document.getElementById(`treino-row-${id}`);
+    if (!row) return;
+
+    const ficha = window.fichaAtiva || localStorage.getItem('fichaAtiva') || 'GERAL';
+    let db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
+    const exercicios = db.fichas && db.fichas[ficha] ? db.fichas[ficha] : [];
+    const ex = exercicios.find(item => (item.id == id));
+
+    if (!ex) return;
+
+    row.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <h4 style="color: #38bdf8; font-size: 0.9rem; margin: 0; text-transform: uppercase;">Editando: ${ex.nome}</h4>
+            <div style="display: flex; gap: 6px; width: 100%;">
+                <input type="number" id="edit-series-${id}" value="${ex.series || ''}" placeholder="Séries" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
+                <input type="number" id="edit-reps-${id}" value="${ex.reps || ''}" placeholder="Reps" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
+                <input type="number" id="edit-carga-${id}" value="${ex.carga || ''}" placeholder="Carga" style="flex: 1; padding: 8px; font-size: 16px; background: #020617; border: 1px solid #38bdf8; border-radius: 8px; color: #fff; outline: none;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+                <button type="button" onclick="salvarEdicaoInline('${id}')" style="background: #10b981; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;" title="Confirmar">✔️</button>
+                <button type="button" onclick="renderizarLogTreino()" style="background: #ef4444; color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px;" title="Cancelar">❌</button>
+            </div>
+        </div>
     `;
 }
+window.ativarEdicaoInline = ativarEdicaoInline;
 
-// --- SALVAR EDIÇÃO INLINE E PERSISTIR NO BANCO ---
-async function salvarEdicaoInline(id, origem) {
-    const nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
-    if (!bancoDeDados.fichas || !bancoDeDados.fichas[nomeFicha]) return;
+// Salva as alterações feitas na edição inline
+function salvarEdicaoInline(id) {
+    const series = document.getElementById(`edit-series-${id}`).value;
+    const reps = document.getElementById(`edit-reps-${id}`).value;
+    const carga = document.getElementById(`edit-carga-${id}`).value;
 
-    const exercicios = bancoDeDados.fichas[nomeFicha];
-    const exercicio = exercicios.find(ex => ex.id === id || exercicios.indexOf(ex) === id);
-    if (!exercicio) return;
-
-    if (exercicio.tipo === 'tempo') {
-        const inputTempo = document.getElementById(`edit-tempo-${id}`);
-        if (inputTempo) exercicio.tempo = inputTempo.value.trim();
-    } else {
-        const inputSeries = document.getElementById(`edit-series-${id}`);
-        const inputReps = document.getElementById(`edit-reps-${id}`);
-        const inputCarga = document.getElementById(`edit-carga-${id}`);
-
-        if (inputSeries) exercicio.series = inputSeries.value.trim();
-        if (inputReps) exercicio.reps = inputReps.value.trim();
-        if (inputCarga) exercicio.carga = inputCarga.value.trim();
+    const ficha = window.fichaAtiva || localStorage.getItem('fichaAtiva') || 'GERAL';
+    let db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
+    
+    if (db.fichas && db.fichas[ficha]) {
+        db.fichas[ficha] = db.fichas[ficha].map(item => {
+            if (item.id == id) {
+                return { ...item, series, reps, carga: carga || '0' };
+            }
+            return item;
+        });
+        localStorage.setItem('assistfit_banco', JSON.stringify(db));
     }
 
-    // Persistência definitiva no Firebase e sincronização local
-    await salvarBanco();
-
-    renderizarLogTreino(nomeFicha);
-    if (typeof renderizarFichas === 'function') renderizarFichas();
-
-    if (typeof mostrarAviso === 'function') {
-        mostrarAviso("Exercício atualizado com sucesso!");
+    if (typeof salvarBanco === 'function') {
+        salvarBanco();
     }
+
+    renderizarLogTreino(ficha);
+    console.log(`✅ Exercício ${id} editado e salvo com sucesso!`);
 }
+window.salvarEdicaoInline = salvarEdicaoInline;
 
 // --- REMOVER EXERCÍCIO COM MODAL E ATUALIZAÇÃO DO CONTADOR ---
 async function removerExercicio(id, origem) {
