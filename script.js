@@ -1938,6 +1938,16 @@ function renderizarFichasConsulta() {
     if(btnSair) btnSair.classList.remove('hidden');
     if(titulo) titulo.innerText = "Consultar Treinos";
 
+    // GARANTIA SÊNIOR: Sincroniza a variável global com o localStorage atualizado antes de contar
+    try {
+        const dbString = localStorage.getItem('assistfit_banco');
+        if (dbString) {
+            bancoDeDados = JSON.parse(dbString);
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar banco para consulta:", e);
+    }
+
     let htmlGerado = "";
 
     if (!bancoDeDados || !bancoDeDados.fichas) return;
@@ -1958,6 +1968,7 @@ function renderizarFichasConsulta() {
     });
     containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
+
 
 function verExerciciosConsulta(nome) {
     const containerLista = document.getElementById('lista-nomes-treinos');
