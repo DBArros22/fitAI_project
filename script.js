@@ -1775,6 +1775,7 @@ function renderizarLogTreino(fichaNome) {
     exerciciosDaFicha.forEach((ex, index) => {
         const itemId = ex.id || index;
         const div = document.createElement('div');
+        div.id = `treino-row-${itemId}`;
         div.className = 'treino-item fade-in';
         div.style.cssText = "display: flex !important; justify-content: space-between !important; align-items: center !important; background: var(--bg-input, #1e293b) !important; border: 1px solid rgba(56, 189, 248, 0.15) !important; border-radius: 18px !important; padding: 16px !important; width: 100% !important; margin-bottom: 10px !important; box-sizing: border-box !important;";
 
@@ -1782,12 +1783,11 @@ function renderizarLogTreino(fichaNome) {
             ? `⏱️ Tempo: ${ex.tempo}` 
             : `🏋️‍♂️ ${ex.series || '-'} Séries | ${ex.reps || '-'} Reps | ${ex.carga || '0'}kg`;
 
-        // Estilos base do botão
-        const estiloBotaoBase = "background: rgba(255, 255, 255, 0.04); color: #f8fafc; border: 1px solid rgba(56, 189, 248, 0.15); width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;";
+        const estiloBotaoBase = "background: rgba(255, 255, 255, 0.05); color: #f8fafc; border: 1px solid rgba(56, 189, 248, 0.2); width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;";
 
-        // Ícones SVG Vetoriais Modernos (Lápis e Lixeira) em Branco Platinado
-        const iconeLapis = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>`;
-        const iconeLixeira = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`;
+        // SVGs Vetoriais Modernos em Branco Platinado
+        const iconeLapis = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
+        const iconeLixeira = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
 
         div.innerHTML = `
             <div class="treino-info" style="flex: 1; min-width: 0; padding-right: 12px;">
@@ -1802,7 +1802,7 @@ function renderizarLogTreino(fichaNome) {
                 <button type="button" style="${estiloBotaoBase}" onclick="ativarEdicaoInline('${itemId}')" title="Editar Exercício">
                     ${iconeLapis}
                 </button>
-                <button type="button" style="${estiloBotaoBase} background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="removerExercicio('${itemId}')" title="Excluir Exercício">
+                <button type="button" style="${estiloBotaoBase} background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="solicitarExclusaoExercicio('${itemId}')" title="Excluir Exercício">
                     ${iconeLixeira}
                 </button>
             </div>
@@ -1811,7 +1811,7 @@ function renderizarLogTreino(fichaNome) {
         containerLog.appendChild(div);
     });
 
-    console.log(`✅ Log renderizado com ícones modernos para: ${ficha}`);
+    console.log(`✅ Log renderizado com ícones platinados para: ${ficha}`);
 }
 
 window.renderizarLogTreino = renderizarLogTreino;
