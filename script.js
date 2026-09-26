@@ -1836,6 +1836,7 @@ function solicitarExclusaoExercicio(id) {
         }
     }
 }
+
 window.solicitarExclusaoExercicio = solicitarExclusaoExercicio;
 
 
