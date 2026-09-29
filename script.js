@@ -1498,44 +1498,61 @@ async function concluirRedefinicaoSenha() {
 
 // --- PÁGINA CRIAR FICHAS COM TREINOS / EXERCICIOS ---
 
-function renderizarFichas() {
-    const container = document.getElementById('lista-fichas');
-    if (!container) return;
-    
-    container.innerHTML = `
-    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
-        <button onclick="showView('lobby')" style="background: rgba(255,255,255,0.1); border: none; color: white; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">
-            ← VOLTAR
-        </button>
-    </div>
-    `;
+function renderizarFichasConsulta() {
+    const containerLista = document.getElementById('lista-nomes-treinos');
+    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
 
-    if (!bancoDeDados || !bancoDeDados.fichas) {
-        bancoDeDados = { fichas: {} };
+    if (!containerLista) return;
+    
+    // Garante que estamos na página principal de listagem
+    containerLista.classList.remove('hidden');
+    if (containerDetalhes) containerDetalhes.classList.add('hidden');
+
+    if(btnVoltar) btnVoltar.classList.add('hidden');
+    if(btnSair) btnSair.classList.remove('hidden');
+    if(titulo) titulo.innerText = "Consultar Treinos";
+
+    // GARANTIA SÊNIOR: Sincroniza a variável global e o banco de dados com o localStorage
+    try {
+        const dbString = localStorage.getItem('assistfit_banco');
+        if (dbString) {
+            const parsedDb = JSON.parse(dbString);
+            bancoDeDados = parsedDb;
+            if (typeof bancoDados !== 'undefined') bancoDados = parsedDb;
+        }
+    } catch (e) {
+        console.error("Erro ao sincronizar banco para consulta:", e);
     }
 
-    const keys = Object.keys(bancoDeDados.fichas);
-    if (keys.length === 0) {
-        container.innerHTML += `<p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ficha criada.</p>`;
+    let htmlGerado = "";
+    const fichasObj = (bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
+
+    if (Object.keys(fichasObj).length === 0) {
+        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
         return;
     }
 
-    keys.forEach(nome => {
-        const exerciciosDaFicha = bancoDeDados.fichas[nome];
-        const totalExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
-        
-        container.innerHTML += `
-        <div class="ficha-item" onclick="abrirFicha('${nome}')" style="cursor: pointer;">
-            <div class="treino-info">
-                <h4 class="italic-bold" style="color:white; text-transform:uppercase;">${nome}</h4>
-                <p style="font-size:10px; color:gray;">${totalExercicios} Exercícios</p>
-            </div>
-            <button onclick="event.stopPropagation(); confirmarAcaoOriginal('EXCLUIR FICHA?', 'Deseja remover toda a ficha ${nome}?', () => excluirFicha('${nome}'))" class="btn-action btn-delete-action">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            </button>
-        </div>`;
+    Object.keys(fichasObj).forEach(nome => {
+        const exerciciosDaFicha = fichasObj[nome];
+        const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
+
+        htmlGerado += `
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
+                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
+                <div>
+                    <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
+                    <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
+                </div>
+                <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
+            </div>`;
     });
+    
+    containerLista.innerHTML = htmlGerado;
 }
+
 
 // --- CRIAR NOVA FICHA ---
 async function criarNovaFicha() {
