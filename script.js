@@ -2130,8 +2130,8 @@ function executarRelogio(id, startTime) {
     }, 40);
 }
 
-function verDetalhesTreino(nomeTreino) {
-    window.fichaAtiva = nomeTreino;
+function verDetalhesTreinoConsultaOriginal(nomeTreino) {
+    window.fichaAtivaConsulta = nomeTreino;
     localStorage.setItem('fichaAtiva', nomeTreino);
 
     const btnSair = document.getElementById('btn-sair-consulta');
@@ -2140,19 +2140,22 @@ function verDetalhesTreino(nomeTreino) {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
 
-    if (btnSair) btnSair.classList.add('hidden');
-    if (btnVoltar) btnVoltar.classList.remove('hidden');
-    if (titulo) titulo.innerText = nomeTreino.toUpperCase();
+    // 1. Alternância visual estricta (Esconde lista, exibe detalhes)
     if (containerLista) containerLista.classList.add('hidden');
     if (containerDetalhes) containerDetalhes.classList.remove('hidden');
 
-    // Lê os exercícios de forma segura do localStorage
+    // 2. Ajuste dos botões de navegação da página de consulta
+    if (btnSair) btnSair.classList.add('hidden');
+    if (btnVoltar) btnVoltar.classList.remove('hidden');
+    if (titulo) titulo.innerText = nomeTreino.toUpperCase();
+
+    // 3. Busca estritamente os exercícios desta ficha
     let exercicios = [];
     try {
         const db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
         exercicios = (db.fichas && db.fichas[nomeTreino]) ? db.fichas[nomeTreino] : [];
     } catch (e) {
-        console.error("Erro ao ler exercícios da ficha:", e);
+        console.error("Erro ao carregar exercícios da ficha:", e);
     }
 
     const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
@@ -2160,10 +2163,11 @@ function verDetalhesTreino(nomeTreino) {
     if (!containerDetalhes) return;
 
     if (exercicios.length === 0) {
-        containerDetalhes.innerHTML = `<p style='color:gray; text-align:center; padding: 20px;'>Nenhum exercício cadastrado nesta ficha.</p>`;
+        containerDetalhes.innerHTML = `<p style='color:gray; text-align:center; padding: 30px;'>Nenhum exercício cadastrado nesta ficha.</p>`;
         return;
     }
 
+    // 4. Renderiza os exercícios dentro do container de detalhes de forma isolada
     containerDetalhes.innerHTML = exercicios.map(ex => {
         const infoEsquerda = ex.tipo === 'tempo'
             ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
