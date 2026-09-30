@@ -1953,7 +1953,6 @@ async function removerExercicio(id, origem) {
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx pagina de consulta treinos xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
 function renderizarFichasConsulta() {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
@@ -1963,7 +1962,7 @@ function renderizarFichasConsulta() {
 
     if (!containerLista) return;
     containerLista.classList.remove('hidden');
-    containerDetalhes.classList.add('hidden');
+    if (containerDetalhes) containerDetalhes.classList.add('hidden');
 
     if(btnVoltar) btnVoltar.classList.add('hidden');
     if(btnSair) btnSair.classList.remove('hidden');
@@ -1981,14 +1980,18 @@ function renderizarFichasConsulta() {
 
     let htmlGerado = "";
 
-    if (!bancoDeDados || !bancoDeDados.fichas) return;
+    if (!bancoDeDados || !bancoDeDados.fichas) {
+        containerLista.innerHTML = `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
+        return;
+    }
 
     Object.keys(bancoDeDados.fichas).forEach(nome => {
         const exerciciosDaFicha = bancoDeDados.fichas[nome];
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
+        // CORREÇÃO: Apontando para verDetalhesTreino que é a função que renderiza os detalhes
         htmlGerado += `
-            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
+            <div onclick="verDetalhesTreino('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
@@ -2000,64 +2003,9 @@ function renderizarFichasConsulta() {
     containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
 }
 
-
+// Mantemos verExerciciosConsulta como alias caso algum outro lugar chame ela
 function verExerciciosConsulta(nome) {
-    // Define a ficha ativa globalmente
-    window.fichaAtiva = nome;
-    localStorage.setItem('fichaAtiva', nome);
-
-    const containerLista = document.getElementById('lista-nomes-treinos');
-    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
-    const btnVoltar = document.getElementById('btn-voltar-consulta');
-    const btnSair = document.getElementById('btn-sair-consulta');
-    const titulo = document.getElementById('cabecalho-consulta');
-
-    // Comportamento estrito de "Nova Página": Oculta lista e exibe detalhes isolados
-    if (containerLista) containerLista.classList.add('hidden');
-    if (containerDetalhes) containerDetalhes.classList.remove('hidden');
-    
-    if (btnVoltar) btnVoltar.classList.remove('hidden');
-    if (btnSair) btnSair.classList.add('hidden');
-    if (titulo) titulo.innerText = nome.toUpperCase();
-
-    const fichasObj = (bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
-    const exercicios = fichasObj[nome] || [];
-    const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
-    
-    if (!containerDetalhes) return;
-
-    containerDetalhes.innerHTML = exercicios.map(ex => {
-        const infoEsquerda = ex.tipo === 'tempo'
-            ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
-            : `<p style="color:white; font-weight:900; margin:0;">${ex.series}x${ex.reps} <span style="color:gray; font-size:10px;">${ex.carga}KG</span></p>`;
-
-        const registroSalvo = historicoTempos[ex.id];
-        const textoUltimoTempo = registroSalvo
-            ? `Último tempo: ${registroSalvo.tempo} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${registroSalvo.data} às ${registroSalvo.hora})</span>`
-            : `Último tempo: --`;
-
-        return `
-        <div class="glass-panel" style="margin-bottom: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border-radius: 15px; border: 1px solid rgba(255,255,255,0.05);">
-            <div style="flex: 1; padding-right: 10px;">
-                <h4 style="color:white; margin:0; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px;">${ex.nome}</h4>
-                ${infoEsquerda}
-                <small id="last-time-${ex.id}" style="color: #3b82f6; font-size: 10px; font-weight: bold; display: block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">
-                    ${textoUltimoTempo}
-                </small>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.25); padding: 8px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.03);">
-                <span id="timer-set-${ex.id}" style="font-family: monospace; color: #10b981; font-weight: bold; font-size: 18px; min-width: 45px; text-align: center; letter-spacing: 0.5px;">0s</span>
-               
-                <button id="btn-timer-set-${ex.id}" onclick="controlarCronometroSet(${ex.id})"
-                    style="background: transparent; border: none; border-radius: 8px; width: 40px; height: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6)); transition: transform 0.2s;"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
-                </button>
-            </div>
-        `;
-    }).join('') || "<p style='color:gray; text-align:center; padding: 20px;'>Nenhum exercício cadastrado nesta ficha.</p>";
-
-    setTimeout(recuperarCronometrosAtivos, 100);
+    verDetalhesTreino(nome);
 }
 
 function controlarCronometroSet(id) {
@@ -2181,7 +2129,7 @@ function verDetalhesTreino(nomeTreino) {
     window.fichaAtiva = nomeTreino;
     localStorage.setItem('fichaAtiva', nomeTreino);
 
-    // 2. Controle dos botões e títulos (como você já faz)
+    // 2. Controle dos botões e títulos
     document.getElementById('btn-sair-consulta').classList.add('hidden');
     document.getElementById('btn-voltar-consulta').classList.remove('hidden');
     document.getElementById('cabecalho-consulta').innerText = nomeTreino.toUpperCase();
@@ -2235,9 +2183,6 @@ function verDetalhesTreino(nomeTreino) {
     setTimeout(recuperarCronometrosAtivos, 100);
 }
 
-window.verDetalhesTreino = verDetalhesTreino;
-
-
 function voltarListaConsulta() {
     document.getElementById('btn-sair-consulta').classList.remove('hidden');
     document.getElementById('btn-voltar-consulta').classList.add('hidden');
@@ -2248,7 +2193,6 @@ function voltarListaConsulta() {
 }
 
 function atualizarListaExercicios() {
-    // CORRIGIDO: O ID correto no HTML é 'select-grupo'
     const campoGrupo = document.getElementById('select-grupo');
     if (!campoGrupo) return;
 
@@ -2280,7 +2224,6 @@ function atualizarListaExercicios() {
 function adicionarExercicio(event) {
     if (event) event.preventDefault();
 
-    // 1. Pega os valores dos inputs do seu HTML
     const grupo = document.getElementById('select-grupo').value;
     const exercicio = document.getElementById('select-exercicio').value;
     const series = document.getElementById('series-ex').value;
@@ -2293,7 +2236,6 @@ function adicionarExercicio(event) {
         return;
     }
 
-    // 2. Cria o objeto do novo item
     const novoItem = {
         id: Date.now(),
         nome: exercicio,
@@ -2305,10 +2247,8 @@ function adicionarExercicio(event) {
         tipo: tempo ? 'tempo' : 'forca'
     };
 
-    // 3. Recupera a ficha ativa atual com fallback seguro
     const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha') || 'GERAL';
 
-    // 4. Salva no banco unificado local
     try {
         let db = { fichas: {} };
         const dbString = localStorage.getItem('assistfit_banco');
@@ -2321,10 +2261,7 @@ function adicionarExercicio(event) {
             db.fichas[fichaAtual] = [];
         }
 
-        // Insere o exercício na ficha ativa do banco central
         db.fichas[fichaAtual].push(novoItem);
-
-        // Salva o banco atualizado no localStorage
         localStorage.setItem('assistfit_banco', JSON.stringify(db));
     } catch (e) {
         console.error("Erro crítico ao salvar no banco:", e);
@@ -2332,23 +2269,20 @@ function adicionarExercicio(event) {
         return;
     }
 
-    // 5. Sincroniza com variáveis globais caso seu app utilize state global
     if (typeof bancoDados !== 'undefined') {
         bancoDados = JSON.parse(localStorage.getItem('assistfit_banco'));
     }
 
-    // 6. Limpa os campos de input para o próximo cadastro
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
     document.getElementById('tempo-ex').value = '';
 
-    // 7. CORREÇÃO DE RENDERIZAÇÃO: Força a atualização visual da tela de forma segura
     if (typeof renderizarLogTreino === 'function') {
         try {
             renderizarLogTreino(fichaAtual);
         } catch (err) {
-            renderizarLogTreino(); // Tenta sem argumento caso a função não espere parâmetros
+            renderizarLogTreino();
         }
     }
     
@@ -2360,15 +2294,10 @@ function adicionarExercicio(event) {
         }
     }
 
-    // Se houver integração assíncrona com Firebase no seu fluxo, força o salvamento/sincronismo
     if (typeof salvarBanco === 'function') {
         salvarBanco();
     }
-
-    console.log("✅ Set adicionado, salvo no banco unificado e tela atualizada com sucesso!");
 }
-
-window.adicionarExercicio = adicionarExercicio;
 
 function formatarTempoParaExibicao(valor) {
     if (!valor) return "00s";
@@ -2381,6 +2310,13 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
+// Expõe as funções globalmente para o HTML
+window.renderizarFichasConsulta = renderizarFichasConsulta;
+window.verDetalhesTreino = verDetalhesTreino;
+window.verExerciciosConsulta = verExerciciosConsulta;
+window.voltarListaConsulta = voltarListaConsulta;
+window.controlarCronometroSet = controlarCronometroSet;
+window.adicionarExercicio = adicionarExercicio;
 
 
 
