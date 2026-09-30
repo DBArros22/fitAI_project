@@ -2322,7 +2322,7 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
-// Expõe as funções globalmente
+ // exposição global das funções 
 window.renderizarFichasConsulta = renderizarFichasConsulta;
 window.verDetalhesTreino = verDetalhesTreino;
 window.verExerciciosConsulta = verExerciciosConsulta;
