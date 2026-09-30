@@ -2031,18 +2031,16 @@ function renderizarFichasConsulta() {
 
     if (!containerLista) return;
     
-    // Garante que estamos na visão inicial da consulta
     containerLista.classList.remove('hidden');
     if (containerDetalhes) {
         containerDetalhes.classList.add('hidden');
-        containerDetalhes.innerHTML = ''; // Limpa resíduos anteriores
+        containerDetalhes.innerHTML = '';
     }
 
     if (btnVoltar) btnVoltar.classList.add('hidden');
     if (btnSair) btnSair.classList.remove('hidden');
     if (titulo) titulo.innerText = "Consultar Treinos";
 
-    // Leitura limpa e exclusiva do localStorage para não afetar a página de registro
     let fichasObj = {};
     try {
         const dbString = localStorage.getItem('assistfit_banco');
@@ -2067,7 +2065,7 @@ function renderizarFichasConsulta() {
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
         htmlGerado += `
-            <div onclick="verDetalhesTreinoConsultaOriginal('${nome}')" class="menu-card"
+            <div onclick="verDetalhesTreino('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
@@ -2080,128 +2078,9 @@ function renderizarFichasConsulta() {
     containerLista.innerHTML = htmlGerado;
 }
 
-// Alias para manter compatibilidade caso algum evento aponte para cá
-function verExerciciosConsulta(nome) {
-    verDetalhesTreino(nome);
-}
 
-function controlarCronometroSet(id) {
-    const display = document.getElementById(`timer-set-${id}`);
-    const btn = document.getElementById(`btn-timer-set-${id}`);
-    const lastDisplay = document.getElementById(`last-time-${id}`);
-
-    if (!cronometrosAtivos[id]) {
-        const startTime = Date.now();
-        localStorage.setItem(`timer_start_${id}`, startTime);
-        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
-        btn.style.background = "#ef4444";
-
-        cronometrosAtivos[id] = setInterval(() => {
-            const passados = Date.now() - startTime;
-            const h = Math.floor(passados / 3600000);
-            const m = Math.floor((passados % 3600000) / 60000);
-            const s = Math.floor((passados % 60000) / 1000);
-            const ms = Math.floor((passados % 1000) / 10);
-
-            let texto = "";
-            if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
-            texto += (m < 10 ? "0"+m : m) + ":";
-            texto += (s < 10 ? "0"+s : s) + ".";
-            texto += (ms < 10 ? "0"+ms : ms);
-
-            if (display) display.innerText = texto;
-        }, 40);
-
-    } else {
-        const tempoCapturado = display.innerText;
-        clearInterval(cronometrosAtivos[id]);
-
-        delete cronometrosAtivos[id];
-        localStorage.removeItem(`timer_start_${id}`);
-        btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="#f8fafc" style="filter: drop-shadow(0 0 4px rgba(248, 250, 252, 0.6));"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>`;
-
-        btn.style.background = "transparent";
-        if (tempoCapturado && tempoCapturado !== "00:00.00" && tempoCapturado !== "0s") {
-
-            const agora = new Date();
-            const dia = String(agora.getDate()).padStart(2, '0');
-            const mes = String(agora.getMonth() + 1).padStart(2, '0');
-            const ano = agora.getFullYear();
-            const dataFormatada = `${dia}/${mes}/${ano}`;
-            const hora = String(agora.getHours()).padStart(2, '0');
-            const minuto = String(agora.getMinutes()).padStart(2, '0');
-            const horaFormatada = `${hora}:${minuto}`;
-
-            const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
-
-            historicoTempos[id] = {
-                tempo: tempoCapturado,
-                data: dataFormatada,
-                hora: horaFormatada
-            };
-
-            localStorage.setItem('assistfit_historico_cronometros', JSON.stringify(historicoTempos));
-            if (lastDisplay) {
-                lastDisplay.innerHTML = `Último tempo: ${tempoCapturado} <span style="color: rgba(255,255,255,0.4); font-weight: normal; margin-left: 4px;">(${dataFormatada} às ${horaFormatada})</span>`;
-            }
-        } 
-        if (display) display.innerText = "00:00.00";
-    }
-}
-
-function recuperarCronometrosAtivos() {
-    Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('timer_start_')) {
-            const id = key.replace('timer_start_', '');
-            const startTimeOriginal = parseInt(localStorage.getItem(key));
-            const display = document.getElementById(`timer-set-${id}`);
-            const btn = document.getElementById(`btn-timer-set-${id}`);
-
-            if (display && btn) {
-                btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="white"><rect x="6" y="6" width="12" height="12"></rect></svg>`;
-                btn.style.background = "#ef4444";
-
-                cronometrosAtivos[id] = setInterval(() => {
-                    const passados = Date.now() - startTimeOriginal;
-                    const h = Math.floor(passados / 3600000);
-                    const m = Math.floor((passados % 3600000) / 60000);
-                    const s = Math.floor((passados % 60000) / 1000);
-                    const ms = Math.floor((passados % 1000) / 10);
-
-                    let texto = "";
-                    if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
-                    texto += (m < 10 ? "0"+m : m) + ":";
-                    texto += (s < 10 ? "0"+s : s) + ".";
-                    texto += (ms < 10 ? "0"+ms : ms);
-                    display.innerText = texto;
-                }, 40);
-            }
-        }
-    });
-}
-
-function executarRelogio(id, startTime) {
-    const display = document.getElementById(`timer-set-${id}`);
-    cronometrosAtivos[id] = setInterval(() => {
-        const agora = Date.now();
-        const passados = agora - startTime;
-        const h = Math.floor(passados / 3600000);
-        const m = Math.floor((passados % 3600000) / 60000);
-        const s = Math.floor((passados % 60000) / 1000);
-        const ms = Math.floor((passados % 1000) / 10);
-
-        let texto = "";
-        if (h > 0) texto += (h < 10 ? "0"+h : h) + ":";
-        texto += (m < 10 ? "0"+m : m) + ":";
-        texto += (s < 10 ? "0"+s : s) + ".";
-        texto += (ms < 10 ? "0"+ms : ms);
-       
-        if (display) display.innerText = texto;
-    }, 40);
-}
-
-function verDetalhesTreinoConsultaOriginal(nomeTreino) {
-    window.fichaAtivaConsulta = nomeTreino;
+function verDetalhesTreino(nomeTreino) {
+    window.fichaAtiva = nomeTreino;
     localStorage.setItem('fichaAtiva', nomeTreino);
 
     const btnSair = document.getElementById('btn-sair-consulta');
@@ -2210,16 +2089,14 @@ function verDetalhesTreinoConsultaOriginal(nomeTreino) {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
 
-    // 1. Alternância visual estricta (Esconde lista, exibe detalhes)
+    // Página única estrita: Oculta a lista e exibe apenas os detalhes
     if (containerLista) containerLista.classList.add('hidden');
     if (containerDetalhes) containerDetalhes.classList.remove('hidden');
 
-    // 2. Ajuste dos botões de navegação da página de consulta
     if (btnSair) btnSair.classList.add('hidden');
     if (btnVoltar) btnVoltar.classList.remove('hidden');
     if (titulo) titulo.innerText = nomeTreino.toUpperCase();
 
-    // 3. Busca estritamente os exercícios desta ficha
     let exercicios = [];
     try {
         const db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
@@ -2237,7 +2114,6 @@ function verDetalhesTreinoConsultaOriginal(nomeTreino) {
         return;
     }
 
-    // 4. Renderiza os exercícios dentro do container de detalhes de forma isolada
     containerDetalhes.innerHTML = exercicios.map(ex => {
         const infoEsquerda = ex.tipo === 'tempo'
             ? `<p style="color:#10b981; font-weight:900; margin:0;">${formatarTempoParaExibicao(ex.tempo)}</p>`
@@ -2272,43 +2148,28 @@ function verDetalhesTreinoConsultaOriginal(nomeTreino) {
     setTimeout(recuperarCronometrosAtivos, 100);
 }
 
+
+function verExerciciosConsulta(nome) {
+    verDetalhesTreino(nome);
+}
+
+
 function voltarListaConsulta() {
-    document.getElementById('btn-sair-consulta').classList.remove('hidden');
-    document.getElementById('btn-voltar-consulta').classList.add('hidden');
-    document.getElementById('cabecalho-consulta').innerText = "Consultar Treinos";
-    document.getElementById('lista-nomes-treinos').classList.remove('hidden');
-    document.getElementById('detalhes-treino-consulta').classList.add('hidden');
-    renderizarFichasConsulta();
-}
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
+    const containerLista = document.getElementById('lista-nomes-treinos');
+    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
 
-function atualizarListaExercicios() {
-    const campoGrupo = document.getElementById('select-grupo');
-    if (!campoGrupo) return;
-
-    const grupo = campoGrupo.value;
-    const selectEx = document.getElementById('select-exercicio');
-    const camposForca = document.getElementById('campos-forca');
-    const camposCardio = document.getElementById('campos-cardio');
-
-    if (!selectEx) return;
-    if (!grupo) {
-        selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>';
-        return;
+    if (btnSair) btnSair.classList.remove('hidden');
+    if (btnVoltar) btnVoltar.classList.add('hidden');
+    if (titulo) titulo.innerText = "Consultar Treinos";
+    if (containerLista) containerLista.classList.remove('hidden');
+    if (containerDetalhes) {
+        containerDetalhes.classList.add('hidden');
+        containerDetalhes.innerHTML = '';
     }
-
-    if (grupo === "Cardio & Aeróbico") {
-        if (camposForca) camposForca.classList.add('hidden');
-        if (camposCardio) camposCardio.classList.remove('hidden');
-    } else {
-        if (camposForca) camposForca.classList.remove('hidden');
-        if (camposCardio) camposCardio.classList.add('hidden');
-    }
-    
-    const lista = dicionarioExercicios[grupo] || [];
-    selectEx.innerHTML = '<option value="">Selecione o Exercício...</option>' +
-        lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
-
 
 
 function formatarTempoParaExibicao(valor) {
@@ -2322,13 +2183,12 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
- // exposição global das funções 
+
+// EXPOSIÇÃO GLOBAL GARANTIDA (Elimina qualquer erro de Undefined)
 window.renderizarFichasConsulta = renderizarFichasConsulta;
 window.verDetalhesTreino = verDetalhesTreino;
 window.verExerciciosConsulta = verExerciciosConsulta;
 window.voltarListaConsulta = voltarListaConsulta;
-window.controlarCronometroSet = controlarCronometroSet;
-window.adicionarExercicio = adicionarExercicio;
 
 
 
