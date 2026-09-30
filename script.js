@@ -1691,6 +1691,74 @@ function voltarParaFichas() {
     showView('fichas');
 }
 
+ // adicionar exercicio
+ 
+function adicionarExercicio(event) {
+    if (event) event.preventDefault();
+
+    const grupo = document.getElementById('select-grupo').value;
+    const exercicio = document.getElementById('select-exercicio').value;
+    const series = document.getElementById('series-ex').value;
+    const reps = document.getElementById('reps-ex').value;
+    const carga = document.getElementById('carga-ex').value;
+    const tempo = document.getElementById('tempo-ex').value;
+
+    if (!exercicio) {
+        alert("Por favor, selecione um exercício.");
+        return;
+    }
+
+    const novoItem = {
+        id: Date.now(),
+        nome: exercicio,
+        grupo: grupo,
+        series: series,
+        reps: reps,
+        carga: carga || '0',
+        tempo: tempo,
+        tipo: tempo ? 'tempo' : 'forca'
+    };
+
+    const fichaAtual = window.fichaAtiva || localStorage.getItem('fichaAtiva') || localStorage.getItem('ultimaFicha') || 'GERAL';
+
+    try {
+        let db = { fichas: {} };
+        const dbString = localStorage.getItem('assistfit_banco');
+        if (dbString) {
+            db = JSON.parse(dbString);
+        }
+
+        if (!db.fichas) db.fichas = {};
+        if (!db.fichas[fichaAtual] || !Array.isArray(db.fichas[fichaAtual])) {
+            db.fichas[fichaAtual] = [];
+        }
+
+        db.fichas[fichaAtual].push(novoItem);
+        localStorage.setItem('assistfit_banco', JSON.stringify(db));
+    } catch (e) {
+        console.error("Erro crítico ao salvar no banco:", e);
+        alert("Erro ao salvar exercício.");
+        return;
+    }
+
+    document.getElementById('series-ex').value = '';
+    document.getElementById('reps-ex').value = '';
+    document.getElementById('carga-ex').value = '';
+    document.getElementById('tempo-ex').value = '';
+
+    if (typeof renderizarLogTreino === 'function') {
+        try { renderizarLogTreino(fichaAtual); } catch (err) { renderizarLogTreino(); }
+    }
+    
+    if (typeof renderizarResumoFicha === 'function') {
+        try { renderizarResumoFicha(fichaAtual); } catch (err) { renderizarResumoFicha(); }
+    }
+
+    if (typeof salvarBanco === 'function') {
+        salvarBanco();
+    }
+}
+
 // --- MÁSCARAS E FORMATAÇÃO DE TEMPO ---
 function mascaraTempo(input) {
     let v = input.value.replace(/\D/g, '');
