@@ -2031,6 +2031,7 @@ function renderizarFichasConsulta() {
 
     if (!containerLista) return;
     
+    // Garante que estamos na página principal de listagem da consulta
     containerLista.classList.remove('hidden');
     if (containerDetalhes) {
         containerDetalhes.classList.add('hidden');
@@ -2041,22 +2042,15 @@ function renderizarFichasConsulta() {
     if (btnSair) btnSair.classList.remove('hidden');
     if (titulo) titulo.innerText = "Consultar Treinos";
 
-    let fichasObj = {};
-    try {
-        const dbString = localStorage.getItem('assistfit_banco');
-        if (dbString) {
-            const dbParsed = JSON.parse(dbString);
-            fichasObj = dbParsed.fichas || {};
-        }
-    } catch (e) {
-        console.error("Erro ao ler banco na consulta:", e);
-    }
-
     let htmlGerado = "";
+    
+    // LÊ DIRETAMENTE DO OBJETO GLOBAL DO FIREBASE (Sem mexer no localStorage da consulta)
+    const fichasObj = (typeof bancoDeDados !== 'undefined' && bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
+
     const chavesFichas = Object.keys(fichasObj);
 
     if (chavesFichas.length === 0) {
-        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino cadastrado.</p>`;
+        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
         return;
     }
 
@@ -2065,7 +2059,7 @@ function renderizarFichasConsulta() {
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
         htmlGerado += `
-            <div onclick="verDetalhesTreino('${nome}')" class="menu-card"
+            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
