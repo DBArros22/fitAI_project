@@ -1962,34 +1962,35 @@ function renderizarFichasConsulta() {
     const titulo = document.getElementById('cabecalho-consulta');
 
     if (!containerLista) return;
+    
+    // Garante que estamos na visão inicial da consulta
     containerLista.classList.remove('hidden');
-    if (containerDetalhes) containerDetalhes.classList.add('hidden');
+    if (containerDetalhes) {
+        containerDetalhes.classList.add('hidden');
+        containerDetalhes.innerHTML = ''; // Limpa resíduos anteriores
+    }
 
-    if(btnVoltar) btnVoltar.classList.add('hidden');
-    if(btnSair) btnSair.classList.remove('hidden');
-    if(titulo) titulo.innerText = "Consultar Treinos";
+    if (btnVoltar) btnVoltar.classList.add('hidden');
+    if (btnSair) btnSair.classList.remove('hidden');
+    if (titulo) titulo.innerText = "Consultar Treinos";
 
-    // CARREGAMENTO SEGURO: Lê direto da fonte da verdade (localStorage) sem sobrescrever variáveis globais de outras telas
+    // Leitura limpa e exclusiva do localStorage para não afetar a página de registro
     let fichasObj = {};
     try {
         const dbString = localStorage.getItem('assistfit_banco');
         if (dbString) {
             const dbParsed = JSON.parse(dbString);
             fichasObj = dbParsed.fichas || {};
-        } else if (typeof bancoDeDados !== 'undefined' && bancoDeDados && bancoDeDados.fichas) {
-            fichasObj = bancoDeDados.fichas;
-        } else if (typeof bancoDados !== 'undefined' && bancoDados && bancoDados.fichas) {
-            fichasObj = bancoDados.fichas;
         }
     } catch (e) {
-        console.error("Erro ao carregar banco para consulta:", e);
+        console.error("Erro ao ler banco na consulta:", e);
     }
 
     let htmlGerado = "";
     const chavesFichas = Object.keys(fichasObj);
 
     if (chavesFichas.length === 0) {
-        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
+        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino cadastrado.</p>`;
         return;
     }
 
@@ -1998,8 +1999,8 @@ function renderizarFichasConsulta() {
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
         htmlGerado += `
-            <div onclick="verDetalhesTreino('${nome}')" class="menu-card"
-                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+            <div onclick="verDetalhesTreinoConsultaOriginal('${nome}')" class="menu-card"
+                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
                 <div>
                     <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
                     <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
@@ -2007,6 +2008,7 @@ function renderizarFichasConsulta() {
                 <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
             </div>`;
     });
+    
     containerLista.innerHTML = htmlGerado;
 }
 
