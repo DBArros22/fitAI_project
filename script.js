@@ -1953,6 +1953,7 @@ async function removerExercicio(id, origem) {
 // XXXXXXXXX fim das funções da pagina registro de treinos XXXXXXXXXXXXXX
 
 // xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx pagina de consulta treinos xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
 function renderizarFichasConsulta() {
     const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
@@ -1968,28 +1969,34 @@ function renderizarFichasConsulta() {
     if(btnSair) btnSair.classList.remove('hidden');
     if(titulo) titulo.innerText = "Consultar Treinos";
 
-    // GARANTIA SÊNIOR: Sincroniza a variável global com o localStorage atualizado antes de contar
+    // CARREGAMENTO SEGURO: Lê direto da fonte da verdade (localStorage) sem sobrescrever variáveis globais de outras telas
+    let fichasObj = {};
     try {
         const dbString = localStorage.getItem('assistfit_banco');
         if (dbString) {
-            bancoDeDados = JSON.parse(dbString);
+            const dbParsed = JSON.parse(dbString);
+            fichasObj = dbParsed.fichas || {};
+        } else if (typeof bancoDeDados !== 'undefined' && bancoDeDados && bancoDeDados.fichas) {
+            fichasObj = bancoDeDados.fichas;
+        } else if (typeof bancoDados !== 'undefined' && bancoDados && bancoDados.fichas) {
+            fichasObj = bancoDados.fichas;
         }
     } catch (e) {
-        console.error("Erro ao sincronizar banco para consulta:", e);
+        console.error("Erro ao carregar banco para consulta:", e);
     }
 
     let htmlGerado = "";
+    const chavesFichas = Object.keys(fichasObj);
 
-    if (!bancoDeDados || !bancoDeDados.fichas) {
-        containerLista.innerHTML = `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
+    if (chavesFichas.length === 0) {
+        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
         return;
     }
 
-    Object.keys(bancoDeDados.fichas).forEach(nome => {
-        const exerciciosDaFicha = bancoDeDados.fichas[nome];
+    chavesFichas.forEach(nome => {
+        const exerciciosDaFicha = fichasObj[nome];
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
-        // CORREÇÃO: Apontando para verDetalhesTreino que é a função que renderiza os detalhes
         htmlGerado += `
             <div onclick="verDetalhesTreino('${nome}')" class="menu-card"
                  style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
@@ -2000,10 +2007,10 @@ function renderizarFichasConsulta() {
                 <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
             </div>`;
     });
-    containerLista.innerHTML = htmlGerado || `<p style="color: #64748b; text-align: center;">Nenhum treino encontrado.</p>`;
+    containerLista.innerHTML = htmlGerado;
 }
 
-// Mantemos verExerciciosConsulta como alias caso algum outro lugar chame ela
+// Alias para manter compatibilidade caso algum evento aponte para cá
 function verExerciciosConsulta(nome) {
     verDetalhesTreino(nome);
 }
@@ -2123,26 +2130,34 @@ function executarRelogio(id, startTime) {
     }, 40);
 }
 
-
 function verDetalhesTreino(nomeTreino) {
-    // 1. Define a ficha ativa globalmente
     window.fichaAtiva = nomeTreino;
     localStorage.setItem('fichaAtiva', nomeTreino);
 
-    // 2. Controle dos botões e títulos
-    document.getElementById('btn-sair-consulta').classList.add('hidden');
-    document.getElementById('btn-voltar-consulta').classList.remove('hidden');
-    document.getElementById('cabecalho-consulta').innerText = nomeTreino.toUpperCase();
-    
-    // 3. Alternância dos containers (Página isolada)
-    document.getElementById('lista-nomes-treinos').classList.add('hidden');
+    const btnSair = document.getElementById('btn-sair-consulta');
+    const btnVoltar = document.getElementById('btn-voltar-consulta');
+    const titulo = document.getElementById('cabecalho-consulta');
+    const containerLista = document.getElementById('lista-nomes-treinos');
     const containerDetalhes = document.getElementById('detalhes-treino-consulta');
-    containerDetalhes.classList.remove('hidden');
 
-    // 4. Busca os exercícios da ficha no banco e renderiza no container de detalhes
-    const db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
-    const exercicios = (db.fichas && db.fichas[nomeTreino]) ? db.fichas[nomeTreino] : [];
+    if (btnSair) btnSair.classList.add('hidden');
+    if (btnVoltar) btnVoltar.classList.remove('hidden');
+    if (titulo) titulo.innerText = nomeTreino.toUpperCase();
+    if (containerLista) containerLista.classList.add('hidden');
+    if (containerDetalhes) containerDetalhes.classList.remove('hidden');
+
+    // Lê os exercícios de forma segura do localStorage
+    let exercicios = [];
+    try {
+        const db = JSON.parse(localStorage.getItem('assistfit_banco') || '{}');
+        exercicios = (db.fichas && db.fichas[nomeTreino]) ? db.fichas[nomeTreino] : [];
+    } catch (e) {
+        console.error("Erro ao ler exercícios da ficha:", e);
+    }
+
     const historicoTempos = JSON.parse(localStorage.getItem('assistfit_historico_cronometros')) || {};
+
+    if (!containerDetalhes) return;
 
     if (exercicios.length === 0) {
         containerDetalhes.innerHTML = `<p style='color:gray; text-align:center; padding: 20px;'>Nenhum exercício cadastrado nesta ficha.</p>`;
@@ -2220,7 +2235,6 @@ function atualizarListaExercicios() {
         lista.map(ex => `<option value="${ex}">${ex}</option>`).join('');
 }
 
-
 function adicionarExercicio(event) {
     if (event) event.preventDefault();
 
@@ -2269,29 +2283,17 @@ function adicionarExercicio(event) {
         return;
     }
 
-    if (typeof bancoDados !== 'undefined') {
-        bancoDados = JSON.parse(localStorage.getItem('assistfit_banco'));
-    }
-
     document.getElementById('series-ex').value = '';
     document.getElementById('reps-ex').value = '';
     document.getElementById('carga-ex').value = '';
     document.getElementById('tempo-ex').value = '';
 
     if (typeof renderizarLogTreino === 'function') {
-        try {
-            renderizarLogTreino(fichaAtual);
-        } catch (err) {
-            renderizarLogTreino();
-        }
+        try { renderizarLogTreino(fichaAtual); } catch (err) { renderizarLogTreino(); }
     }
     
     if (typeof renderizarResumoFicha === 'function') {
-        try {
-            renderizarResumoFicha(fichaAtual);
-        } catch (err) {
-            renderizarResumoFicha(); 
-        }
+        try { renderizarResumoFicha(fichaAtual); } catch (err) { renderizarResumoFicha(); }
     }
 
     if (typeof salvarBanco === 'function') {
@@ -2310,7 +2312,7 @@ function formatarTempoParaExibicao(valor) {
     return valor + "s";
 }
 
-// Expõe as funções globalmente para o HTML
+// Expõe as funções globalmente
 window.renderizarFichasConsulta = renderizarFichasConsulta;
 window.verDetalhesTreino = verDetalhesTreino;
 window.verExerciciosConsulta = verExerciciosConsulta;
