@@ -1076,7 +1076,7 @@ function showView(viewId) {
     }
 
     // 5. GANCHOS ESPECÍFICOS (HOOKS) - LIMPOS E CORRETOS
-    try {
+   try {
         if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
             renderizarFichas();
         } else if (cleanId === 'registro') {
@@ -1098,6 +1098,29 @@ function showView(viewId) {
         } else if (cleanId === 'perfil') {
             if (typeof carregarDadosPerfil === 'function') carregarDadosPerfil();
             if (typeof renderizarPerfil === 'function') renderizarPerfil();
+        } 
+        // --- ADIÇÃO SÊNIOR: GANCHOS PARA A PÁGINA DE CONSULTA ---
+        else if (cleanId === 'consulta' || cleanId === 'consultar' || cleanId === 'treinos-consulta') {
+            // Reseta a visão para garantir o comportamento de "página única" (mostra lista, esconde detalhes antigos)
+            const containerLista = document.getElementById('lista-nomes-treinos');
+            const containerDetalhes = document.getElementById('detalhes-treino-consulta');
+            const btnVoltar = document.getElementById('btn-voltar-consulta');
+            const btnSair = document.getElementById('btn-sair-consulta');
+            const titulo = document.getElementById('cabecalho-consulta');
+
+            if (containerLista) containerLista.classList.remove('hidden');
+            if (containerDetalhes) {
+                containerDetalhes.classList.add('hidden');
+                containerDetalhes.innerHTML = '';
+            }
+            if (btnVoltar) btnVoltar.classList.add('hidden');
+            if (btnSair) btnSair.classList.remove('hidden');
+            if (titulo) titulo.innerText = "Consultar Treinos";
+
+            // Dispara a renderização das fichas na consulta
+            if (typeof renderizarFichasConsulta === 'function') {
+                renderizarFichasConsulta();
+            }
         }
     } catch (erroHook) {
         console.error("Erro crítico executando o hook da view:", erroHook);
