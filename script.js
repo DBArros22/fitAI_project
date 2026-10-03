@@ -1532,33 +1532,28 @@ function renderizarFichasConsulta() {
     
     // Garante que estamos na página principal de listagem
     containerLista.classList.remove('hidden');
-    if (containerDetalhes) containerDetalhes.classList.add('hidden');
-
-    if(btnVoltar) btnVoltar.classList.add('hidden');
-    if(btnSair) btnSair.classList.remove('hidden');
-    if(titulo) titulo.innerText = "Consultar Treinos";
-
-    // GARANTIA SÊNIOR: Sincroniza a variável global e o banco de dados com o localStorage
-    try {
-        const dbString = localStorage.getItem('assistfit_banco');
-        if (dbString) {
-            const parsedDb = JSON.parse(dbString);
-            bancoDeDados = parsedDb;
-            if (typeof bancoDados !== 'undefined') bancoDados = parsedDb;
-        }
-    } catch (e) {
-        console.error("Erro ao sincronizar banco para consulta:", e);
+    if (containerDetalhes) {
+        containerDetalhes.classList.add('hidden');
+        containerDetalhes.innerHTML = '';
     }
 
-    let htmlGerado = "";
-    const fichasObj = (bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
+    if (btnVoltar) btnVoltar.classList.add('hidden');
+    if (btnSair) btnSair.classList.remove('hidden');
+    if (titulo) titulo.innerText = "Consultar Treinos";
 
-    if (Object.keys(fichasObj).length === 0) {
+    let htmlGerado = "";
+    
+    // LEITURA PURA DO FIREBASE (Variável global gerenciada pelo login/firebase)
+    const fichasObj = (typeof bancoDeDados !== 'undefined' && bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
+
+    const chavesFichas = Object.keys(fichasObj);
+
+    if (chavesFichas.length === 0) {
         containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
         return;
     }
 
-    Object.keys(fichasObj).forEach(nome => {
+    chavesFichas.forEach(nome => {
         const exerciciosDaFicha = fichasObj[nome];
         const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
 
@@ -1575,7 +1570,6 @@ function renderizarFichasConsulta() {
     
     containerLista.innerHTML = htmlGerado;
 }
-
 
 // --- CRIAR NOVA FICHA ---
 async function criarNovaFicha() {
