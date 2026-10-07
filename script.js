@@ -1578,9 +1578,18 @@ async function criarNovaFicha() {
         if (nome && !bancoDeDados.fichas[nome]) {
             bancoDeDados.fichas[nome] = [];
             await salvarBanco();
+            
+            // Garante a atualização de todas as telas de listagem de fichas na SPA
             if (typeof renderizarFichas === 'function') renderizarFichas();
             if (typeof renderizarFichasConsulta === 'function') renderizarFichasConsulta();
+            
+            // Opcional: Se houver uma função específica de renderização dos cards na tela inicial de fichas, chame-a aqui também
+            
             mostrarAviso(`Treino ${nome} criado com sucesso!`);
+            
+            // Opcional de UX: Abre automaticamente a ficha recém-criada para já preencher os exercícios
+            abrirFicha(nome);
+            
         } else if (bancoDeDados.fichas[nome]) {
             mostrarAviso("Este nome de treino já existe.");
         }
