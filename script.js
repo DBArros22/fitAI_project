@@ -1719,6 +1719,30 @@ function voltarParaFichas() {
 
  // adicionar exercicio
 
+function atualizarListaExercicios(nomeFicha) {
+    if (!nomeFicha) {
+        nomeFicha = window.fichaAtiva || localStorage.getItem('fichaAtiva');
+    }
+    if (!nomeFicha) return;
+
+    window.fichaAtiva = nomeFicha;
+    localStorage.setItem('fichaAtiva', nomeFicha);
+
+    // Atualiza o nome da ficha ativa na interface
+    document.querySelectorAll('#nome-ficha-ativa, .nome-ficha-ativa').forEach(el => {
+        el.innerText = nomeFicha.toUpperCase();
+    });
+
+    // Se a sua função original de renderização já existe, redirecionamos para ela para aproveitar sua lógica existente
+    if (typeof renderizarLogTreino === 'function') {
+        renderizarLogTreino(nomeFicha);
+    } else if (typeof renderizarResumoFicha === 'function') {
+        renderizarResumoFicha(nomeFicha);
+    }
+}
+
+window.atualizarListaExercicios = atualizarListaExercicios;
+
 function adicionarExercicio(event) {
     if (event) event.preventDefault();
 
