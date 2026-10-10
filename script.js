@@ -1521,56 +1521,6 @@ async function concluirRedefinicaoSenha() {
 
 // --- PÁGINA CRIAR FICHAS COM TREINOS / EXERCICIOS ---
 
-function renderizarFichasConsulta() {
-    const containerLista = document.getElementById('lista-nomes-treinos');
-    const containerDetalhes = document.getElementById('detalhes-treino-consulta');
-    const btnVoltar = document.getElementById('btn-voltar-consulta');
-    const btnSair = document.getElementById('btn-sair-consulta');
-    const titulo = document.getElementById('cabecalho-consulta');
-
-    if (!containerLista) return;
-    
-    // Garante que estamos na página principal de listagem
-    containerLista.classList.remove('hidden');
-    if (containerDetalhes) {
-        containerDetalhes.classList.add('hidden');
-        containerDetalhes.innerHTML = '';
-    }
-
-    if (btnVoltar) btnVoltar.classList.add('hidden');
-    if (btnSair) btnSair.classList.remove('hidden');
-    if (titulo) titulo.innerText = "Consultar Treinos";
-
-    let htmlGerado = "";
-    
-    // LEITURA PURA DO FIREBASE (Variável global gerenciada pelo login/firebase)
-    const fichasObj = (typeof bancoDeDados !== 'undefined' && bancoDeDados && bancoDeDados.fichas) ? bancoDeDados.fichas : {};
-
-    const chavesFichas = Object.keys(fichasObj);
-
-    if (chavesFichas.length === 0) {
-        containerLista.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum treino encontrado.</p>`;
-        return;
-    }
-
-    chavesFichas.forEach(nome => {
-        const exerciciosDaFicha = fichasObj[nome];
-        const qtdExercicios = Array.isArray(exerciciosDaFicha) ? exerciciosDaFicha.length : 0;
-
-        htmlGerado += `
-            <div onclick="verExerciciosConsulta('${nome}')" class="menu-card"
-                 style="margin-bottom: 15px; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 18px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05);">
-                <div>
-                    <h3 class="italic-bold uppercase" style="color: white; margin: 0; font-size: 1.1rem;">${nome}</h3>
-                    <p style="font-size: 10px; color: gray; margin: 5px 0 0 0;">${qtdExercicios} Exercícios</p>
-                </div>
-                <p style="color: #3b82f6; margin: 0; font-size: 0.9rem; font-weight: bold;">VER EXERCÍCIOS →</p>
-            </div>`;
-    });
-    
-    containerLista.innerHTML = htmlGerado;
-}
-
 // --- CRIAR NOVA FICHA ---
 async function criarNovaFicha() {
     solicitarNomeFichaCustom(async (nome) => {
