@@ -1076,7 +1076,7 @@ function showView(viewId) {
     }
 
     // 5. GANCHOS ESPECÍFICOS (HOOKS) - LIMPOS E CORRETOS
-   try {
+    try {
         if (cleanId === 'planilhas' && typeof renderizarFichas === 'function') {
             renderizarFichas();
         } else if (cleanId === 'registro') {
@@ -1093,6 +1093,12 @@ function showView(viewId) {
             if (typeof renderizarLogTreino === 'function' && window.fichaAtiva) {
                 renderizarLogTreino(window.fichaAtiva);
             }
+            
+            // --- CORREÇÃO AQUI: Força a renderização da lista de fichas na tela de registro ---
+            if (typeof renderizarFichas === 'function') {
+                renderizarFichas();
+            }
+
         } else if (cleanId === 'lobby' && typeof renderizarFichas === 'function') {
             renderizarFichas();
         } else if (cleanId === 'perfil') {
@@ -1101,7 +1107,6 @@ function showView(viewId) {
         } 
         // --- ADIÇÃO SÊNIOR: GANCHOS PARA A PÁGINA DE CONSULTA ---
         else if (cleanId === 'consulta' || cleanId === 'consultar' || cleanId === 'treinos-consulta') {
-            // Reseta a visão para garantir o comportamento de "página única" (mostra lista, esconde detalhes antigos)
             const containerLista = document.getElementById('lista-nomes-treinos');
             const containerDetalhes = document.getElementById('detalhes-treino-consulta');
             const btnVoltar = document.getElementById('btn-voltar-consulta');
@@ -1117,7 +1122,6 @@ function showView(viewId) {
             if (btnSair) btnSair.classList.remove('hidden');
             if (titulo) titulo.innerText = "Consultar Treinos";
 
-            // Dispara a renderização das fichas na consulta
             if (typeof renderizarFichasConsulta === 'function') {
                 renderizarFichasConsulta();
             }
@@ -1126,8 +1130,8 @@ function showView(viewId) {
         console.error("Erro crítico executando o hook da view:", erroHook);
     }
 
-    // Persistência de estado
-    window.currentView = cleanId;
+    // Persistência de estado (Linha final corrigida e fechamento da função)
+    window.currentView = viewId;
     localStorage.setItem('currentView', viewId);
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 }
